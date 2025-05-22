@@ -1,0 +1,43 @@
+project_id = "ixihbqubatyfulnurpco"
+
+[api]
+enabled = true
+
+[functions.register-shop]
+verify_jwt = false
+
+[functions.pin-login]
+verify_jwt = false
+
+[functions.check-shop-name]
+verify_jwt = false
+
+[functions.send-whatsapp-otp]
+verify_jwt = false
+
+[functions.verify-whatsapp-otp]
+verify_jwt = false
+
+[functions.send-email-otp]
+verify_jwt = false
+
+[functions.verify-email-otp]
+verify_jwt = false
+
+[functions.paypack-webhook]
+verify_jwt = false
+
+[functions.flutterwave-webhook]
+verify_jwt = false
+
+[functions.update-pin]
+verify_jwt = true
+
+[functions.delete-account]
+verify_jwt = true
+
+[functions.paypack-cashin]
+verify_jwt = true
+
+[functions.approve-manual-payment]
+verify_jwt = true
