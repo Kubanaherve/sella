@@ -1,0 +1,714 @@
+@import '@fontsource/plus-jakarta-sans/400.css';
+@import '@fontsource/plus-jakarta-sans/500.css';
+@import '@fontsource/plus-jakarta-sans/600.css';
+@import '@fontsource/plus-jakarta-sans/700.css';
+@import '@fontsource/plus-jakarta-sans/800.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Sella — electric blue glass (matches logo) */
+    --background: 214 60% 98%;
+    --foreground: 222 47% 12%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 12%;
+
+    --primary: 217 100% 55%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 214 45% 94%;
+    --secondary-foreground: 222 47% 18%;
+
+    --muted: 214 35% 95%;
+    --muted-foreground: 215 16% 42%;
+
+    --accent: 217 91% 60%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 48%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 214 30% 88%;
+    --input: 214 30% 88%;
+    --ring: 217 100% 55%;
+
+    --radius: 1rem;
+
+    --gold: 217 100% 55%;
+    --gold-light: 217 100% 68%;
+    --gold-glow: 217 100% 60%;
+    --navy: 217 91% 45%;
+    --navy-light: 217 91% 58%;
+    --navy-dark: 222 70% 28%;
+
+    --glass-bg: 0 0% 100% / 0.88;
+    --glass-border: 214 40% 100% / 0.55;
+    --glass-shadow: 222 47% 20% / 0.08;
+
+    --gradient-gold: linear-gradient(135deg, #0b3fcc, #1a6fff);
+    --gradient-navy: linear-gradient(135deg, #0b3fcc, #1a6fff);
+    --gradient-luxury: linear-gradient(135deg, #0b3fcc, #3b82f6 70%, #d033ff);
+    --gradient-brand: linear-gradient(145deg, #0b3fcc 0%, #1a6fff 52%, #5ac8fa 100%);
+    --gradient-hero: radial-gradient(ellipse 120% 90% at 70% 0%, #2b6cff 0%, #0b3fcc 42%, #08153f 78%, #040816 100%);
+
+    --sidebar-background: 214 60% 98%;
+    --sidebar-foreground: 222 30% 25%;
+    --sidebar-primary: 217 100% 55%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 214 35% 95%;
+    --sidebar-accent-foreground: 222 47% 18%;
+    --sidebar-border: 214 30% 88%;
+    --sidebar-ring: 217 100% 55%;
+  }
+
+  .dark {
+    --background: 168 30% 7%;
+    --foreground: 160 20% 96%;
+
+    --card: 168 25% 11%;
+    --card-foreground: 160 20% 96%;
+
+    --popover: 168 25% 11%;
+    --popover-foreground: 160 20% 96%;
+
+    --primary: 175 55% 42%;
+    --primary-foreground: 168 40% 6%;
+
+    --secondary: 168 20% 16%;
+    --secondary-foreground: 160 20% 96%;
+
+    --muted: 168 18% 15%;
+    --muted-foreground: 160 12% 65%;
+
+    --accent: 24 90% 52%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 62% 40%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 168 18% 18%;
+    --input: 168 18% 18%;
+    --ring: 175 55% 42%;
+
+    --glass-bg: 168 25% 12% / 0.85;
+    --glass-border: 160 20% 40% / 0.35;
+    --glass-shadow: 0 0% 0% / 0.4;
+
+    --sidebar-background: 168 30% 7%;
+    --sidebar-foreground: 160 20% 96%;
+    --sidebar-primary: 175 55% 42%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 168 18% 14%;
+    --sidebar-accent-foreground: 160 20% 96%;
+    --sidebar-border: 168 18% 16%;
+    --sidebar-ring: 175 55% 42%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 100% -10%, hsl(217 90% 90% / 0.55), transparent),
+      radial-gradient(ellipse 60% 40% at -10% 20%, hsl(214 80% 92% / 0.4), transparent);
+    background-attachment: fixed;
+    /* Keep layout inside the visible viewport on notched phones */
+    min-height: 100dvh;
+  }
+
+  :root {
+    /*
+      Safe areas: use env() directly where possible.
+      --sella-safe-top-floor is set by src/lib/safeArea.ts on native
+      (WKWebView often reports env() as 0 while still drawing under the island).
+    */
+    --sella-safe-top-floor: 0px;
+    --sella-safe-top: max(
+      env(safe-area-inset-top, 0px),
+      var(--sella-safe-top-floor)
+    );
+    --sella-safe-bottom: max(
+      env(safe-area-inset-bottom, 0px),
+      var(--sella-safe-bottom-floor, 0px)
+    );
+    --sella-safe-left: env(safe-area-inset-left, 0px);
+    --sella-safe-right: env(safe-area-inset-right, 0px);
+    --sella-safe-bottom-floor: 0px;
+    /* Scales slightly with short vs tall screens */
+    --sella-header-gap: clamp(0.55rem, 1.8vh, 0.9rem);
+    --sella-header-bottom-gap: clamp(0.55rem, 1.4vh, 0.8rem);
+    --sella-tabbar-height: 3.75rem;
+  }
+
+  html.sella-android-chrome {
+    --sella-safe-bottom-floor: 12px;
+  }
+
+  html.sella-ios-chrome {
+    /* Home-indicator floor when env() is missing */
+    --sella-safe-bottom-floor: 20px;
+  }
+
+  .safe-top {
+    padding-top: max(
+      env(safe-area-inset-top, 0px),
+      var(--sella-safe-top-floor)
+    );
+  }
+  .safe-bottom {
+    padding-bottom: max(
+      env(safe-area-inset-bottom, 0px),
+      var(--sella-safe-bottom-floor, 0px)
+    );
+  }
+  .safe-x {
+    padding-left: var(--sella-safe-left);
+    padding-right: var(--sella-safe-right);
+  }
+}
+
+@layer components {
+  .sella-app-shell {
+    @apply relative bg-transparent;
+    min-height: 100dvh;
+  }
+
+  .sella-app-content {
+    @apply max-w-lg mx-auto;
+    min-height: 100dvh;
+    padding-bottom: calc(5.75rem + var(--sella-safe-bottom));
+  }
+
+  /* Full-screen flows (new sale) — no tab bar collision */
+  .sella-app-content-immersive {
+    padding-bottom: var(--sella-safe-bottom);
+  }
+
+  .sella-page {
+    @apply min-h-full;
+  }
+
+  .sella-page-body {
+    @apply px-4 pt-3 pb-6;
+  }
+
+  .sella-app-header {
+    @apply sticky top-0 z-40 flex items-center justify-between gap-3 px-3 sm:px-4;
+    @apply border-b border-border/80 bg-white/90 backdrop-blur-xl;
+    /*
+      Clear Dynamic Island / notch / status icons on every phone.
+      env() first (Safari), then floor from JS (Capacitor WebView fallback).
+    */
+    padding-top: calc(
+      max(env(safe-area-inset-top, 0px), var(--sella-safe-top-floor, 0px)) +
+        var(--sella-header-gap)
+    );
+    padding-bottom: var(--sella-header-bottom-gap);
+    min-height: calc(
+      max(env(safe-area-inset-top, 0px), var(--sella-safe-top-floor, 0px)) + 3.25rem
+    );
+  }
+
+  .sella-tabbar {
+    @apply fixed bottom-0 inset-x-0 z-50 mx-auto max-w-lg;
+    @apply grid grid-cols-5 gap-0 border-t border-border bg-white/95 backdrop-blur-xl;
+    padding-bottom: var(--sella-safe-bottom);
+    min-height: calc(var(--sella-tabbar-height) + var(--sella-safe-bottom));
+    box-shadow: 0 -10px 28px rgba(11, 63, 204, 0.08);
+  }
+
+  .sella-tab {
+    @apply flex flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-semibold tracking-wide;
+    @apply text-muted-foreground active:scale-95;
+    transition:
+      color 220ms ease,
+      transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+      background-color 220ms ease;
+  }
+
+  .sella-tab-active {
+    @apply text-primary relative;
+    transform: translateY(-1px);
+  }
+
+  .sella-tab-active::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 18px;
+    height: 3px;
+    border-radius: 999px;
+    background: hsl(var(--primary));
+  }
+
+  .sella-tab-active svg {
+    stroke-width: 2.4;
+  }
+
+  .sella-fab-wrap {
+    @apply fixed z-50 right-4;
+    bottom: calc(4.85rem + var(--sella-safe-bottom));
+    max-width: 32rem;
+  }
+
+  .sella-sheet-top {
+    padding-top: max(
+      1rem,
+      calc(
+        max(env(safe-area-inset-top, 0px), var(--sella-safe-top-floor, 0px)) * 0.25 +
+          0.85rem
+      )
+    );
+  }
+
+  .sella-fixed-bottom-bar {
+    @apply fixed inset-x-0 z-40 mx-auto max-w-lg border-t border-border bg-white/95 backdrop-blur px-3 py-3;
+    bottom: 0;
+    padding-bottom: max(
+      0.75rem,
+      env(safe-area-inset-bottom, 0px),
+      var(--sella-safe-bottom-floor, 0px)
+    );
+  }
+
+  .sella-fixed-bottom-bar-above-tabs {
+    bottom: calc(var(--sella-tabbar-height) + var(--sella-safe-bottom));
+    padding-bottom: 0.75rem;
+  }
+
+  @media (min-width: 512px) {
+    .sella-fab-wrap {
+      right: calc(50% - 16rem + 1rem);
+    }
+  }
+
+  .sella-fab {
+    @apply w-14 h-14 rounded-2xl text-white flex items-center justify-center;
+    background: var(--gradient-brand);
+    box-shadow: 0 12px 28px rgba(26, 111, 255, 0.38);
+    transition:
+      transform 280ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 280ms ease,
+      background 280ms ease;
+  }
+
+  .sella-fab-menu {
+    @apply absolute bottom-16 right-0 w-56 space-y-2 mb-1;
+    animation: sella-fab-pop 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .sella-fab-menu-item {
+    @apply w-full rounded-xl bg-white border border-border shadow-md;
+    @apply px-3 py-2.5 text-left text-sm font-semibold text-foreground;
+    @apply active:scale-[0.98] transition-transform;
+  }
+
+  .sella-stat {
+    @apply rounded-2xl border border-border/80 bg-white p-3.5 shadow-sm;
+  }
+
+  .sella-stat-label {
+    @apply text-[10px] font-semibold uppercase tracking-wide text-muted-foreground;
+  }
+
+  .sella-stat-value {
+    @apply mt-1.5 text-xl font-extrabold tracking-tight tabular-nums text-foreground leading-none;
+  }
+
+  .sella-list-card {
+    @apply rounded-2xl border border-border/80 bg-white shadow-sm overflow-hidden;
+  }
+
+  .sella-chip {
+    @apply inline-flex items-center h-7 px-2.5 rounded-full text-[11px] font-bold border;
+  }
+}
+
+@layer components {
+  .sella-hero-bg {
+    background: var(--gradient-hero);
+    background-attachment: fixed;
+  }
+
+  /* Perfect 1:1 app-icon box — continuous corner ~22.37% (iOS ratio) */
+  .brand-mark-box {
+    border-radius: 22.37%;
+    isolation: isolate;
+    transform: translateZ(0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+  }
+
+  .brand-mark-plain {
+    box-shadow:
+      0 8px 28px rgba(26, 111, 255, 0.35),
+      0 2px 10px rgba(208, 51, 255, 0.18);
+  }
+
+  .brand-mark-framed {
+    box-shadow:
+      0 0 0 1.5px rgba(255, 255, 255, 0.55),
+      0 0 0 4px rgba(90, 200, 250, 0.18),
+      0 16px 36px rgba(11, 63, 204, 0.42),
+      0 6px 18px rgba(208, 51, 255, 0.22);
+  }
+
+  .brand-mark-framed::before {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    border-radius: inherit;
+    background: linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.28) 0%,
+      rgba(255, 255, 255, 0.05) 38%,
+      transparent 55%
+    );
+    mix-blend-mode: soft-light;
+  }
+
+  .brand-mark-framed::after {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    border-radius: inherit;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.5),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+  }
+
+  .glass-card {
+    @apply relative overflow-hidden rounded-2xl border border-border bg-white/90 p-5 shadow-sm backdrop-blur-md;
+  }
+
+  .glass-card-dark {
+    @apply relative overflow-hidden rounded-2xl border border-white/10 p-5 shadow-lg;
+    background: linear-gradient(145deg, #0b4fd9 0%, #1a6fff 100%);
+  }
+
+  .gold-glow {
+    box-shadow: 0 8px 24px hsl(175 66% 26% / 0.22);
+  }
+
+  .gold-glow-hover:hover {
+    box-shadow: 0 10px 28px hsl(175 66% 26% / 0.3);
+  }
+
+  .neon-border {
+    position: relative;
+  }
+
+  .neon-border::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    background: linear-gradient(135deg, hsl(175 66% 30%), hsl(24 90% 48%));
+    border-radius: inherit;
+    z-index: -1;
+    opacity: 0.35;
+    filter: blur(3px);
+  }
+
+  .btn-navy {
+    @apply bg-primary text-primary-foreground font-medium transition-all duration-300 hover:shadow-lg;
+    background: var(--gradient-navy);
+  }
+
+  .btn-navy:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px hsl(175 66% 26% / 0.35);
+  }
+
+  .btn-gold {
+    @apply font-medium text-white transition-all duration-300;
+    background: var(--gradient-gold);
+  }
+
+  .btn-gold:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px hsl(24 90% 48% / 0.35);
+  }
+
+  .input-glow:focus {
+    box-shadow: 0 0 0 3px hsl(175 66% 26% / 0.22);
+  }
+
+  .table-premium {
+    @apply w-full text-sm;
+  }
+
+  .table-premium th {
+    @apply bg-primary/10 px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider text-primary;
+  }
+
+  .table-premium td {
+    @apply border-b border-border/50 px-3 py-3;
+  }
+
+  .table-premium tr:hover td {
+    @apply bg-muted/50;
+  }
+}
+
+@layer utilities {
+  .text-gradient-gold {
+    background: linear-gradient(135deg, hsl(24 90% 48%), hsl(175 66% 28%));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .text-gradient-navy {
+    background: linear-gradient(135deg, hsl(175 66% 22%), hsl(175 50% 36%));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+
+  .animate-pulse-gold {
+    animation: pulse-brand 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-brand {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(26, 111, 255, 0.4); }
+    50% { box-shadow: 0 0 22px 12px rgba(208, 51, 255, 0); }
+  }
+
+  .animate-shimmer {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(90, 200, 250, 0.22) 50%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+  }
+
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+}
+
+.glass-card-neon {
+  @apply relative overflow-hidden rounded-2xl border border-white/20 bg-black/70 shadow-lg backdrop-blur-lg flex items-center justify-center;
+  box-shadow:
+    0 0 4px hsl(175 66% 30% / 0.2),
+    0 0 8px hsl(24 90% 48% / 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.glass-card-neon:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 0 8px hsl(175 66% 30% / 0.28),
+    0 0 16px hsl(24 90% 48% / 0.14);
+}
+
+.neon-text-dark {
+  color: hsl(175, 55%, 42%);
+  text-shadow:
+    0 0 1px hsl(175, 55%, 42%),
+    0 0 2px hsl(24, 90%, 48%);
+  overflow: hidden;
+  white-space: nowrap;
+  border-right: 2px solid hsl(175, 55%, 42%);
+  box-sizing: border-box;
+}
+
+.animate-typing-loop {
+  display: inline-block;
+  width: 0;
+  animation: typing 3s steps(30, end) 1 forwards,
+             pause 10s linear 1 forwards,
+             typing-reverse 3s steps(30, end) 1 forwards;
+  animation-iteration-count: infinite;
+  animation-delay: 0s, 3s, 13s;
+}
+
+@keyframes typing {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+@keyframes pause {
+  from { width: 100%; }
+  to { width: 100%; }
+}
+
+@keyframes typing-reverse {
+  from { width: 100%; }
+  to { width: 0; }
+}
+
+.neon-text-dark::after {
+  content: "";
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  margin-left: 2px;
+  background-color: hsl(175, 55%, 42%);
+  animation: blink 0.7s step-end infinite alternate;
+}
+
+@keyframes blink {
+  0%, 50%, 100% { opacity: 1; }
+  25%, 75% { opacity: 0; }
+}
+
+/* ── Sella splash signature ───────────────────────────────────────── */
+.sella-splash-mark {
+  animation: sella-mark-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.sella-signature-stroke {
+  fill: none;
+  stroke: #ffffff;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 480;
+  stroke-dashoffset: 480;
+  animation: sella-sign-write 1.65s cubic-bezier(0.45, 0, 0.2, 1) 0.4s forwards;
+}
+
+.sella-signature-fill {
+  fill: url(#sigFill);
+  opacity: 0;
+  animation: sella-fill-in 0.45s ease-out 1.85s forwards;
+}
+
+.sella-signature-underline {
+  stroke-dasharray: 280;
+  stroke-dashoffset: 280;
+  animation: sella-sign-write 0.65s ease-out 2s forwards;
+}
+
+@keyframes sella-fill-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.sella-splash-tag {
+  animation: sella-tag-in 0.5s ease-out 2.1s both;
+}
+
+@keyframes sella-mark-in {
+  from {
+    opacity: 0;
+    transform: scale(0.82) translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes sella-sign-write {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes sella-tag-in {
+  from {
+    opacity: 0;
+    letter-spacing: 0.4em;
+  }
+  to {
+    opacity: 0.75;
+    letter-spacing: 0.22em;
+  }
+}
+
+.sella-btn-confirm {
+  @apply w-full font-bold text-white rounded-2xl flex items-center justify-center gap-2;
+  min-height: 52px;
+  background: #16a34a;
+  box-shadow: 0 10px 24px rgba(22, 163, 74, 0.35);
+}
+
+.sella-btn-confirm:disabled {
+  opacity: 0.45;
+  box-shadow: none;
+}
+
+.sella-overlay {
+  background: rgba(0, 0, 0, 0.45);
+}
+
+/* ── In-app page transitions (glass / light bloom) ─────────────────── */
+.sella-page-enter {
+  animation: sella-page-enter 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  will-change: opacity, transform, filter;
+}
+
+@keyframes sella-page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.985);
+    filter: blur(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes sella-fab-pop {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.92);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sella-page-enter,
+  .sella-fab-menu,
+  .sella-splash-mark,
+  .sella-signature-stroke,
+  .sella-signature-fill,
+  .sella-signature-underline,
+  .sella-splash-tag {
+    animation: none !important;
+  }
+}
