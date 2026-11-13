@@ -6,7 +6,7 @@
 |---|---|
 | Multi-tenant SQL + RLS (`user_id`) | `supabase/migrations/20261112010000_multitenant_saas_auth_payments.sql` |
 | WhatsApp OTP send/verify | `supabase/functions/send-whatsapp-otp`, `verify-whatsapp-otp` |
-| Reviewer bypass | Phone `+250780000000` → OTP `123456` |
+| Reviewer bypass | **DEV/TestFlight ONLY.** Requires `ENABLE_REVIEWER_BYPASS=true` and is blocked in production unless `REVIEWER_ALLOW_IN_PRODUCTION=true`. Never ship with bypass on. |
 | Paypack MoMo cashin + webhook | `paypack-cashin`, `paypack-webhook` |
 | Manual MoMo / BK bank + receipt upload | `/subscribe` + `receipts` storage |
 | Admin approve/reject | `/admin/payments` + `approve-manual-payment` |
@@ -56,6 +56,6 @@ Set `RESEND_API_KEY` + `EMAIL_FROM` as Edge Function secrets for reliable delive
 ## Reviewer credentials
 
 - Phone: **+250 780 000 000**
-- WhatsApp OTP: **123456**
+- WhatsApp OTP: use a dedicated TestFlight demo account — **never** leave fixed OTP bypass enabled in production
 - PIN: any 4–6 digits chosen at registration
 - Email: any valid address (reviewer can skip mailbox step)

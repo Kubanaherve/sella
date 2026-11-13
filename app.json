@@ -1,4 +1,5 @@
 {
+  "_comment": "LEGACY Expo/EAS leftover — SELLA ships with Capacitor only (see capacitor.config.ts). Do not use Expo EAS for production builds. Kept so old tooling does not break; safe to delete after confirming no CI references it.",
   "expo": {
     "name": "Sella",
     "slug": "sella",

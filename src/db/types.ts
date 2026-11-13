@@ -193,6 +193,9 @@ export type CreateSaleOrderResult = {
   remaining: number;
   changeDue: number;
   receiptNumber: string;
+  /** True when saved to durable outbox — not yet confirmed by server */
+  queuedOffline?: boolean;
+  outboxId?: string;
 };
 
 export interface SaleRefund {

@@ -19,6 +19,8 @@ import {
   type PaymentSlice,
 } from "@/lib/money";
 import { calendarDateKeyInKigali, isWithinLastDaysKigali } from "@/lib/dates";
+import { isNetworkFailure } from "@/lib/network";
+import { enqueueOutbox } from "@/db/outbox";
 
 export type { CreateSaleOrderInput, CreateSaleOrderResult };
 
@@ -303,8 +305,9 @@ export async function createSaleOrder(
     throw new Error("Izina ry'umukiriya rirakenewe ku ideni");
   }
 
+  const idempotencyKey = crypto.randomUUID();
   const payload = {
-    idempotency_key: crypto.randomUUID(),
+    idempotency_key: idempotencyKey,
     client_name: String(input.clientName || "").trim() || "Walk-in",
     phone: input.phone || null,
     due_date: normalized.remaining > 0 ? input.dueDate || null : null,
@@ -322,17 +325,60 @@ export async function createSaleOrder(
     })),
   };
 
-  const { data, error } = await sb().rpc("create_sale_order", {
-    p_payload: payload,
-  });
-  if (error) {
-    const msg = error.message || "";
-    if (/could not find the function|schema cache/i.test(msg)) {
-      throw new Error(
-        "Server update required: apply migration 20261112170000_atomic_pos_rpcs.sql"
-      );
+  let data: unknown;
+  try {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new Error("offline");
     }
-    throw new Error(msg || "Sale failed");
+    const res = await sb().rpc("create_sale_order", {
+      p_payload: payload,
+    });
+    if (res.error) {
+      const msg = res.error.message || "";
+      if (/could not find the function|schema cache/i.test(msg)) {
+        throw new Error(
+          "Server update required: apply migration 20261112170000_atomic_pos_rpcs.sql"
+        );
+      }
+      if (isNetworkFailure(res.error)) throw res.error;
+      throw new Error(msg || "Sale failed");
+    }
+    data = res.data;
+  } catch (err) {
+    if (!isNetworkFailure(err) && String((err as Error)?.message) !== "offline") {
+      throw err instanceof Error ? err : new Error(String(err));
+    }
+    const queued = await enqueueOutbox({
+      operation: "create_sale_order",
+      payload,
+      idempotency_key: idempotencyKey,
+    });
+    const now = new Date().toISOString();
+    const receiptNumber = `OFF-${idempotencyKey.slice(0, 8).toUpperCase()}`;
+    const provisionalDebt: Debt = {
+      id: queued.id,
+      client_id: "offline",
+      total_amount: orderTotal,
+      remaining_balance: normalized.remaining,
+      due_date: normalized.remaining > 0 ? input.dueDate || null : null,
+      status: normalized.remaining > 0 ? "active" : "paid",
+      paid_at: normalized.remaining > 0 ? null : now,
+      notes: `queued offline · ${receiptNumber}`,
+      created_at: now,
+      updated_at: now,
+    };
+    return {
+      debt: provisionalDebt,
+      sales: [],
+      payments: [],
+      payment: null,
+      paid: orderTotal - normalized.remaining,
+      remaining: normalized.remaining,
+      changeDue: toRwf(input.changeGiven ?? normalized.changeDue),
+      receiptNumber,
+      queuedOffline: true,
+      outboxId: queued.id,
+    };
   }
 
   const row = data as {
@@ -416,16 +462,46 @@ export async function recordPayment(input: {
 }): Promise<Payment> {
   if (input.amount <= 0) throw new Error("Amafaranga ntayemewe");
 
-  const { data, error } = await sb().rpc("record_payment", {
-    p_payload: {
-      idempotency_key: crypto.randomUUID(),
-      debt_id: input.debtId,
-      amount: toRwf(input.amount),
-      payment_method: input.paymentMethod,
-      notes: input.notes || null,
-      reference_number: input.referenceNumber?.trim() || null,
-    },
-  });
+  const idempotency_key = crypto.randomUUID();
+  const p_payload = {
+    idempotency_key,
+    debt_id: input.debtId,
+    amount: toRwf(input.amount),
+    payment_method: input.paymentMethod,
+    notes: input.notes || null,
+    reference_number: input.referenceNumber?.trim() || null,
+  };
+
+  let data: unknown;
+  let error: { message?: string } | null = null;
+  try {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      throw new Error("offline");
+    }
+    const res = await sb().rpc("record_payment", { p_payload });
+    data = res.data;
+    error = res.error;
+  } catch (err) {
+    if (isNetworkFailure(err) || String((err as Error)?.message) === "offline") {
+      await enqueueOutbox({
+        operation: "record_payment",
+        payload: p_payload,
+        idempotency_key,
+      });
+      const now = new Date().toISOString();
+      return {
+        id: idempotency_key,
+        debt_id: input.debtId,
+        client_id: "offline",
+        amount: toRwf(input.amount),
+        payment_method: input.paymentMethod,
+        reference_number: input.referenceNumber?.trim() || null,
+        notes: input.notes || "queued offline",
+        created_at: now,
+      };
+    }
+    throw err instanceof Error ? err : new Error(String(err));
+  }
   if (error) {
     const msg = error.message || "";
     if (/could not find the function|schema cache/i.test(msg)) {

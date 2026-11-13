@@ -9,6 +9,7 @@ const OPEN_PATHS = new Set([
   "/subscribe",
   "/billing",
   "/account",
+  "/notifications",
   "/terms",
   "/privacy",
   "/forgot-password",

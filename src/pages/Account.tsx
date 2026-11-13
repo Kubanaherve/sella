@@ -107,7 +107,7 @@ const AccountPage = () => {
     <div className="sella-page">
       <PageHeader title="Account" subtitle="PIN, plan & shop data" backTo="/more" />
       <main className="sella-page-body space-y-4">
-        <div className="bg-white rounded-2xl border p-4 space-y-1 text-sm">
+        <div className="glass-card rounded-2xl border border-border/60 p-4 space-y-1 text-sm">
           {shopName && <p className="font-semibold text-base">{shopName}</p>}
           {shopCode && (
             <p className="text-xs text-primary font-semibold tracking-wider">{shopCode}</p>
@@ -116,7 +116,7 @@ const AccountPage = () => {
           {phone && <p className="text-muted-foreground">{phone}</p>}
         </div>
 
-        <div className="bg-white rounded-2xl border p-4 space-y-2 text-sm">
+        <div className="glass-card rounded-2xl border border-border/60 p-4 space-y-2 text-sm">
           <p className="font-semibold">Subscription</p>
           <p>{accessLabel(subscription)}</p>
           <Button className="w-full" onClick={() => navigate("/subscribe")}>
@@ -126,7 +126,7 @@ const AccountPage = () => {
 
         <ChangePinCard />
 
-        <div className="bg-white rounded-2xl border p-4 space-y-2">
+        <div className="glass-card rounded-2xl border border-border/60 p-4 space-y-2">
           <p className="font-semibold text-sm">Advanced data tools</p>
           <p className="text-[11px] text-muted-foreground">
             Use carefully — these clear sales or business records.
@@ -179,7 +179,7 @@ const AccountPage = () => {
         )}
 
         {mode === "cloud" && (
-          <div className="bg-white rounded-2xl border p-4 space-y-3">
+          <div className="glass-card rounded-2xl border border-border/60 p-4 space-y-3">
             <label className="text-xs text-muted-foreground">Owner name</label>
             <Input value={fullName} onChange={(e) => setFullName(e.target.value)} />
             <Button className="w-full" disabled={busy} onClick={saveProfile}>

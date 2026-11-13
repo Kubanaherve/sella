@@ -55,11 +55,11 @@ export function PinDialPad({
   return (
     <div className="flex flex-col items-center w-full">
       {displayName && (
-        <p className="text-[#0B3FCC] text-base font-medium mb-1 tracking-tight">
+        <p className="text-[#0B3FCC] dark:text-[#9EC4FF] text-base font-medium mb-1 tracking-tight">
           Muraho, {displayName}
         </p>
       )}
-      <p className="text-slate-500 text-xs mb-6">
+      <p className="text-slate-500 dark:text-slate-400 text-xs mb-6">
         Injiza PIN yawe · {maxLength} digits
       </p>
 
@@ -99,7 +99,7 @@ export function PinDialPad({
                 aria-label="Delete"
                 onClick={handleDelete}
                 disabled={isLoading || pin.length === 0}
-                className="w-[72px] h-[72px] rounded-full flex items-center justify-center text-[#0B3FCC]/75 hover:bg-white/60 active:bg-white/80 transition-all disabled:opacity-25 mx-auto"
+                className="w-[72px] h-[72px] rounded-full flex items-center justify-center text-[#0B3FCC]/75 dark:text-[#9EC4FF]/80 hover:bg-white/60 dark:hover:bg-white/10 active:bg-white/80 dark:active:bg-white/15 transition-all disabled:opacity-25 mx-auto"
               >
                 <Delete size={26} />
               </button>
@@ -112,7 +112,7 @@ export function PinDialPad({
               type="button"
               onClick={() => handlePress(digit)}
               disabled={isLoading}
-              className="w-[72px] h-[72px] rounded-full bg-white/70 backdrop-blur-md border border-[#1A6FFF]/15 flex items-center justify-center text-[28px] font-semibold text-[#0B3FCC] hover:bg-white/90 active:bg-white active:scale-95 transition-all disabled:opacity-50 mx-auto shadow-[0_8px_24px_rgba(11,63,204,0.12)]"
+              className="w-[72px] h-[72px] rounded-full bg-white/70 dark:bg-white/10 backdrop-blur-md border border-[#1A6FFF]/15 dark:border-[#5AC8FA]/25 flex items-center justify-center text-[28px] font-semibold text-[#0B3FCC] dark:text-[#E8F2FF] hover:bg-white/90 dark:hover:bg-white/15 active:bg-white dark:active:bg-white/20 active:scale-95 transition-all disabled:opacity-50 mx-auto shadow-[0_8px_24px_rgba(11,63,204,0.12)] dark:shadow-[0_8px_24px_rgba(26,111,255,0.25)]"
             >
               {digit}
             </button>

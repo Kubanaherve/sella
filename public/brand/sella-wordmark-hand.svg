@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 220" fill="none" role="img" aria-label="Sella">
+  <title>Sella</title>
+  <!--
+    Original Sella hand-lettered master (animation + fill).
+    Continuous cursive capital S ? e ? l ? l ? a.
+    Friendly welcome-script personality; original construction (not a copy).
+  -->
+  <defs>
+    <linearGradient id="sellaHandStroke" x1="36" y1="28" x2="610" y2="190" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#6B4DFF"/>
+      <stop offset="28%" stop-color="#2B5BFF"/>
+      <stop offset="62%" stop-color="#1A6FFF"/>
+      <stop offset="100%" stop-color="#4AB8F0"/>
+    </linearGradient>
+    <linearGradient id="sellaHandFill" x1="80" y1="20" x2="560" y2="200" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#7A5CFF"/>
+      <stop offset="40%" stop-color="#1A6FFF"/>
+      <stop offset="78%" stop-color="#0B3FCC"/>
+      <stop offset="100%" stop-color="#3AA8E8"/>
+    </linearGradient>
+    <linearGradient id="sellaHandGlass" x1="120" y1="30" x2="120" y2="190" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.55"/>
+      <stop offset="35%" stop-color="#A8D8FF" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#0B3FCC" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="sellaSoftShadow" x="-8%" y="-8%" width="116%" height="130%">
+      <feDropShadow dx="0" dy="6" stdDeviation="4" flood-color="#0B3FCC" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+
+  <!-- Soft contact shadow (vector, not blur bloom) -->
+  <path
+    d="M 72 132 C 78 90, 108 56, 152 56 C 188 56, 208 82, 198 112 C 188 140, 148 156, 112 144 C 128 136, 168 122, 208 112 C 248 100, 278 76, 292 62 C 312 42, 348 46, 342 76 C 336 106, 300 122, 272 116 C 292 108, 328 92, 360 82 C 380 74, 398 52, 392 38 C 386 62, 398 152, 404 192 C 412 152, 430 74, 462 60 C 484 50, 506 42, 500 34 C 496 58, 508 152, 514 192 C 524 144, 560 68, 608 62 C 644 58, 668 82, 658 112 C 648 142, 608 156, 576 140 C 600 130, 636 122, 668 128"
+    fill="none"
+    stroke="#0B3FCC"
+    stroke-opacity="0.12"
+    stroke-width="22"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    transform="translate(0 10)"
+  />
+
+  <!-- Dimensional glass body (static export / settle) -->
+  <g id="sella-hand-fill" filter="url(#sellaSoftShadow)">
+    <path
+      d="M 72 128 C 78 86, 108 52, 152 52 C 188 52, 208 78, 198 108 C 188 136, 148 152, 112 140 C 128 132, 168 118, 208 108 C 248 96, 278 72, 292 58 C 312 38, 348 42, 342 72 C 336 102, 300 118, 272 112 C 292 104, 328 88, 360 78 C 380 70, 398 48, 392 34 C 386 58, 398 148, 404 188 C 412 148, 430 70, 462 56 C 484 46, 506 38, 500 30 C 496 54, 508 148, 514 188 C 524 140, 560 64, 608 58 C 644 54, 668 78, 658 108 C 648 138, 608 152, 576 136 C 600 126, 636 118, 668 124"
+      fill="none"
+      stroke="url(#sellaHandFill)"
+      stroke-width="20"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M 72 128 C 78 86, 108 52, 152 52 C 188 52, 208 78, 198 108 C 188 136, 148 152, 112 140 C 128 132, 168 118, 208 108 C 248 96, 278 72, 292 58 C 312 38, 348 42, 342 72 C 336 102, 300 118, 272 112 C 292 104, 328 88, 360 78 C 380 70, 398 48, 392 34 C 386 58, 398 148, 404 188 C 412 148, 430 70, 462 56 C 484 46, 506 38, 500 30 C 496 54, 508 148, 514 188 C 524 140, 560 64, 608 58 C 644 54, 668 78, 658 108 C 648 138, 608 152, 576 136 C 600 126, 636 118, 668 124"
+      fill="none"
+      stroke="url(#sellaHandGlass)"
+      stroke-width="10"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      opacity="0.85"
+    />
+  </g>
+
+  <!-- Animation path (stroke-dash write) -->
+  <path
+    id="sella-hand-path"
+    d="M 72 128 C 78 86, 108 52, 152 52 C 188 52, 208 78, 198 108 C 188 136, 148 152, 112 140 C 128 132, 168 118, 208 108 C 248 96, 278 72, 292 58 C 312 38, 348 42, 342 72 C 336 102, 300 118, 272 112 C 292 104, 328 88, 360 78 C 380 70, 398 48, 392 34 C 386 58, 398 148, 404 188 C 412 148, 430 70, 462 56 C 484 46, 506 38, 500 30 C 496 54, 508 148, 514 188 C 524 140, 560 64, 608 58 C 644 54, 668 78, 658 108 C 648 138, 608 152, 576 136 C 600 126, 636 118, 668 124"
+    fill="none"
+    stroke="url(#sellaHandStroke)"
+    stroke-width="18"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+</svg>

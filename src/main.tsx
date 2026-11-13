@@ -3,6 +3,10 @@ import App from "./App.tsx";
 import "./index.css";
 import { Capacitor } from "@capacitor/core";
 import { initSafeAreaChrome } from "./lib/safeArea";
+import { bootstrapAppearance } from "./contexts/ThemeContext";
+
+// Manual theme only — apply stored light/dark before paint (never phone system).
+bootstrapAppearance();
 
 // Apply before first paint so headers never sit under the notch.
 initSafeAreaChrome();

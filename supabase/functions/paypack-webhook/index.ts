@@ -1,12 +1,10 @@
 import { corsHeaders, json } from "../_shared/cors.ts";
 import { adminClient } from "../_shared/supabaseAdmin.ts";
+import {
+  activateFromPayment,
+  markPaymentFailed,
+} from "../_shared/subscriptionActivate.ts";
 
-function periodEnd(planTier: string): string {
-  const days = planTier === "annual" ? 365 : 30;
-  return new Date(Date.now() + days * 86400000).toISOString();
-}
-
-/** Constant-time string compare for webhook secrets. */
 function secretsEqual(a: string, b: string): boolean {
   if (a.length !== b.length) return false;
   let out = 0;
@@ -46,6 +44,14 @@ Deno.serve(async (req) => {
     const ref = String(
       data.ref || data.reference || data.transaction_id || payload.ref || ""
     ).trim();
+    const amount = data.amount != null ? Number(data.amount) : null;
+
+    const failed =
+      status === "failed" ||
+      status === "cancelled" ||
+      status === "canceled" ||
+      event === "transaction:failed" ||
+      event === "transaction:cancelled";
 
     const success =
       status === "successful" ||
@@ -53,11 +59,8 @@ Deno.serve(async (req) => {
       event === "transaction:processed" ||
       event === "transaction:successful";
 
-    if (!success) return json({ ok: true, ignored: true, status, event });
-
-    // Never match "any pending payment" — require an explicit transaction reference.
     if (!ref) {
-      console.error("Paypack webhook success without ref — refusing to auto-activate");
+      console.error("Paypack webhook without ref — refusing");
       return json({ error: "Missing payment reference" }, 400);
     }
 
@@ -65,38 +68,89 @@ Deno.serve(async (req) => {
     const { data: payments } = await sb
       .from("subscription_payments")
       .select("*")
-      .eq("status", "pending")
       .or(`external_transaction_id.eq.${ref},reference_id.eq.${ref}`)
       .order("created_at", { ascending: false })
       .limit(1);
     const payment = payments?.[0];
-    if (!payment) return json({ ok: true, message: "No matching pending payment" });
+    if (!payment) {
+      return json({ ok: true, message: "No matching payment", ref });
+    }
 
-    await sb
-      .from("subscription_payments")
-      .update({
-        status: "completed",
-        verified_at: new Date().toISOString(),
-        external_transaction_id: ref || payment.external_transaction_id,
-        admin_notes: "Paypack webhook auto-verified",
-      })
-      .eq("id", payment.id);
+    if (payment.status === "completed") {
+      return json({ ok: true, idempotent: true, payment_id: payment.id });
+    }
 
-    const end = periodEnd(payment.plan_tier || "monthly");
-    await sb.from("user_subscriptions").upsert(
-      {
-        user_id: payment.user_id,
-        plan_tier: payment.plan_tier || "monthly",
-        status: "active",
-        current_period_start: new Date().toISOString(),
-        current_period_end: end,
-        auto_renew: true,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: "user_id" }
-    );
+    if (failed) {
+      await markPaymentFailed(
+        sb,
+        payment.id,
+        `Paypack webhook ${status || event}`,
+        status.includes("cancel") ? "cancelled" : "rejected"
+      );
+      return json({ ok: true, status: "failed", payment_id: payment.id });
+    }
 
-    return json({ ok: true, payment_id: payment.id, current_period_end: end });
+    if (!success) return json({ ok: true, ignored: true, status, event });
+
+    // Optional amount check when Paypack includes amount
+    if (amount != null && Number.isFinite(amount) && Number(payment.amount) !== amount) {
+      console.error("Paypack amount mismatch", payment.amount, amount);
+      return json({ error: "Amount mismatch" }, 400);
+    }
+
+    // Optional live re-verify against Paypack events API when configured
+    const clientId = Deno.env.get("PAYPACK_CLIENT_ID") || "";
+    const clientSecret = Deno.env.get("PAYPACK_CLIENT_SECRET") || "";
+    if (clientId && clientSecret && Deno.env.get("PAYPACK_REVERIFY") === "true") {
+      try {
+        const authRes = await fetch(
+          "https://payments.paypack.rw/api/auth/agents/authorize",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Accept: "application/json" },
+            body: JSON.stringify({ client_id: clientId, client_secret: clientSecret }),
+          }
+        );
+        const authJson = await authRes.json();
+        const token = authJson.access || authJson.access_token || authJson.token;
+        if (token) {
+          const evRes = await fetch(
+            `https://payments.paypack.rw/api/transactions/events?ref=${encodeURIComponent(ref)}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                Accept: "application/json",
+              },
+            }
+          );
+          if (evRes.ok) {
+            const evJson = await evRes.json();
+            const rows = Array.isArray(evJson) ? evJson : evJson?.transactions || evJson?.data || [];
+            const okRow = (rows as { status?: string }[]).some((r) => {
+              const s = String(r.status || "").toLowerCase();
+              return s === "successful" || s === "success";
+            });
+            if (!okRow && Array.isArray(rows) && rows.length > 0) {
+              return json({ error: "Paypack re-verify failed", detail: evJson }, 400);
+            }
+          }
+        }
+      } catch (e) {
+        console.error("Paypack re-verify error", e);
+      }
+    }
+
+    const result = await activateFromPayment(sb, payment, {
+      externalId: ref,
+      note: "Paypack webhook verified",
+    });
+
+    return json({
+      ok: true,
+      payment_id: payment.id,
+      current_period_end: result.current_period_end,
+      already: result.already || false,
+    });
   } catch (e) {
     console.error(e);
     return json({ error: e instanceof Error ? e.message : "Webhook failed" }, 500);

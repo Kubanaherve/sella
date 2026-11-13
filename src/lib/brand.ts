@@ -29,6 +29,14 @@ export const BRAND = {
   /** Paths under /public/brand — exact official assets */
   publicIcon: "/brand/sella-icon.png",
   publicLogo: "/brand/sella-logo.png",
+  /** Official glass + solid SVG pack */
+  publicBrandPack: "/brand/sella-brand",
+  publicGlassMark: "/brand/sella-brand/assets/sella-mark-glass-light.svg",
+  publicGlassTile: "/brand/sella-brand/assets/sella-tile-glass-light.svg",
+  publicGlassHorizontal: "/brand/sella-brand/assets/sella-horizontal-glass-light.svg",
+  publicGlassStacked: "/brand/sella-brand/assets/sella-stacked-glass-light.svg",
+  publicGlassWordmark: "/brand/sella-brand/assets/sella-wordmark-glass-light.svg",
+
   colors: {
     /** Match glossy neon S-bag icon */
     blue: "#1A6FFF",

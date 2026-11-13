@@ -18,7 +18,8 @@
     "android:sync": "npm run cap:sync && npx cap open android",
     "ios:sync": "npm run cap:sync && npx cap open ios",
     "android:apk": "npm run cap:sync && cd android && ./gradlew assembleDebug",
-    "verify": "npm run typecheck && npm run lint && npm test && npm run build"
+    "verify": "npm run typecheck && npm run lint && npm test && npm run build",
+    "test:rls": "node scripts/rls-two-shop-matrix.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.6.0",
@@ -29,6 +30,7 @@
     "@capacitor/haptics": "^8.0.2",
     "@capacitor/ios": "^8.6.0",
     "@capacitor/keyboard": "^8.0.6",
+    "@capacitor/push-notifications": "^8.1.3",
     "@capacitor/share": "^8.0.3",
     "@capacitor/splash-screen": "^8.0.2",
     "@capacitor/status-bar": "^8.0.4",

@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import { BRAND } from "@/lib/brand";
-import glassScript from "@/assets/brand/sella-glass-script.png";
+import { sellaBrandSrc, sellaGlassFinish } from "@/lib/sellaBrand";
+import { useThemeOptional } from "@/contexts/ThemeContext";
 
 type Size = "sm" | "md" | "lg" | "xl" | "hero";
 
@@ -15,14 +16,16 @@ const SIZE: Record<Size, string> = {
 type Props = {
   size?: Size;
   className?: string;
-  /** Soft cyan bloom behind the glass script */
   glow?: boolean;
 };
 
 /**
- * Handwritten glass-bold “Sella” wordmark (brand blues).
+ * Official glass wordmark — follows manual app appearance (not phone system).
  */
 export function GlassWordmark({ size = "md", className, glow = false }: Props) {
+  const { isDark } = useThemeOptional();
+  const finish = sellaGlassFinish(isDark ? "dark" : "light");
+
   return (
     <div className={cn("relative inline-flex items-center justify-center", className)}>
       {glow && (
@@ -32,10 +35,10 @@ export function GlassWordmark({ size = "md", className, glow = false }: Props) {
         />
       )}
       <img
-        src={glassScript}
+        src={sellaBrandSrc("wordmark", finish)}
         alt={BRAND.name}
         className={cn(
-          "relative z-[1] select-none object-contain drop-shadow-[0_8px_24px_rgba(11,63,204,0.45)]",
+          "relative z-[1] select-none object-contain drop-shadow-[0_8px_24px_rgba(11,63,204,0.35)]",
           SIZE[size]
         )}
         draggable={false}

@@ -17,6 +17,7 @@ import { showWebOnlyTools } from "@/lib/platform";
 import { hapticLight } from "@/lib/haptics";
 import { accessLabel } from "@/lib/entitlements";
 import { BrandMark } from "@/components/BrandMark";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { labels } from "@/lib/kinyarwanda";
 
 const MorePage = () => {
@@ -100,9 +101,21 @@ const MorePage = () => {
     },
     {
       icon: Shield,
+      label: "Admin dashboard",
+      path: "/admin",
+      hide: !isSuperAdmin,
+    },
+    {
+      icon: Shield,
       label: "Admin payments",
       path: "/admin/payments",
       hide: !isSuperAdmin,
+    },
+    {
+      icon: Bell,
+      label: "Notifications",
+      path: "/notifications",
+      hide: false,
     },
     {
       icon: LogOut,
@@ -135,6 +148,16 @@ const MorePage = () => {
               </p>
             )}
           </div>
+        </div>
+
+        <div className="sella-list-card p-3 space-y-2">
+          <p className="px-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+            Appearance
+          </p>
+          <ThemeToggle />
+          <p className="px-1 text-[11px] text-muted-foreground">
+            Manual glass light/dark — does not follow your phone system theme.
+          </p>
         </div>
 
         <div className="sella-list-card p-0 divide-y divide-border/60">

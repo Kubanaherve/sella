@@ -101,13 +101,13 @@ export function computeNextPeriodEnd(params: {
 }
 
 export const MERCHANT = {
-  bankName: import.meta.env.VITE_BANK_NAME || "Bank of Kigali (BK)",
+  bankName: import.meta.env.VITE_BANK_NAME || "Zigama",
   accountName: import.meta.env.VITE_BANK_ACCOUNT_NAME || "Sella",
-  accountNumber: import.meta.env.VITE_BANK_ACCOUNT_NUMBER || "000XXXXXXX",
-  swift: import.meta.env.VITE_BANK_SWIFT || "BKIGRWRW",
+  accountNumber: import.meta.env.VITE_BANK_ACCOUNT_NUMBER || "7081032",
+  swift: import.meta.env.VITE_BANK_SWIFT || "",
   /** MTN MoMo Pay / merchant code shown for manual transfers */
   momoCode: import.meta.env.VITE_MOMO_MERCHANT_CODE || "*182*8*1#",
-  momoPhone: import.meta.env.VITE_MOMO_MERCHANT_PHONE || "+2507XXXXXXXX",
+  momoPhone: import.meta.env.VITE_MOMO_MERCHANT_PHONE || "+250796580545",
   momoName: import.meta.env.VITE_MOMO_MERCHANT_NAME || "Sella",
   /** Airtel Money merchant (manual) — replace placeholders when you have the account */
   airtelCode: import.meta.env.VITE_AIRTEL_MERCHANT_CODE || "*500*1#",

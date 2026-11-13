@@ -3,6 +3,7 @@ import { SellaLogoMark } from "@/components/SellaLogoMark";
 import { SellaSignature } from "@/components/SellaSignature";
 import { BRAND } from "@/lib/brand";
 import { MOTION, prefersReducedMotion, SPLASH_TIMING } from "@/lib/motion";
+import { useThemeOptional } from "@/contexts/ThemeContext";
 
 type Props = {
   onDone: () => void;
@@ -22,6 +23,7 @@ export function SellaSplash({ onDone, minMs = MOTION.splashMax }: Props) {
   const [phase, setPhase] = useState<Phase>("hold");
   const doneRef = useRef(false);
   const reduced = prefersReducedMotion();
+  const { isDark } = useThemeOptional();
 
   useEffect(() => {
     const finish = () => {
@@ -63,12 +65,16 @@ export function SellaSplash({ onDone, minMs = MOTION.splashMax }: Props) {
 
   return (
     <div
-      className={`sella-splash-root sella-splash-root--light fixed inset-0 z-[200] flex flex-col items-center justify-center overflow-hidden ${
-        phase === "out" ? "sella-splash-root--out" : ""
-      }`}
+      className={`sella-splash-root fixed inset-0 z-[200] flex flex-col items-center justify-center overflow-hidden ${
+        isDark ? "sella-splash-root--dark" : "sella-splash-root--light"
+      } ${phase === "out" ? "sella-splash-root--out" : ""}`}
       aria-hidden={phase === "out"}
     >
-      <div className="pointer-events-none absolute inset-0 sella-splash-light-atmosphere" />
+      <div
+        className={`pointer-events-none absolute inset-0 ${
+          isDark ? "sella-splash-dark-atmosphere" : "sella-splash-light-atmosphere"
+        }`}
+      />
 
       <div className="relative z-10 flex w-full max-w-sm flex-col items-center px-8">
         {/* Shared stage so word → logo crossfade stays centered */}
@@ -108,9 +114,9 @@ export function SellaSplash({ onDone, minMs = MOTION.splashMax }: Props) {
         </div>
 
         <p
-          className={`mt-5 text-center text-[11px] font-semibold uppercase tracking-[0.32em] text-[#0B3FCC]/85 ${
-            showTag ? "sella-splash-tag" : "opacity-0"
-          }`}
+          className={`mt-5 text-center text-[11px] font-semibold uppercase tracking-[0.32em] ${
+            isDark ? "text-[#9EC4FF]/90" : "text-[#0B3FCC]/85"
+          } ${showTag ? "sella-splash-tag" : "opacity-0"}`}
         >
           {BRAND.tagline}
         </p>

@@ -13,7 +13,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { OfflineBanner } from "@/components/OfflineBanner";
 import { PageTransition } from "@/components/PageTransition";
 import { labels } from "@/lib/kinyarwanda";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { startOutboxSyncListener } from "@/services/outboxSync";
 
 const TABS = [
   { to: "/dashboard", label: labels.home, icon: Home },
@@ -28,6 +29,10 @@ export function AppShell() {
   const navigate = useNavigate();
   const { canWrite } = useAuth();
   const [fabOpen, setFabOpen] = useState(false);
+
+  useEffect(() => {
+    startOutboxSyncListener();
+  }, []);
 
   const immersive =
     location.pathname.startsWith("/add-debt") ||

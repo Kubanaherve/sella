@@ -5,6 +5,7 @@ import {
   Building2,
   CreditCard,
   Loader2,
+  Pencil,
   ShieldCheck,
   Smartphone,
 } from "lucide-react";
@@ -21,7 +22,6 @@ import {
 import {
   type BillingChannel,
   type BillingPlan,
-  pollUntilActive,
   preferredBillingChannels,
   startCardCharge,
   startPaypackCashin,
@@ -29,6 +29,8 @@ import {
   submitManualPayment,
   validateCardAuth,
   verifyFlutterwavePayment,
+  waitForPaymentConfirmation,
+  confirmTestPayment,
 } from "@/services/billing";
 import {
   AirtelLogo,
@@ -36,10 +38,9 @@ import {
   MtnLogo,
   VisaLogo,
 } from "@/components/payment/PaymentBrandLogos";
-import FlipCardForm, {
-  emptyCard,
+import CardCheckoutModal, {
   type CardPayload,
-} from "@/components/payment/FlipCardForm";
+} from "@/components/payment/CardCheckoutModal";
 import { toast } from "sonner";
 
 function channelLabel(c: BillingChannel): string {
@@ -72,7 +73,8 @@ const SubscribePage = () => {
   const [channel, setChannel] = useState<BillingChannel>(channels[0]);
   const [referenceId, setReferenceId] = useState("");
   const [proof, setProof] = useState<File | null>(null);
-  const [card, setCard] = useState<CardPayload>(emptyCard());
+  const [card, setCard] = useState<CardPayload | null>(null);
+  const [cardModalOpen, setCardModalOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [otpOpen, setOtpOpen] = useState(false);
   const [otp, setOtp] = useState("");
@@ -81,13 +83,22 @@ const SubscribePage = () => {
   const [pendingRef, setPendingRef] = useState<string | null>(null);
   const [pendingFlwRef, setPendingFlwRef] = useState<string | null>(null);
   const [statusMsg, setStatusMsg] = useState("");
+  const [pendingPaymentId, setPendingPaymentId] = useState<string | null>(null);
+  const [testModeHint, setTestModeHint] = useState(false);
 
   const amount = plan === "annual" ? getAnnualPriceRwf() : getMonthlyPriceRwf();
 
   const finishSuccess = async (msg?: string) => {
-    toast.success(msg || "Kwishyura byagenze neza!");
     await refreshSubscription();
+    toast.success(msg || "Payment confirmed — subscription active for 30 days");
     navigate("/account");
+  };
+
+  const selectChannel = (c: BillingChannel) => {
+    setChannel(c);
+    if (c === "card_visa_mc") {
+      setCardModalOpen(true);
+    }
   };
 
   const pay = async () => {
@@ -105,7 +116,7 @@ const SubscribePage = () => {
 
       if (channel === "paypack_mtn" || channel === "paypack_airtel") {
         if (!phone.trim() || phone.replace(/\D/g, "").length < 9) {
-          toast.error("Andika numero ya MoMo (07xxxxxxxx)");
+          toast.error("Andika numero (07xxxxxxxx)");
           return;
         }
         const data = await startPaypackCashin({
@@ -113,28 +124,61 @@ const SubscribePage = () => {
           plan,
           network: channel === "paypack_airtel" ? "airtel" : "mtn",
         });
+        // Request sent — NOT paid yet
+        setPendingPaymentId(data.payment_id);
+        setTestModeHint(!!data.test_mode);
         setStatusMsg(
-          data?.message ||
-            "Approve the payment prompt on your phone (MTN / Airtel)."
+          data.message ||
+            "Approve on your phone. Waiting for provider confirmation…"
         );
-        toast.success("Check your phone — approve the MoMo request");
-        await pollUntilActive(refreshSubscription, { attempts: 10, intervalMs: 4000 });
-        toast.message("If paid, access unlocks automatically via webhook");
+        toast.message(
+          data.test_mode
+            ? "TEST MODE — no real money. Use Confirm test payment below."
+            : "Payment request sent — approve on your phone"
+        );
+
+        if (data.test_mode) {
+          // Do not pretend success — wait for explicit test confirm or admin
+          return;
+        }
+
+        const result = await waitForPaymentConfirmation(data.payment_id, {
+          attempts: 24,
+          intervalMs: 5000,
+          onTick: (s) => {
+            setStatusMsg(
+              s.confirmed
+                ? "Payment confirmed!"
+                : s.failed
+                  ? `Payment ${s.status}`
+                  : "Waiting for provider webhook confirmation…"
+            );
+          },
+        });
+
+        if (result.confirmed) {
+          await finishSuccess(
+            result.subscription?.current_period_end
+              ? `Active until ${new Date(result.subscription.current_period_end).toLocaleDateString("en-RW")}`
+              : "Subscription activated"
+          );
+          return;
+        }
+        if (result.failed) {
+          toast.error(`Payment ${result.status}. Try again or use manual transfer.`);
+          return;
+        }
+        toast.message(
+          "Still pending. If you approved MoMo, access will unlock automatically when Paypack confirms — check Account in a minute."
+        );
         await refreshSubscription();
         return;
       }
 
       if (channel === "card_visa_mc") {
-        if (card.number.replace(/\D/g, "").length < 13) {
-          toast.error("Enter a valid card number");
-          return;
-        }
-        if (!card.name.trim()) {
-          toast.error("Enter the name on the card");
-          return;
-        }
-        if (!card.expiryMonth || !card.expiryYear || card.cvv.length < 3) {
-          toast.error("Enter expiry and CVC");
+        if (!card) {
+          setCardModalOpen(true);
+          toast.message("Add your card first");
           return;
         }
 
@@ -150,14 +194,14 @@ const SubscribePage = () => {
         });
 
         if (data.status === "successful") {
-          setCard(emptyCard());
-          await finishSuccess(data.message || "Card payment successful");
+          setCard(null);
+          await finishSuccess(data.message || "Card payment confirmed");
           return;
         }
 
         if (data.status === "redirect_required" && data.redirect_url) {
           setPendingRef(data.reference || null);
-          setStatusMsg("Opening your bank’s 3D Secure page…");
+          setStatusMsg("Complete 3D Secure with your bank…");
           window.location.href = data.redirect_url;
           return;
         }
@@ -166,7 +210,7 @@ const SubscribePage = () => {
           setPendingRef(data.reference || null);
           setPendingFlwRef(data.flw_ref || null);
           setOtpOpen(true);
-          setStatusMsg("Enter the OTP from your bank SMS");
+          setStatusMsg("Enter the OTP from your bank");
           return;
         }
 
@@ -178,20 +222,29 @@ const SubscribePage = () => {
           return;
         }
 
-        if (data.reference) {
-          setPendingRef(data.reference);
-          setStatusMsg("Verifying card payment…");
+        if (data.payment_id) {
+          setStatusMsg("Verifying card with Flutterwave…");
+          const result = await waitForPaymentConfirmation(data.payment_id, {
+            attempts: 12,
+            intervalMs: 4000,
+          });
+          if (result.confirmed) {
+            setCard(null);
+            await finishSuccess("Card payment confirmed");
+            return;
+          }
+        } else if (data.reference) {
           for (let i = 0; i < 8; i++) {
             await new Promise((r) => setTimeout(r, 3000));
             const v = await verifyFlutterwavePayment(data.reference);
             if (v.status === "successful") {
-              setCard(emptyCard());
-              await finishSuccess("Card payment successful");
+              setCard(null);
+              await finishSuccess("Card payment confirmed");
               return;
             }
           }
-          toast.message("Payment still pending — refresh Account in a minute");
         }
+        toast.message("Card still pending bank confirmation");
         return;
       }
 
@@ -211,7 +264,9 @@ const SubscribePage = () => {
         referenceId,
         proofFile: proof,
       });
-      toast.success("Kwishyura kwawe kugejejweho! Turabyemeza mu minota 15");
+      toast.message(
+        "Transfer submitted for review — subscription activates only after admin verifies the TxId"
+      );
       navigate("/account");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Payment failed");
@@ -232,7 +287,7 @@ const SubscribePage = () => {
       });
       if (data.status === "successful") {
         setOtpOpen(false);
-        setCard(emptyCard());
+        setCard(null);
         await finishSuccess(data.message);
         return;
       }
@@ -249,7 +304,7 @@ const SubscribePage = () => {
   };
 
   const submitPin = async () => {
-    if (!pendingRef) return;
+    if (!pendingRef || !card) return;
     setBusy(true);
     try {
       const data = await validateCardAuth({
@@ -268,7 +323,7 @@ const SubscribePage = () => {
       });
       if (data.status === "successful") {
         setPinOpen(false);
-        setCard(emptyCard());
+        setCard(null);
         await finishSuccess(data.message);
         return;
       }
@@ -283,6 +338,10 @@ const SubscribePage = () => {
       setBusy(false);
     }
   };
+
+  const cardSummary = card
+    ? `${card.brand === "mastercard" ? "Mastercard" : card.brand === "amex" ? "Amex" : "Visa"} ·••• ${card.number.replace(/\D/g, "").slice(-4)}`
+    : null;
 
   return (
     <div className="min-h-screen sella-hero-bg pb-[max(1.5rem,env(safe-area-inset-bottom))]">
@@ -310,7 +369,7 @@ const SubscribePage = () => {
             onClick={() => setPlan("monthly")}
             className={`sella-pay-method ${plan === "monthly" ? "is-active" : ""}`}
           >
-            <p className="text-xs text-muted-foreground">Monthly</p>
+            <p className="text-xs text-muted-foreground">Monthly · 30 days</p>
             <p className="text-xl font-bold">
               RWF {getMonthlyPriceRwf().toLocaleString()}
             </p>
@@ -320,7 +379,7 @@ const SubscribePage = () => {
             onClick={() => setPlan("annual")}
             className={`sella-pay-method ${plan === "annual" ? "is-active" : ""}`}
           >
-            <p className="text-xs text-muted-foreground">Annual · save 10k</p>
+            <p className="text-xs text-muted-foreground">Annual · 365 days</p>
             <p className="text-xl font-bold">
               RWF {getAnnualPriceRwf().toLocaleString()}
             </p>
@@ -334,43 +393,41 @@ const SubscribePage = () => {
               <button
                 key={c}
                 type="button"
-                onClick={() => setChannel(c)}
+                onClick={() => selectChannel(c)}
                 className={`sella-pay-method flex items-center gap-3 ${
                   channel === c ? "is-active" : ""
                 }`}
               >
-                <div className="w-16 shrink-0 flex justify-center">
-                  {c === "paypack_mtn" || c === "momo_manual" ? (
-                    <MtnLogo className="h-8 w-[72px]" />
-                  ) : null}
-                  {c === "paypack_airtel" || c === "airtel_manual" ? (
-                    <AirtelLogo className="h-8 w-[72px]" />
-                  ) : null}
-                  {c === "card_visa_mc" ? (
+                <div className="w-[72px] h-10 shrink-0 flex items-center justify-center">
+                  {(c === "paypack_mtn" || c === "momo_manual") && (
+                    <MtnLogo className="h-9 max-w-[72px]" />
+                  )}
+                  {(c === "paypack_airtel" || c === "airtel_manual") && (
+                    <AirtelLogo className="h-10 max-w-[56px]" />
+                  )}
+                  {c === "card_visa_mc" && (
                     <div className="flex items-center gap-1">
-                      <div className="rounded bg-white px-1 py-0.5 shadow-sm">
-                        <VisaLogo className="h-3.5" />
-                      </div>
+                      <VisaLogo className="h-4" />
                       <MastercardLogo className="h-6" />
                     </div>
-                  ) : null}
-                  {c === "bank_transfer" ? (
+                  )}
+                  {c === "bank_transfer" && (
                     <Building2 className="text-primary" size={22} />
-                  ) : null}
-                  {c === "apple_iap" ? (
+                  )}
+                  {c === "apple_iap" && (
                     <CreditCard className="text-primary" size={22} />
-                  ) : null}
+                  )}
                 </div>
                 <div className="min-w-0 flex-1 text-left">
                   <p className="text-sm font-bold">{channelLabel(c)}</p>
                   <p className="text-[11px] text-muted-foreground truncate">
                     {c === "paypack_mtn" || c === "paypack_airtel"
-                      ? "Instant STK prompt on your phone"
+                      ? "STK prompt → webhook unlocks 30 days"
                       : c === "card_visa_mc"
-                        ? "Secure Visa & Mastercard · 3D Secure"
+                        ? "Opens secure card popup"
                         : c === "apple_iap"
                           ? "App Store subscription"
-                          : "Send money, then paste TxId"}
+                          : "Send money, paste TxId for review"}
                   </p>
                 </div>
               </button>
@@ -380,11 +437,11 @@ const SubscribePage = () => {
 
         {(channel === "paypack_mtn" || channel === "paypack_airtel") && (
           <div className="glass-card p-4 space-y-3">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               {channel === "paypack_mtn" ? (
-                <MtnLogo className="h-7" />
+                <MtnLogo className="h-10" />
               ) : (
-                <AirtelLogo className="h-7" />
+                <AirtelLogo className="h-12" />
               )}
               <p className="text-sm font-semibold">
                 Phone that will approve the charge
@@ -398,33 +455,49 @@ const SubscribePage = () => {
               className="input-glow"
             />
             <p className="text-[11px] text-muted-foreground">
-              You will get a MoMo / Airtel Money prompt. Enter PIN to confirm
-              RWF {amount.toLocaleString()}.
+              You get a prompt on this phone. Subscription activates only after
+              Paypack confirms — not when you tap Pay.
             </p>
           </div>
         )}
 
         {channel === "card_visa_mc" && (
           <div className="glass-card p-4 space-y-3">
-            <div className="flex items-center justify-between gap-2">
-              <p className="text-sm font-semibold flex items-center gap-2">
-                <CreditCard size={16} /> Card details
-              </p>
-              <div className="flex items-center gap-1.5">
-                <div className="rounded bg-white px-1.5 py-0.5 shadow-sm">
-                  <VisaLogo className="h-3.5" />
+            {cardSummary ? (
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  {card?.brand === "mastercard" ? (
+                    <MastercardLogo className="h-8" />
+                  ) : (
+                    <VisaLogo className="h-5" />
+                  )}
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold truncate">{cardSummary}</p>
+                    <p className="text-[11px] text-muted-foreground truncate">
+                      {card?.name}
+                    </p>
+                  </div>
                 </div>
-                <MastercardLogo className="h-6" />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0 gap-1"
+                  onClick={() => setCardModalOpen(true)}
+                >
+                  <Pencil size={14} /> Edit
+                </Button>
               </div>
-            </div>
-            <FlipCardForm value={card} onChange={setCard} disabled={busy} />
-            <Input
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="Phone (optional, for receipt)"
-              inputMode="tel"
-              className="input-glow"
-            />
+            ) : (
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full h-12 gap-2"
+                onClick={() => setCardModalOpen(true)}
+              >
+                <CreditCard size={18} /> Add Visa / Mastercard
+              </Button>
+            )}
           </div>
         )}
 
@@ -447,22 +520,25 @@ const SubscribePage = () => {
                   <p>
                     Account number: <strong>{MERCHANT.accountNumber}</strong>
                   </p>
-                  <p>
-                    SWIFT: <strong>{MERCHANT.swift}</strong>
-                  </p>
+                  {MERCHANT.swift ? (
+                    <p>
+                      SWIFT: <strong>{MERCHANT.swift}</strong>
+                    </p>
+                  ) : null}
                 </div>
               </>
             ) : channel === "airtel_manual" ? (
               <>
-                <p className="font-semibold flex items-center gap-2">
-                  <AirtelLogo className="h-6" /> Airtel Money merchant
-                </p>
+                <div className="flex items-center gap-2">
+                  <AirtelLogo className="h-10" />
+                  <p className="font-semibold">Airtel Money merchant</p>
+                </div>
                 <div className="rounded-xl bg-white/60 p-3 space-y-1 text-[13px]">
                   <p>
                     Name: <strong>{MERCHANT.airtelName}</strong>
                   </p>
                   <p>
-                    Code / USSD: <strong>{MERCHANT.airtelCode}</strong>
+                    Code: <strong>{MERCHANT.airtelCode}</strong>
                   </p>
                   <p>
                     Phone: <strong>{MERCHANT.airtelPhone}</strong>
@@ -471,15 +547,16 @@ const SubscribePage = () => {
               </>
             ) : (
               <>
-                <p className="font-semibold flex items-center gap-2">
-                  <MtnLogo className="h-6" /> MTN MoMo merchant
-                </p>
+                <div className="flex items-center gap-2">
+                  <MtnLogo className="h-9" />
+                  <p className="font-semibold">MTN MoMo merchant</p>
+                </div>
                 <div className="rounded-xl bg-white/60 p-3 space-y-1 text-[13px]">
                   <p>
                     Name: <strong>{MERCHANT.momoName}</strong>
                   </p>
                   <p>
-                    Code / USSD: <strong>{MERCHANT.momoCode}</strong>
+                    Code: <strong>{MERCHANT.momoCode}</strong>
                   </p>
                   <p>
                     Phone: <strong>{MERCHANT.momoPhone}</strong>
@@ -509,19 +586,61 @@ const SubscribePage = () => {
 
         {statusMsg && (
           <div className="rounded-xl border border-primary/20 bg-primary/5 px-3 py-2 text-sm text-primary flex items-start gap-2">
-            <Smartphone size={16} className="mt-0.5 shrink-0" />
+            {busy ? (
+              <Loader2 size={16} className="mt-0.5 shrink-0 animate-spin" />
+            ) : (
+              <Smartphone size={16} className="mt-0.5 shrink-0" />
+            )}
             <span>{statusMsg}</span>
+          </div>
+        )}
+
+        {testModeHint && pendingPaymentId && (
+          <div className="glass-card p-4 space-y-2 border border-amber-300/60">
+            <p className="text-sm font-semibold text-amber-900">
+              Test mode — no real money
+            </p>
+            <p className="text-[11px] text-muted-foreground">
+              Simulates a provider webhook so we can verify 30-day activation
+              while waiting for MTN/Airtel credentials.
+            </p>
+            <Button
+              className="w-full"
+              disabled={busy}
+              onClick={async () => {
+                setBusy(true);
+                try {
+                  const r = await confirmTestPayment(pendingPaymentId, "success");
+                  if (r.confirmed) {
+                    toast.message(r.warning || "Test activation only");
+                    await finishSuccess(
+                      r.current_period_end
+                        ? `TEST active until ${new Date(r.current_period_end).toLocaleDateString("en-RW")}`
+                        : "TEST subscription activated"
+                    );
+                  }
+                } catch (e) {
+                  toast.error(e instanceof Error ? e.message : "Test confirm failed");
+                } finally {
+                  setBusy(false);
+                }
+              }}
+            >
+              Confirm test payment (activate 30 days)
+            </Button>
           </div>
         )}
 
         <div className="rounded-2xl bg-gradient-to-br from-[#0b3fcc] to-[#1a6fff] text-white p-4 flex items-center justify-between shadow-lg shadow-primary/25">
           <div>
-            <p className="text-xs text-white/70">Total due</p>
+            <p className="text-xs text-white/70">
+              Total · {plan === "annual" ? "365" : "30"} days access
+            </p>
             <p className="text-2xl font-bold">RWF {amount.toLocaleString()}</p>
           </div>
           <div className="flex flex-col items-end gap-1">
             <ShieldCheck />
-            <p className="text-[10px] text-white/70">Encrypted checkout</p>
+            <p className="text-[10px] text-white/70">Webhook-verified</p>
           </div>
         </div>
 
@@ -532,29 +651,30 @@ const SubscribePage = () => {
         >
           {busy ? (
             <>
-              <Loader2 className="animate-spin" size={18} /> Processing…
+              <Loader2 className="animate-spin" size={18} /> Waiting…
             </>
           ) : (
             `Pay RWF ${amount.toLocaleString()}`
           )}
         </Button>
-
-        <p className="text-center text-[10px] text-muted-foreground leading-relaxed">
-          Card data is encrypted to Flutterwave. MoMo uses Paypack. Manual
-          transfers go to the merchant accounts above — replace placeholders in
-          your env when ready.
-        </p>
       </main>
 
-      {/* OTP sheet */}
+      <CardCheckoutModal
+        open={cardModalOpen}
+        initial={card}
+        onClose={() => setCardModalOpen(false)}
+        onConfirm={(c) => {
+          setCard(c);
+          setChannel("card_visa_mc");
+          setCardModalOpen(false);
+          toast.message("Card saved — tap Pay to charge");
+        }}
+      />
+
       {otpOpen && (
         <div className="fixed inset-0 z-[140] sella-overlay flex items-end sm:items-center justify-center p-4">
           <div className="sella-popup-glass w-full max-w-sm rounded-3xl p-5 space-y-3">
             <h2 className="font-bold text-lg relative z-10">Bank OTP</h2>
-            <p className="text-sm text-muted-foreground relative z-10">
-              Enter the one-time code sent by your bank to finish the card
-              payment.
-            </p>
             <Input
               value={otp}
               onChange={(e) => setOtp(e.target.value)}
@@ -563,19 +683,10 @@ const SubscribePage = () => {
               inputMode="numeric"
             />
             <div className="relative z-10 flex gap-2">
-              <Button
-                variant="outline"
-                className="flex-1"
-                onClick={() => setOtpOpen(false)}
-                disabled={busy}
-              >
+              <Button variant="outline" className="flex-1" onClick={() => setOtpOpen(false)} disabled={busy}>
                 Cancel
               </Button>
-              <Button
-                className="flex-1"
-                onClick={() => void submitOtp()}
-                disabled={busy || otp.length < 4}
-              >
+              <Button className="flex-1" onClick={() => void submitOtp()} disabled={busy || otp.length < 4}>
                 Confirm
               </Button>
             </div>
@@ -583,14 +694,10 @@ const SubscribePage = () => {
         </div>
       )}
 
-      {/* PIN sheet */}
       {pinOpen && (
         <div className="fixed inset-0 z-[140] sella-overlay flex items-end sm:items-center justify-center p-4">
           <div className="sella-popup-glass w-full max-w-sm rounded-3xl p-5 space-y-3">
             <h2 className="font-bold text-lg relative z-10">Card PIN</h2>
-            <p className="text-sm text-muted-foreground relative z-10">
-              Enter your card PIN to authorize this payment.
-            </p>
             <Input
               value={pin}
               onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 4))}
@@ -600,19 +707,10 @@ const SubscribePage = () => {
               inputMode="numeric"
             />
             <div className="relative z-10 flex gap-2">
-              <Button
-                variant="outline"
-                className="flex-1"
-                onClick={() => setPinOpen(false)}
-                disabled={busy}
-              >
+              <Button variant="outline" className="flex-1" onClick={() => setPinOpen(false)} disabled={busy}>
                 Cancel
               </Button>
-              <Button
-                className="flex-1"
-                onClick={() => void submitPin()}
-                disabled={busy || pin.length < 4}
-              >
+              <Button className="flex-1" onClick={() => void submitPin()} disabled={busy || pin.length < 4}>
                 Confirm
               </Button>
             </div>

@@ -19,7 +19,6 @@ export function getNativePlatform(): "ios" | "android" | "web" {
   return "web";
 }
 
-/** Route billing by platform: iOS → StoreKit path; Web/Android → MoMo/Card/Bank. */
 export function preferredBillingChannels(): BillingChannel[] {
   if (getNativePlatform() === "ios") {
     return [
@@ -46,6 +45,20 @@ export function planAmount(plan: BillingPlan): number {
   return plan === "annual" ? getAnnualPriceRwf() : getMonthlyPriceRwf();
 }
 
+export type PaymentStatusResult = {
+  payment_id: string;
+  reference: string | null;
+  status: string;
+  confirmed: boolean;
+  failed: boolean;
+  message?: string;
+  subscription?: {
+    status: string;
+    current_period_end: string | null;
+    active: boolean;
+  } | null;
+};
+
 export async function startPaypackCashin(input: {
   phone: string;
   plan: BillingPlan;
@@ -61,7 +74,60 @@ export async function startPaypackCashin(input: {
   });
   if (error) throw error;
   if (data?.error) throw new Error(data.error);
-  return data;
+  return data as {
+    success?: boolean;
+    confirmed: boolean;
+    payment_id: string;
+    reference: string;
+    amount: number;
+    network: string;
+    message?: string;
+    provider?: string;
+    test_mode?: boolean;
+    external_transaction_id?: string | null;
+  };
+}
+
+export async function getPaymentStatus(input: {
+  payment_id?: string;
+  reference?: string;
+}): Promise<PaymentStatusResult> {
+  const sb = getSupabase();
+  const { data, error } = await sb.functions.invoke("payment-status", {
+    body: input,
+  });
+  if (error) throw error;
+  if (data?.error) throw new Error(data.error);
+  return data as PaymentStatusResult;
+}
+
+/**
+ * Poll until provider confirms (webhook) or fails / times out.
+ * Never treats "request sent" as paid.
+ */
+export async function waitForPaymentConfirmation(
+  paymentId: string,
+  opts?: { attempts?: number; intervalMs?: number; onTick?: (s: PaymentStatusResult) => void }
+): Promise<PaymentStatusResult> {
+  const attempts = opts?.attempts ?? 24; // ~2 min at 5s
+  const intervalMs = opts?.intervalMs ?? 5000;
+  let last: PaymentStatusResult | null = null;
+  for (let i = 0; i < attempts; i++) {
+    last = await getPaymentStatus({ payment_id: paymentId });
+    opts?.onTick?.(last);
+    if (last.confirmed || last.failed) return last;
+    await new Promise((r) => setTimeout(r, intervalMs));
+  }
+  return (
+    last || {
+      payment_id: paymentId,
+      reference: null,
+      status: "pending",
+      confirmed: false,
+      failed: false,
+      message: "Still waiting for provider confirmation",
+    }
+  );
 }
 
 export async function startCardCharge(input: {
@@ -158,17 +224,11 @@ export async function submitManualPayment(input: {
       contentType: input.proofFile.type || "image/jpeg",
     });
     if (upErr) throw upErr;
-    const { data: signed } = await sb.storage.from("receipts").createSignedUrl(path, 60 * 60 * 24 * 30);
+    const { data: signed } = await sb.storage
+      .from("receipts")
+      .createSignedUrl(path, 60 * 60 * 24 * 30);
     proofUrl = signed?.signedUrl || path;
   }
-
-  // airtel_manual stored as momo_manual until DB constraint includes it — use momo_manual + notes via reference prefix
-  const method =
-    input.method === "airtel_manual" ? "momo_manual" : input.method;
-  const referenceId =
-    input.method === "airtel_manual"
-      ? `AIRTEL:${input.referenceId.trim()}`
-      : input.referenceId.trim();
 
   const { data, error } = await sb
     .from("subscription_payments")
@@ -177,8 +237,8 @@ export async function submitManualPayment(input: {
       amount: planAmount(input.plan),
       currency: "RWF",
       plan_tier: input.plan,
-      payment_method: method,
-      reference_id: referenceId,
+      payment_method: input.method,
+      reference_id: input.referenceId.trim(),
       proof_image_url: proofUrl,
       status: "pending",
     })
@@ -194,6 +254,25 @@ export async function startAppleIap(_plan: BillingPlan) {
   );
 }
 
+/** TEST ONLY — activates subscription without real money when PAYMENT_MODE=test. */
+export async function confirmTestPayment(
+  paymentId: string,
+  action: "success" | "fail" = "success"
+) {
+  const sb = getSupabase();
+  const { data, error } = await sb.functions.invoke("test-payment-confirm", {
+    body: { payment_id: paymentId, action },
+  });
+  if (error) throw error;
+  if (data?.error) throw new Error(data.error);
+  return data as {
+    confirmed: boolean;
+    status: string;
+    current_period_end?: string;
+    warning?: string;
+  };
+}
+
 export async function deleteAccountRemote() {
   const sb = getSupabase();
   const { data, error } = await sb.functions.invoke("delete-account", { body: {} });
@@ -202,7 +281,7 @@ export async function deleteAccountRemote() {
   return data;
 }
 
-/** Poll subscription refresh after STK / card redirect. */
+/** @deprecated use waitForPaymentConfirmation */
 export async function pollUntilActive(
   refresh: () => Promise<unknown>,
   opts?: { attempts?: number; intervalMs?: number }

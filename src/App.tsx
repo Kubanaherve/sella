@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
+import { ThemeProvider, useTheme } from "./contexts/ThemeContext";
 import { SubscriptionGuard } from "./components/SubscriptionGuard";
 import { AppShell } from "./components/AppShell";
 import { SellaSplash } from "./components/SellaSplash";
@@ -40,6 +41,11 @@ const queryClient = new QueryClient();
 
 const SPLASH_KEY = "sella_splash_seen_v9_capital_Sella";
 
+function ThemedToasts() {
+  const { appearance } = useTheme();
+  return <Sonner position="top-center" richColors theme={appearance} />;
+}
+
 const App = () => {
   const [showSplash, setShowSplash] = useState(() => {
     try {
@@ -61,12 +67,13 @@ const App = () => {
   return (
   <ErrorBoundary label="root">
   <QueryClientProvider client={queryClient}>
+    <ThemeProvider>
     <TooltipProvider>
       <ConfigGate>
       <AuthProvider>
         {showSplash && <SellaSplash onDone={finishSplash} />}
         <Toaster />
-        <Sonner position="top-center" richColors />
+        <ThemedToasts />
         <BrowserRouter>
           <SubscriptionGuard>
             <Routes>
@@ -106,6 +113,7 @@ const App = () => {
       </AuthProvider>
       </ConfigGate>
     </TooltipProvider>
+    </ThemeProvider>
   </QueryClientProvider>
   </ErrorBoundary>
   );

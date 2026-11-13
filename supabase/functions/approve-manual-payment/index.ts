@@ -1,11 +1,10 @@
 import { corsHeaders, json } from "../_shared/cors.ts";
 import { adminClient } from "../_shared/supabaseAdmin.ts";
+import {
+  activateFromPayment,
+  markPaymentFailed,
+} from "../_shared/subscriptionActivate.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
-
-function periodEnd(planTier: string): string {
-  const days = planTier === "annual" ? 365 : 30;
-  return new Date(Date.now() + days * 86400000).toISOString();
-}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -43,43 +42,31 @@ Deno.serve(async (req) => {
     if (error || !payment) return json({ error: "Payment not found" }, 404);
 
     if (action === "reject") {
+      await markPaymentFailed(
+        sb,
+        paymentId,
+        notes || "Rejected by admin",
+        "rejected"
+      );
       await sb
         .from("subscription_payments")
-        .update({
-          status: "rejected",
-          verified_by: userData.user.id,
-          verified_at: new Date().toISOString(),
-          admin_notes: notes || "Rejected by admin",
-        })
+        .update({ verified_by: userData.user.id })
         .eq("id", paymentId);
       return json({ success: true, status: "rejected" });
     }
 
-    const end = periodEnd(payment.plan_tier || "monthly");
-    await sb
-      .from("subscription_payments")
-      .update({
-        status: "completed",
-        verified_by: userData.user.id,
-        verified_at: new Date().toISOString(),
-        admin_notes: notes || "Approved by admin",
-      })
-      .eq("id", paymentId);
+    const result = await activateFromPayment(sb, payment, {
+      externalId: payment.external_transaction_id || payment.reference_id || payment.id,
+      note: notes || "Approved by admin",
+      verifiedBy: userData.user.id,
+    });
 
-    await sb.from("user_subscriptions").upsert(
-      {
-        user_id: payment.user_id,
-        plan_tier: payment.plan_tier || "monthly",
-        status: "active",
-        current_period_start: new Date().toISOString(),
-        current_period_end: end,
-        auto_renew: true,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: "user_id" }
-    );
-
-    return json({ success: true, status: "completed", current_period_end: end });
+    return json({
+      success: true,
+      status: "completed",
+      current_period_end: result.current_period_end,
+      already: result.already || false,
+    });
   } catch (e) {
     console.error(e);
     return json({ error: e instanceof Error ? e.message : "Approve failed" }, 500);
