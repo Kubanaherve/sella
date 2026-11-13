@@ -38,26 +38,21 @@ function envMode(): "test" | "live" {
     : "live";
 }
 
-/** Choose collector: explicit network + available credentials. */
+/**
+ * Choose collector for STK cash-in.
+ * Live mode prefers Paypack (has webhook → activateFromPayment).
+ * Direct MTN/Airtel Open API keys are ignored until dedicated webhook
+ * edge functions exist — otherwise payments stay pending forever.
+ * Live with no Paypack credentials fails closed (never silent test).
+ */
 export function resolveCollector(network: "mtn" | "airtel"): ProviderId {
   if (envMode() === "test") return "test";
-  if (network === "airtel") {
-    if (Deno.env.get("AIRTEL_CLIENT_ID") && Deno.env.get("AIRTEL_CLIENT_SECRET")) {
-      return "airtel_open_api";
-    }
-    if (Deno.env.get("PAYPACK_CLIENT_ID") && Deno.env.get("PAYPACK_CLIENT_SECRET")) {
-      return "paypack"; // Paypack covers Airtel in RW today
-    }
-    return "test";
-  }
-  // mtn
-  if (Deno.env.get("MTN_MOMO_SUBSCRIPTION_KEY") && Deno.env.get("MTN_MOMO_API_USER")) {
-    return "mtn_momo";
-  }
   if (Deno.env.get("PAYPACK_CLIENT_ID") && Deno.env.get("PAYPACK_CLIENT_SECRET")) {
     return "paypack";
   }
-  return "test";
+  throw new Error(
+    `Live MoMo (${network}) is not configured. Set PAYPACK_CLIENT_ID and PAYPACK_CLIENT_SECRET, or use PAYMENT_MODE=test for sandbox.`
+  );
 }
 
 export async function collectPayment(input: CollectInput): Promise<CollectResult> {

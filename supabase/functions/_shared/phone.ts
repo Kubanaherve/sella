@@ -35,6 +35,8 @@ export function reviewerBypassEnabled(): boolean {
     Deno.env.get("DENO_ENV") ||
     ""
   ).toLowerCase();
+  // Fail closed when env is unset — missing APP_ENV must never enable bypass
+  if (!appEnv) return false;
   const isProd = appEnv === "production" || appEnv === "prod";
   if (isProd) {
     return (Deno.env.get("REVIEWER_ALLOW_IN_PRODUCTION") || "").toLowerCase() === "true";

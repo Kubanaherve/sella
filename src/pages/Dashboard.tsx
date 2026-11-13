@@ -178,12 +178,14 @@ const DashboardPage = () => {
     };
     window.addEventListener("paymentMade", refresh);
     window.addEventListener("newDebtAdded", refresh);
+    window.addEventListener("sella:outbox-synced", refresh);
     document.addEventListener("visibilitychange", () => {
       if (document.visibilityState === "visible") refresh();
     });
     return () => {
       window.removeEventListener("paymentMade", refresh);
       window.removeEventListener("newDebtAdded", refresh);
+      window.removeEventListener("sella:outbox-synced", refresh);
     };
   }, [isAuthenticated, fetchStats]);
 

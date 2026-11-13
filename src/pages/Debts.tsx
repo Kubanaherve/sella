@@ -219,6 +219,15 @@ const DebtsPage = () => {
     setPage(1);
   }, [fetchCustomers, searchQuery]);
 
+  useEffect(() => {
+    const onSync = () => {
+      void fetchCustomers(1, searchQuery);
+      setPage(1);
+    };
+    window.addEventListener("sella:outbox-synced", onSync);
+    return () => window.removeEventListener("sella:outbox-synced", onSync);
+  }, [fetchCustomers, searchQuery]);
+
   // ── Infinite scroll ────────────────────────────────────────────────────────
   const handleScroll = () => {
     if (!containerRef.current || loading || !hasMore) return;

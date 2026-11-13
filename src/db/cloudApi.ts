@@ -356,7 +356,8 @@ export async function createSaleOrder(
     const now = new Date().toISOString();
     const receiptNumber = `OFF-${idempotencyKey.slice(0, 8).toUpperCase()}`;
     const provisionalDebt: Debt = {
-      id: queued.id,
+      // Prefixed so follow-up payments cannot hit RPC with a fake debt UUID
+      id: `offline:${queued.id}`,
       client_id: "offline",
       total_amount: orderTotal,
       remaining_balance: normalized.remaining,
@@ -461,6 +462,11 @@ export async function recordPayment(input: {
   referenceNumber?: string | null;
 }): Promise<Payment> {
   if (input.amount <= 0) throw new Error("Amafaranga ntayemewe");
+  if (input.debtId.startsWith("offline:")) {
+    throw new Error(
+      "This sale is still syncing — wait for connection before recording a payment"
+    );
+  }
 
   const idempotency_key = crypto.randomUUID();
   const p_payload = {

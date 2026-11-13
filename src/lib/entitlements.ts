@@ -48,16 +48,19 @@ export function trialDaysRemaining(sub: SubscriptionSnapshot | null, now = new D
   return Math.max(0, Math.ceil(ms / 86400000));
 }
 
-/** Write access = trial/paid period still open. */
+/**
+ * Write access — must match SQL `user_has_write_access`:
+ * trialing + trial_ends_at > now, or active + current_period_end > now.
+ */
 export function hasWriteAccess(sub: SubscriptionSnapshot | null, now = new Date()): boolean {
   if (!sub) return false;
-  if (sub.status === "expired" || sub.status === "canceled") {
-    const end = sub.currentPeriodEnd || sub.trialEndsAt;
-    return !!end && new Date(end).getTime() > now.getTime();
+  if (sub.status === "trialing") {
+    return !!sub.trialEndsAt && new Date(sub.trialEndsAt).getTime() > now.getTime();
   }
-  const end = sub.status === "trialing" ? sub.trialEndsAt : sub.currentPeriodEnd;
-  if (!end) return false;
-  return new Date(end).getTime() > now.getTime();
+  if (sub.status === "active") {
+    return !!sub.currentPeriodEnd && new Date(sub.currentPeriodEnd).getTime() > now.getTime();
+  }
+  return false;
 }
 
 export function isSubscriptionExpired(sub: SubscriptionSnapshot | null, now = new Date()): boolean {

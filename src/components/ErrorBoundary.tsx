@@ -2,13 +2,13 @@ import { Component, type ErrorInfo, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 
 type Props = { children: ReactNode; label?: string };
-type State = { error: Error | null };
+type State = { error: Error | null; recoveryKey: number };
 
 /** Prevents a single React crash from blanking the whole app (white screen). */
 export class ErrorBoundary extends Component<Props, State> {
-  state: State = { error: null };
+  state: State = { error: null, recoveryKey: 0 };
 
-  static getDerivedStateFromError(error: Error): State {
+  static getDerivedStateFromError(error: Error): Partial<State> {
     return { error };
   }
 
@@ -17,7 +17,9 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   render() {
-    if (!this.state.error) return this.props.children;
+    if (!this.state.error) {
+      return <div key={this.state.recoveryKey}>{this.props.children}</div>;
+    }
 
     return (
       <div className="min-h-[50vh] flex flex-col items-center justify-center p-6 text-center space-y-3">
@@ -29,7 +31,9 @@ export class ErrorBoundary extends Component<Props, State> {
         <div className="flex gap-2">
           <Button
             variant="outline"
-            onClick={() => this.setState({ error: null })}
+            onClick={() =>
+              this.setState((s) => ({ error: null, recoveryKey: s.recoveryKey + 1 }))
+            }
           >
             Try again
           </Button>

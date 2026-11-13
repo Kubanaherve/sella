@@ -20,17 +20,7 @@ export function getNativePlatform(): "ios" | "android" | "web" {
 }
 
 export function preferredBillingChannels(): BillingChannel[] {
-  if (getNativePlatform() === "ios") {
-    return [
-      "apple_iap",
-      "paypack_mtn",
-      "paypack_airtel",
-      "card_visa_mc",
-      "momo_manual",
-      "airtel_manual",
-      "bank_transfer",
-    ];
-  }
+  // apple_iap hidden until StoreKit is wired (startAppleIap is a stub)
   return [
     "paypack_mtn",
     "paypack_airtel",

@@ -21,6 +21,24 @@ describe("entitlements", () => {
     expect(hasWriteAccess(expired)).toBe(false);
   });
 
+  it("allows write only for active status with future period end", () => {
+    expect(
+      hasWriteAccess({
+        ...base,
+        status: "active",
+        trialEndsAt: null,
+        currentPeriodEnd: "2099-06-01T00:00:00.000Z",
+      })
+    ).toBe(true);
+    expect(
+      hasWriteAccess({
+        ...base,
+        status: "past_due",
+        currentPeriodEnd: "2099-06-01T00:00:00.000Z",
+      })
+    ).toBe(false);
+  });
+
   it("preserves unused paid time on early renewal", () => {
     const now = new Date("2026-01-10T00:00:00.000Z");
     const end = computeNextPeriodEnd({

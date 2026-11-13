@@ -167,12 +167,14 @@ const ReportsPage = () => {
 
     window.addEventListener("paymentMade", refreshReports);
     window.addEventListener("newDebtAdded", refreshReports);
+    window.addEventListener("sella:outbox-synced", refreshReports);
     window.addEventListener("focus", refreshReports);
     document.addEventListener("visibilitychange", refreshReports);
 
     return () => {
       window.removeEventListener("paymentMade", refreshReports);
       window.removeEventListener("newDebtAdded", refreshReports);
+      window.removeEventListener("sella:outbox-synced", refreshReports);
       window.removeEventListener("focus", refreshReports);
       document.removeEventListener("visibilitychange", refreshReports);
     };
