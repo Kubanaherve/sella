@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   ArrowLeft,
   Building2,
@@ -30,7 +30,10 @@ import {
   validateCardAuth,
   verifyFlutterwavePayment,
   waitForPaymentConfirmation,
+  getPaymentStatus,
   confirmTestPayment,
+  markPaymentInProgress,
+  clearPaymentInProgress,
 } from "@/services/billing";
 import {
   AirtelLogo,
@@ -66,6 +69,7 @@ function channelLabel(c: BillingChannel): string {
 
 const SubscribePage = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { subscription, refreshSubscription, mode, profile, user } = useAuth();
   const channels = useMemo(() => preferredBillingChannels(), []);
   const [plan, setPlan] = useState<BillingPlan>("monthly");
@@ -88,11 +92,82 @@ const SubscribePage = () => {
 
   const amount = plan === "annual" ? getAnnualPriceRwf() : getMonthlyPriceRwf();
 
-  const finishSuccess = async (msg?: string) => {
-    await refreshSubscription();
-    toast.success(msg || "Payment confirmed — subscription active for 30 days");
-    navigate("/account");
-  };
+  const finishSuccess = useCallback(
+    async (msg?: string) => {
+      clearPaymentInProgress();
+      await refreshSubscription();
+      toast.success(msg || "Payment confirmed — subscription active");
+      // Land on dashboard so write access is immediately usable
+      navigate("/dashboard");
+    },
+    [navigate, refreshSubscription]
+  );
+
+  // After Flutterwave 3DS redirect back to /subscribe?tx_ref=…
+  useEffect(() => {
+    const txRef =
+      searchParams.get("tx_ref") ||
+      searchParams.get("txRef") ||
+      searchParams.get("reference");
+    if (!txRef || mode !== "cloud") return;
+    let cancelled = false;
+    (async () => {
+      setBusy(true);
+      setStatusMsg("Verifying card payment…");
+      markPaymentInProgress(5);
+      try {
+        const v = await verifyFlutterwavePayment(txRef);
+        if (cancelled) return;
+        if (v.status === "successful") {
+          setSearchParams({}, { replace: true });
+          await finishSuccess(v.message || "Card payment confirmed");
+          return;
+        }
+        setStatusMsg("Card payment still pending bank confirmation");
+      } catch (e) {
+        if (!cancelled) {
+          toast.error(e instanceof Error ? e.message : "Could not verify card payment");
+        }
+      } finally {
+        if (!cancelled) setBusy(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [searchParams, mode, finishSuccess, setSearchParams]);
+
+  // Keep polling a pending MoMo/card payment even after the first wait times out
+  useEffect(() => {
+    if (!pendingPaymentId || testModeHint) return;
+    let cancelled = false;
+    const tick = async () => {
+      try {
+        const result = await getPaymentStatus({ payment_id: pendingPaymentId });
+        if (cancelled) return;
+        if (result.confirmed) {
+          setPendingPaymentId(null);
+          await finishSuccess(
+            result.subscription?.current_period_end
+              ? `Active until ${new Date(result.subscription.current_period_end).toLocaleDateString("en-RW")}`
+              : "Subscription activated"
+          );
+        } else if (result.failed) {
+          setPendingPaymentId(null);
+          setStatusMsg(`Payment ${result.status}`);
+          toast.error(`Payment ${result.status}`);
+        }
+      } catch {
+        /* next tick */
+      }
+    };
+    const id = window.setInterval(() => void tick(), 8000);
+    void tick();
+    return () => {
+      cancelled = true;
+      window.clearInterval(id);
+    };
+  }, [pendingPaymentId, testModeHint, finishSuccess]);
 
   const selectChannel = (c: BillingChannel) => {
     setChannel(c);
@@ -119,6 +194,7 @@ const SubscribePage = () => {
           toast.error("Andika numero (07xxxxxxxx)");
           return;
         }
+        markPaymentInProgress(5);
         const data = await startPaypackCashin({
           phone,
           plan,
@@ -181,6 +257,7 @@ const SubscribePage = () => {
           toast.message("Add your card first");
           return;
         }
+        markPaymentInProgress(5);
 
         const data = await startCardCharge({
           plan,

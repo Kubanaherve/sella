@@ -38,6 +38,24 @@ const NotificationsPage = () => {
     void load();
   }, [load]);
 
+  useEffect(() => {
+    if (mode !== "cloud" || !isAuthenticated) return;
+    const sb = getSupabase();
+    const channel = sb
+      .channel("sella-billing-notifs")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "billing_notifications" },
+        () => {
+          void load();
+        }
+      )
+      .subscribe();
+    return () => {
+      void sb.removeChannel(channel);
+    };
+  }, [mode, isAuthenticated, load]);
+
   const markRead = async (id: string) => {
     const sb = getSupabase();
     await sb

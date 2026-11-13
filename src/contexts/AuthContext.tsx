@@ -25,6 +25,8 @@ import {
 import { onAccountSwitch } from "@/lib/sessionIsolation";
 import { setActiveWorkspaceId } from "@/db/workspaceSession";
 import { clearAppUnlock, isAppUnlocked } from "@/lib/appUnlock";
+import { isPaymentInProgress } from "@/services/billing";
+import { toast } from "sonner";
 
 export interface CloudProfile {
   id: string;
@@ -278,7 +280,86 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => unsub?.();
   }, [mode, loadCloudSession, refreshProfile, clearAuthState]);
 
+  // Resume / tab focus: re-read entitlement (covers missed websocket)
+  useEffect(() => {
+    if (mode !== "cloud" || !user?.id) return;
+    const refresh = () => {
+      if (document.visibilityState === "visible") void refreshSubscription();
+    };
+    document.addEventListener("visibilitychange", refresh);
+    window.addEventListener("focus", refresh);
+    return () => {
+      document.removeEventListener("visibilitychange", refresh);
+      window.removeEventListener("focus", refresh);
+    };
+  }, [mode, user?.id, refreshSubscription]);
+
+  // Real-time unlock: webhook → user_subscriptions / billing_notifications
+  useEffect(() => {
+    if (mode !== "cloud" || !user?.id) return;
+    const sb = getSupabase();
+    const userId = user.id;
+
+    const channel = sb
+      .channel(`user-realtime-${userId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "user_subscriptions",
+          filter: `user_id=eq.${userId}`,
+        },
+        (payload) => {
+          const row = (payload.new || null) as Record<string, unknown> | null;
+          if (row && row.user_id === userId) {
+            setSubscription(mapUserSub(row, userId));
+          } else {
+            void refreshSubscription();
+          }
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "billing_notifications",
+          filter: `user_id=eq.${userId}`,
+        },
+        (payload) => {
+          const notif = payload.new as {
+            kind?: string;
+            title?: string;
+            body?: string | null;
+          };
+          if (
+            notif?.kind === "payment_success" ||
+            notif?.kind === "subscription_activated"
+          ) {
+            toast.success(notif.title || "Kwishyura byagenze neza!", {
+              description: notif.body || "Subscription yemejwe — wishimire gukoresha Sella.",
+            });
+            void refreshSubscription();
+          } else if (
+            notif?.kind === "payment_failed" ||
+            notif?.kind === "payment_cancelled"
+          ) {
+            toast.error(notif.title || "Kwishyura ntibyakunze", {
+              description: notif.body || undefined,
+            });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      void sb.removeChannel(channel);
+    };
+  }, [mode, user?.id, refreshSubscription]);
+
   // Native only: resume from background → PIN again (never wipe remembered shops)
+  // Grace-period if a MoMo/Airtel USSD payment prompt or bank 3D-secure was active
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) return;
     let handle: { remove: () => Promise<void> } | undefined;
@@ -293,6 +374,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
           if (!wasBackground) return;
           wasBackground = false;
+
+          // If a payment or USSD prompt is in-flight, keep user in-session and refresh
+          if (isPaymentInProgress()) {
+            void refreshSubscription();
+            return;
+          }
+
           void lockToPin();
         });
       } catch {
@@ -302,7 +390,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => {
       void handle?.remove();
     };
-  }, [lockToPin]);
+  }, [lockToPin, refreshSubscription]);
 
   const isSuperAdmin =
     mode === "cloud" &&

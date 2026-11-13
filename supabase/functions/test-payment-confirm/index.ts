@@ -14,9 +14,12 @@ Deno.serve(async (req) => {
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
 
   try {
+    const appEnv = (Deno.env.get("APP_ENV") || "").toLowerCase();
+    const isProduction = appEnv === "production";
     const testEnabled =
-      Deno.env.get("PAYMENT_MODE") === "test" ||
-      Deno.env.get("ENABLE_TEST_PAYMENTS") === "true";
+      !isProduction &&
+      (Deno.env.get("PAYMENT_MODE") === "test" ||
+        Deno.env.get("ENABLE_TEST_PAYMENTS") === "true");
 
     const authHeader = req.headers.get("Authorization") || "";
     const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
@@ -33,6 +36,11 @@ Deno.serve(async (req) => {
       .select("is_superadmin")
       .eq("user_id", userData.user.id)
       .maybeSingle();
+
+    // Production: only superadmin drills; never open test confirm to all users
+    if (isProduction && !profile?.is_superadmin) {
+      return json({ error: "Test payments are disabled in production" }, 403);
+    }
 
     if (!testEnabled && !profile?.is_superadmin) {
       return json(

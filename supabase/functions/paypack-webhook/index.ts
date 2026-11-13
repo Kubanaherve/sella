@@ -63,12 +63,17 @@ Deno.serve(async (req) => {
       console.error("Paypack webhook without ref — refusing");
       return json({ error: "Missing payment reference" }, 400);
     }
+    // Strip PostgREST filter metacharacters so .or() cannot be injected
+    const safeRef = ref.replace(/[,.()]/g, "");
+    if (!safeRef) {
+      return json({ error: "Invalid payment reference" }, 400);
+    }
 
     const sb = adminClient();
     const { data: payments } = await sb
       .from("subscription_payments")
       .select("*")
-      .or(`external_transaction_id.eq.${ref},reference_id.eq.${ref}`)
+      .or(`external_transaction_id.eq.${safeRef},reference_id.eq.${safeRef}`)
       .order("created_at", { ascending: false })
       .limit(1);
     const payment = payments?.[0];
