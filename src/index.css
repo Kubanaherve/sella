@@ -1,8 +1,10 @@
-@import '@fontsource/plus-jakarta-sans/400.css';
-@import '@fontsource/plus-jakarta-sans/500.css';
-@import '@fontsource/plus-jakarta-sans/600.css';
-@import '@fontsource/plus-jakarta-sans/700.css';
-@import '@fontsource/plus-jakarta-sans/800.css';
+@import '@fontsource/outfit/400.css';
+@import '@fontsource/outfit/500.css';
+@import '@fontsource/outfit/600.css';
+@import '@fontsource/outfit/700.css';
+@import '@fontsource/outfit/800.css';
+@import '@fontsource/sora/600.css';
+@import '@fontsource/sora/700.css';
 
 @tailwind base;
 @tailwind components;
@@ -48,15 +50,27 @@
     --navy-light: 217 91% 58%;
     --navy-dark: 222 70% 28%;
 
-    --glass-bg: 0 0% 100% / 0.88;
-    --glass-border: 214 40% 100% / 0.55;
-    --glass-shadow: 222 47% 20% / 0.08;
+    --glass-bg: 0 0% 100% / 0.62;
+    --glass-border: 214 80% 100% / 0.65;
+    --glass-shadow: 217 90% 40% / 0.12;
+    --glass-highlight: 0 0% 100% / 0.55;
+    --glass-blue-wash: 217 100% 55% / 0.08;
 
     --gradient-gold: linear-gradient(135deg, #0b3fcc, #1a6fff);
     --gradient-navy: linear-gradient(135deg, #0b3fcc, #1a6fff);
-    --gradient-luxury: linear-gradient(135deg, #0b3fcc, #3b82f6 70%, #d033ff);
+    --gradient-luxury: linear-gradient(135deg, #0b3fcc, #3b82f6 70%, #5ac8fa);
     --gradient-brand: linear-gradient(145deg, #0b3fcc 0%, #1a6fff 52%, #5ac8fa 100%);
-    --gradient-hero: radial-gradient(ellipse 120% 90% at 70% 0%, #2b6cff 0%, #0b3fcc 42%, #08153f 78%, #040816 100%);
+    --gradient-glass-blue: linear-gradient(
+      145deg,
+      rgba(11, 63, 204, 0.92) 0%,
+      rgba(26, 111, 255, 0.88) 48%,
+      rgba(90, 200, 250, 0.82) 100%
+    );
+    /* Soft periwinkle glass field (brand ambient) */
+    --gradient-hero: radial-gradient(ellipse 90% 70% at 15% 10%, #cfe0ff 0%, transparent 55%),
+      radial-gradient(ellipse 80% 60% at 95% 85%, #b7c9f5 0%, transparent 50%),
+      linear-gradient(165deg, #f7f9ff 0%, #e8eefc 48%, #d9e4fa 100%);
+    --sella-ambient-image: url("/brand/sella-glass-ambient.jpg");
 
     --sidebar-background: 214 60% 98%;
     --sidebar-foreground: 222 30% 25%;
@@ -118,16 +132,23 @@
   }
 
   html {
-    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-family: Outfit, "Sora", system-ui, sans-serif;
+    font-feature-settings: "ss01" on, "cv11" on;
   }
 
   body {
-    @apply bg-background text-foreground antialiased;
-    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    @apply text-foreground antialiased;
+    font-family: Outfit, "Sora", system-ui, sans-serif;
+    letter-spacing: -0.011em;
+    background-color: #eef2fb;
     background-image:
+      var(--sella-ambient-image),
       radial-gradient(ellipse 80% 50% at 100% -10%, hsl(217 90% 90% / 0.55), transparent),
-      radial-gradient(ellipse 60% 40% at -10% 20%, hsl(214 80% 92% / 0.4), transparent);
-    background-attachment: fixed;
+      radial-gradient(ellipse 60% 40% at -10% 20%, hsl(214 80% 92% / 0.45), transparent);
+    background-size: cover, auto, auto;
+    background-position: center, center, center;
+    background-attachment: fixed, fixed, fixed;
+    background-repeat: no-repeat;
     /* Keep layout inside the visible viewport on notched phones */
     min-height: 100dvh;
   }
@@ -208,9 +229,23 @@
     @apply px-4 pt-3 pb-6;
   }
 
+  h1, h2, h3, .font-display {
+    font-family: Sora, Outfit, system-ui, sans-serif;
+    letter-spacing: -0.025em;
+  }
+
   .sella-app-header {
     @apply sticky top-0 z-40 flex items-center justify-between gap-3 px-3 sm:px-4;
-    @apply border-b border-border/80 bg-white/90 backdrop-blur-xl;
+    @apply border-b backdrop-blur-2xl;
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.78) 0%,
+      rgba(247, 250, 255, 0.62) 100%
+    );
+    border-color: rgba(255, 255, 255, 0.55);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.65) inset,
+      0 8px 24px rgba(11, 63, 204, 0.06);
     /*
       Clear Dynamic Island / notch / status icons on every phone.
       env() first (Safari), then floor from JS (Capacitor WebView fallback).
@@ -227,10 +262,18 @@
 
   .sella-tabbar {
     @apply fixed bottom-0 inset-x-0 z-50 mx-auto max-w-lg;
-    @apply grid grid-cols-5 gap-0 border-t border-border bg-white/95 backdrop-blur-xl;
+    @apply grid grid-cols-5 gap-0 border-t backdrop-blur-2xl;
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.72) 0%,
+      rgba(247, 250, 255, 0.88) 100%
+    );
+    border-color: rgba(255, 255, 255, 0.55);
     padding-bottom: var(--sella-safe-bottom);
     min-height: calc(var(--sella-tabbar-height) + var(--sella-safe-bottom));
-    box-shadow: 0 -10px 28px rgba(11, 63, 204, 0.08);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.7) inset,
+      0 -12px 32px rgba(11, 63, 204, 0.1);
   }
 
   .sella-tab {
@@ -280,8 +323,7 @@
   }
 
   .sella-fixed-bottom-bar {
-    @apply fixed inset-x-0 z-40 mx-auto max-w-lg border-t border-border bg-white/95 backdrop-blur px-3 py-3;
-    bottom: 0;
+    @apply sticky bottom-0 z-40 w-full border-t border-border bg-white/95 backdrop-blur px-3 py-3 mt-auto shrink-0;
     padding-bottom: max(
       0.75rem,
       env(safe-area-inset-bottom, 0px),
@@ -316,13 +358,26 @@
   }
 
   .sella-fab-menu-item {
-    @apply w-full rounded-xl bg-white border border-border shadow-md;
+    @apply w-full rounded-xl border shadow-md backdrop-blur-xl;
     @apply px-3 py-2.5 text-left text-sm font-semibold text-foreground;
     @apply active:scale-[0.98] transition-transform;
+    background: rgba(255, 255, 255, 0.82);
+    border-color: rgba(255, 255, 255, 0.7);
   }
 
   .sella-stat {
-    @apply rounded-2xl border border-border/80 bg-white p-3.5 shadow-sm;
+    @apply relative overflow-hidden rounded-2xl p-3.5;
+    background: linear-gradient(
+      160deg,
+      rgba(255, 255, 255, 0.78) 0%,
+      rgba(240, 246, 255, 0.55) 100%
+    );
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.75) inset,
+      0 10px 28px rgba(11, 63, 204, 0.08);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
   }
 
   .sella-stat-label {
@@ -334,18 +389,155 @@
   }
 
   .sella-list-card {
-    @apply rounded-2xl border border-border/80 bg-white shadow-sm overflow-hidden;
+    @apply relative overflow-hidden rounded-2xl;
+    background: linear-gradient(
+      165deg,
+      rgba(255, 255, 255, 0.8) 0%,
+      rgba(244, 248, 255, 0.58) 100%
+    );
+    border: 1px solid rgba(255, 255, 255, 0.72);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.7) inset,
+      0 12px 30px rgba(11, 63, 204, 0.07);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
   }
 
   .sella-chip {
     @apply inline-flex items-center h-7 px-2.5 rounded-full text-[11px] font-bold border;
   }
+
+  .sella-chip-glass {
+    @apply inline-flex items-center h-8 px-3 rounded-full text-xs font-bold border backdrop-blur-md;
+    background: rgba(255, 255, 255, 0.55);
+    border-color: rgba(26, 111, 255, 0.14);
+    color: #0b3fcc;
+  }
+
+  .sella-chip-glass-active {
+    background: var(--gradient-glass-blue);
+    border-color: transparent;
+    color: #fff;
+    box-shadow: 0 8px 18px rgba(26, 111, 255, 0.28);
+  }
+
+  .sella-input-glass {
+    @apply w-full h-11 rounded-2xl px-3 text-sm text-foreground placeholder:text-muted-foreground;
+    @apply focus:outline-none;
+    background: rgba(255, 255, 255, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.65) inset;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .sella-input-glass:focus {
+    border-color: rgba(26, 111, 255, 0.35);
+    box-shadow:
+      0 0 0 3px rgba(26, 111, 255, 0.14),
+      0 1px 0 rgba(255, 255, 255, 0.7) inset;
+  }
+
+  .sella-sheet-glass {
+    @apply relative overflow-hidden flex flex-col;
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.92) 0%,
+      rgba(239, 245, 255, 0.88) 100%
+    );
+    border: 1px solid rgba(255, 255, 255, 0.75);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.8) inset,
+      0 24px 60px rgba(11, 63, 204, 0.22);
+    backdrop-filter: blur(22px);
+    -webkit-backdrop-filter: blur(22px);
+  }
+
+  /* Centered popup / dialog glass panel */
+  .sella-popup-glass {
+    @apply relative overflow-hidden;
+    background: linear-gradient(
+      165deg,
+      rgba(255, 255, 255, 0.9) 0%,
+      rgba(236, 244, 255, 0.82) 100%
+    );
+    border: 1px solid rgba(255, 255, 255, 0.78);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.85) inset,
+      0 22px 56px rgba(11, 63, 204, 0.24);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+  }
+
+  .sella-popup-glass::before {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.28) 0%,
+      transparent 40%,
+      rgba(26, 111, 255, 0.05) 100%
+    );
+  }
+
+  .sella-popup-header-glass {
+    @apply relative text-white;
+    background: var(--gradient-glass-blue);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.22);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.22) inset;
+  }
+
+  .sella-popup-header-glass::before {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      160deg,
+      rgba(255, 255, 255, 0.22) 0%,
+      transparent 48%,
+      rgba(90, 200, 250, 0.12) 100%
+    );
+  }
+
+  .sella-btn-glass {
+    @apply inline-flex items-center justify-center gap-1.5 font-bold active:scale-[0.98] transition-transform;
+    background: rgba(26, 111, 255, 0.1);
+    border: 1px solid rgba(26, 111, 255, 0.16);
+    color: #0b3fcc;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  .sella-btn-glass-solid {
+    @apply inline-flex items-center justify-center gap-1.5 font-bold text-white active:scale-[0.98] transition-transform;
+    background: var(--gradient-glass-blue);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.35) inset,
+      0 10px 24px rgba(26, 111, 255, 0.32);
+  }
 }
 
 @layer components {
   .sella-hero-bg {
-    background: var(--gradient-hero);
+    background-color: #eef2fb;
+    background-image:
+      linear-gradient(180deg, rgba(247, 249, 255, 0.55), rgba(238, 242, 251, 0.72)),
+      var(--sella-ambient-image),
+      var(--gradient-hero);
+    background-size: auto, cover, auto;
+    background-position: center;
+    background-repeat: no-repeat;
     background-attachment: fixed;
+  }
+
+  .sella-glass-ambient-veil {
+    background:
+      radial-gradient(ellipse 70% 55% at 50% 42%, rgba(255, 255, 255, 0.55), transparent 70%),
+      linear-gradient(180deg, rgba(247, 249, 255, 0.2), rgba(207, 224, 255, 0.18));
   }
 
   /* Perfect 1:1 app-icon box — continuous corner ~22.37% (iOS ratio) */
@@ -400,12 +592,52 @@
   }
 
   .glass-card {
-    @apply relative overflow-hidden rounded-2xl border border-border bg-white/90 p-5 shadow-sm backdrop-blur-md;
+    @apply relative overflow-hidden rounded-2xl p-5;
+    background: linear-gradient(
+      160deg,
+      rgba(255, 255, 255, 0.78) 0%,
+      rgba(236, 244, 255, 0.52) 100%
+    );
+    border: 1px solid rgba(255, 255, 255, 0.72);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.75) inset,
+      0 14px 36px rgba(11, 63, 204, 0.1);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+  }
+
+  .glass-card::before {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.35) 0%,
+      transparent 42%,
+      rgba(26, 111, 255, 0.04) 100%
+    );
   }
 
   .glass-card-dark {
-    @apply relative overflow-hidden rounded-2xl border border-white/10 p-5 shadow-lg;
-    background: linear-gradient(145deg, #0b4fd9 0%, #1a6fff 100%);
+    @apply relative overflow-hidden rounded-2xl border border-white/25 p-5 shadow-lg text-white;
+    background: var(--gradient-glass-blue);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.28) inset,
+      0 16px 40px rgba(11, 63, 204, 0.28);
+  }
+
+  .glass-card-dark::before {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      160deg,
+      rgba(255, 255, 255, 0.22) 0%,
+      transparent 45%,
+      rgba(90, 200, 250, 0.12) 100%
+    );
   }
 
   .gold-glow {
@@ -432,27 +664,34 @@
   }
 
   .btn-navy {
-    @apply bg-primary text-primary-foreground font-medium transition-all duration-300 hover:shadow-lg;
-    background: var(--gradient-navy);
+    @apply font-medium text-white transition-all duration-300;
+    background: var(--gradient-glass-blue);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.3) inset,
+      0 10px 26px rgba(26, 111, 255, 0.28);
   }
 
   .btn-navy:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 30px hsl(175 66% 26% / 0.35);
+    transform: translateY(-1px);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.35) inset,
+      0 14px 32px rgba(26, 111, 255, 0.36);
   }
 
   .btn-gold {
     @apply font-medium text-white transition-all duration-300;
-    background: var(--gradient-gold);
+    background: var(--gradient-glass-blue);
+    border: 1px solid rgba(255, 255, 255, 0.28);
   }
 
   .btn-gold:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 30px hsl(24 90% 48% / 0.35);
+    transform: translateY(-1px);
+    box-shadow: 0 12px 28px rgba(26, 111, 255, 0.32);
   }
 
   .input-glow:focus {
-    box-shadow: 0 0 0 3px hsl(175 66% 26% / 0.22);
+    box-shadow: 0 0 0 3px rgba(26, 111, 255, 0.18);
   }
 
   .table-premium {
@@ -593,6 +832,29 @@
   animation: sella-mark-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+.sella-glass-script {
+  animation: sella-glass-script-in 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.35s both;
+  filter: drop-shadow(0 0 28px rgba(90, 200, 250, 0.35));
+}
+
+.sella-glass-script-write {
+  animation: sella-glass-script-in 0.85s cubic-bezier(0.22, 1, 0.36, 1) both;
+  filter: drop-shadow(0 10px 28px rgba(11, 63, 204, 0.28));
+}
+
+@keyframes sella-glass-script-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.92);
+    filter: blur(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
 .sella-signature-stroke {
   fill: none;
   stroke: #ffffff;
@@ -665,26 +927,84 @@
   box-shadow: none;
 }
 
+/* ── Professional checkout flip card ───────────────────────────────── */
+.sella-pay-card-scene {
+  perspective: 1200px;
+  height: 200px;
+}
+
+.sella-pay-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.sella-pay-card-inner.is-flipped {
+  transform: rotateY(180deg);
+}
+
+.sella-pay-card-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 18px;
+  padding: 1.1rem 1.2rem;
+  display: flex;
+  flex-direction: column;
+  box-shadow:
+    0 18px 40px rgba(11, 63, 204, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+}
+
+.sella-pay-card-front {
+  background:
+    radial-gradient(ellipse 80% 70% at 10% 0%, rgba(255, 255, 255, 0.28), transparent 55%),
+    linear-gradient(135deg, #0b3fcc 0%, #1a6fff 48%, #5ac8fa 100%);
+}
+
+.sella-pay-card-back {
+  transform: rotateY(180deg);
+  background: linear-gradient(145deg, #0a2a7a 0%, #1347c4 55%, #1a6fff 100%);
+}
+
+.sella-pay-method {
+  @apply w-full rounded-2xl border px-3 py-3 text-left transition-all;
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-color: rgba(255, 255, 255, 0.55);
+}
+
+.sella-pay-method.is-active {
+  border-color: transparent;
+  box-shadow:
+    0 0 0 2px rgba(26, 111, 255, 0.55),
+    0 10px 28px rgba(26, 111, 255, 0.18);
+  background: rgba(255, 255, 255, 0.78);
+}
+
 .sella-overlay {
-  background: rgba(0, 0, 0, 0.45);
+  background: rgba(7, 26, 74, 0.42);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 /* ── In-app page transitions (glass / light bloom) ─────────────────── */
+/* Opacity only — filter/transform create containing blocks that trap fixed UI. */
 .sella-page-enter {
-  animation: sella-page-enter 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
-  will-change: opacity, transform, filter;
+  animation: sella-page-enter 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 @keyframes sella-page-enter {
   from {
     opacity: 0;
-    transform: translateY(14px) scale(0.985);
-    filter: blur(8px);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
-    filter: blur(0);
   }
 }
 

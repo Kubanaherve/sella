@@ -55,7 +55,7 @@ const InstallPage = () => {
         {/* Back Button */}
         <button
           onClick={() => navigate(-1)}
-          className="w-10 h-10 rounded-lg bg-white/15 text-white flex items-center justify-center mb-6"
+          className="w-10 h-10 rounded-lg bg-white/70 text-[#0B3FCC] border border-[#1A6FFF]/20 flex items-center justify-center mb-6"
         >
           <ArrowLeft size={20} />
         </button>

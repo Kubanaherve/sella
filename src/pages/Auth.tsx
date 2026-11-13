@@ -349,7 +349,7 @@ const AuthPage = () => {
   if (isCheckingAuth) {
     return (
       <div className="min-h-screen sella-hero-bg flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-white/30 border-t-white rounded-full animate-spin" />
+        <div className="w-10 h-10 border-4 border-[#1A6FFF]/25 border-t-[#1A6FFF] rounded-full animate-spin" />
       </div>
     );
   }
@@ -361,10 +361,10 @@ const AuthPage = () => {
         <div className="mt-4 w-12 h-12 rounded-full bg-emerald-400/20 flex items-center justify-center">
           <CheckCircle2 className="text-emerald-300" size={28} />
         </div>
-        <h1 className="text-white text-xl font-bold mt-3 text-center">
+        <h1 className="text-[#0B3FCC] text-xl font-bold mt-3 text-center">
           {t("Murakoze gukoresha Sella!", "Thank you for using Sella!")}
         </h1>
-        <p className="text-white/70 text-sm mt-1 text-center">
+        <p className="text-slate-600 text-sm mt-1 text-center">
           {t("Shop yawe iretse — urabona amakuru aha:", "Your shop is ready — here are your details:")}
         </p>
 
@@ -412,7 +412,7 @@ const AuthPage = () => {
           </p>
         </div>
 
-        <p className="text-white/60 text-xs mt-4 text-center max-w-xs">
+        <p className="text-slate-500 text-xs mt-4 text-center max-w-xs">
           {t(
             "Ubundi ubwo uzinjira: PIN ya imibare 4 gusa — nta numero buri munsi.",
             "Next time: just dial your 4-digit PIN — your shop is remembered."
@@ -437,12 +437,12 @@ const AuthPage = () => {
       <div className="min-h-screen sella-hero-bg flex flex-col items-center justify-center p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,calc(var(--sella-safe-top-floor)+0.75rem),env(safe-area-inset-top))]">
         <BrandMark variant="icon" size="xl" float />
         {selectedAccount.shopName && (
-          <p className="text-white text-lg font-semibold mt-4 tracking-tight">
+          <p className="text-[#0B3FCC] text-lg font-semibold mt-4 tracking-tight">
             {selectedAccount.shopName}
           </p>
         )}
         {selectedAccount.shopCode && (
-          <p className="text-white/45 text-[11px] tracking-[0.2em] mt-0.5">
+          <p className="text-slate-400 text-[11px] tracking-[0.2em] mt-0.5">
             {selectedAccount.shopCode}
           </p>
         )}
@@ -460,7 +460,7 @@ const AuthPage = () => {
           {rememberedAccounts.length > 1 && (
             <button
               type="button"
-              className="text-white/60 text-sm"
+              className="text-slate-500 text-sm"
               onClick={() => {
                 setSelectedAccount(null);
                 setPinError(null);
@@ -472,7 +472,7 @@ const AuthPage = () => {
           )}
           <button
             type="button"
-            className="text-white/40 text-xs"
+            className="text-slate-400 text-xs"
             onClick={() => {
               setSelectedAccount(null);
               setPinError(null);
@@ -490,7 +490,7 @@ const AuthPage = () => {
     return (
       <div className="min-h-screen sella-hero-bg flex flex-col items-center justify-center p-6 pb-[max(1.5rem,env(safe-area-inset-bottom),var(--sella-safe-bottom-floor))] pt-[max(1.5rem,calc(var(--sella-safe-top-floor)+0.75rem),env(safe-area-inset-top))]">
         <BrandMark variant="icon" size="lg" float />
-        <h1 className="text-white text-lg font-bold mt-4">
+        <h1 className="text-[#0B3FCC] text-lg font-bold mt-4">
           {t("Injira na telefone + PIN", "Sign in with phone + PIN")}
         </h1>
         <div className="w-full max-w-sm glass-card mt-6 space-y-3">
@@ -521,7 +521,7 @@ const AuthPage = () => {
             {t("Komeza kuri PIN", "Continue to PIN")}
           </Button>
         </div>
-        <button type="button" className="mt-6 text-white/50 text-sm" onClick={() => setStep("home")}>
+        <button type="button" className="mt-6 text-slate-500 text-sm" onClick={() => setStep("home")}>
           ← {t("Subira", "Back")}
         </button>
       </div>
@@ -532,7 +532,7 @@ const AuthPage = () => {
     return (
       <div className="min-h-screen sella-hero-bg flex flex-col items-center justify-center p-6 pb-[max(1.5rem,env(safe-area-inset-bottom),var(--sella-safe-bottom-floor))] pt-[max(1.5rem,calc(var(--sella-safe-top-floor)+0.75rem),env(safe-area-inset-top))]">
         <BrandMark variant="icon" size="xl" float />
-        <p className="text-white/70 text-sm mt-4 mb-2">
+        <p className="text-slate-600 text-sm mt-4 mb-2">
           {t("Hitamo shop yawe — injiza PIN ya 4", "Choose your shop — enter 4-digit PIN")}
         </p>
         <div className="w-full max-w-sm space-y-3 mt-4">
@@ -548,7 +548,7 @@ const AuthPage = () => {
                 }}
                 className="w-full glass-card p-4 flex items-center gap-4 text-left"
               >
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#0f3d38] to-[#0f766e] flex items-center justify-center text-lg font-bold text-white">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#0B3FCC] to-[#5AC8FA] flex items-center justify-center text-lg font-bold text-white">
                   {(account.shopName || account.displayName).charAt(0).toUpperCase()}
                 </div>
                 <div>
@@ -575,14 +575,14 @@ const AuthPage = () => {
             onClick={() => setStep("register")}
             className="w-full glass-card p-4 flex items-center gap-4 border-dashed"
           >
-            <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center">
-              <Plus size={22} className="text-white/70" />
+            <div className="w-12 h-12 rounded-full bg-white/80 border border-[#1A6FFF]/20 flex items-center justify-center">
+              <Plus size={22} className="text-[#0B3FCC]/70" />
             </div>
             <p className="font-medium">{t("Andikisha shop nshya", "Register new shop")}</p>
           </button>
           <button
             type="button"
-            className="w-full text-sm text-white/70 underline"
+            className="w-full text-sm text-slate-600 underline"
             onClick={() => setStep("phone_login")}
           >
             {t("Injira na numero yindi", "Sign in with another phone")}
@@ -598,7 +598,7 @@ const AuthPage = () => {
         <div className="absolute right-4 flex gap-2 top-[max(1rem,calc(max(var(--sella-safe-top-floor),env(safe-area-inset-top,0px))+0.35rem))]">
           <button
             type="button"
-            className={`text-xs px-2 py-1 rounded ${lang === "rw" ? "bg-white text-primary" : "text-white/70"}`}
+            className={`text-xs px-2 py-1 rounded ${lang === "rw" ? "bg-white text-primary" : "text-slate-600"}`}
             onClick={() => {
               setAppLanguage("rw");
               setLang("rw");
@@ -608,7 +608,7 @@ const AuthPage = () => {
           </button>
           <button
             type="button"
-            className={`text-xs px-2 py-1 rounded ${lang === "en" ? "bg-white text-primary" : "text-white/70"}`}
+            className={`text-xs px-2 py-1 rounded ${lang === "en" ? "bg-white text-primary" : "text-slate-600"}`}
             onClick={() => {
               setAppLanguage("en");
               setLang("en");
@@ -619,7 +619,7 @@ const AuthPage = () => {
         </div>
 
         <BrandMark variant="icon" size="lg" float />
-        <h1 className="text-white text-lg font-bold mt-3">
+        <h1 className="text-[#0B3FCC] text-lg font-bold mt-3">
           {t("Andikisha shop yawe", "Register your shop")}
         </h1>
 
@@ -741,10 +741,10 @@ const AuthPage = () => {
           </Button>
         </div>
 
-        <button type="button" className="mt-6 text-white/50 text-sm" onClick={() => setStep("home")}>
+        <button type="button" className="mt-6 text-slate-500 text-sm" onClick={() => setStep("home")}>
           ← {t("Subira", "Back")}
         </button>
-        <p className="text-white/40 text-[11px] mt-4">
+        <p className="text-slate-400 text-[11px] mt-4">
           <Link to="/terms" className="underline">
             Terms
           </Link>{" "}
@@ -762,7 +762,7 @@ const AuthPage = () => {
       <div className="absolute right-4 flex gap-2 top-[max(1rem,calc(max(var(--sella-safe-top-floor),env(safe-area-inset-top,0px))+0.35rem))]">
         <button
           type="button"
-          className={`text-xs px-2 py-1 rounded ${lang === "rw" ? "bg-white text-primary" : "text-white/70"}`}
+          className={`text-xs px-2 py-1 rounded ${lang === "rw" ? "bg-white text-primary" : "text-slate-600"}`}
           onClick={() => {
             setAppLanguage("rw");
             setLang("rw");
@@ -772,7 +772,7 @@ const AuthPage = () => {
         </button>
         <button
           type="button"
-          className={`text-xs px-2 py-1 rounded ${lang === "en" ? "bg-white text-primary" : "text-white/70"}`}
+          className={`text-xs px-2 py-1 rounded ${lang === "en" ? "bg-white text-primary" : "text-slate-600"}`}
           onClick={() => {
             setAppLanguage("en");
             setLang("en");
@@ -783,7 +783,7 @@ const AuthPage = () => {
       </div>
 
       <BrandMark variant="logo" size="hero" float />
-      <p className="text-white/75 text-sm mt-3 mb-8 text-center max-w-xs">{BRAND.taglineRw}</p>
+      <p className="text-[#0B3FCC]/80 text-sm mt-3 mb-8 text-center max-w-xs">{BRAND.taglineRw}</p>
 
       <div className="w-full max-w-sm space-y-3">
         {rememberedAccounts.length > 0 && (
@@ -795,7 +795,7 @@ const AuthPage = () => {
           </Button>
         )}
         <Button
-          className={`w-full h-12 text-base ${rememberedAccounts.length ? "bg-white/10 border border-white/30 text-white hover:bg-white/20" : "btn-gold"}`}
+          className={`w-full h-12 text-base ${rememberedAccounts.length ? "bg-white/70 border border-[#1A6FFF]/25 text-[#0B3FCC] hover:bg-white/90 backdrop-blur" : "btn-gold"}`}
           variant={rememberedAccounts.length ? "outline" : "default"}
           onClick={() => setStep("register")}
         >
@@ -803,14 +803,14 @@ const AuthPage = () => {
         </Button>
         <Button
           variant="outline"
-          className="w-full h-12 bg-white/10 border-white/30 text-white hover:bg-white/20"
+          className="w-full h-12 bg-white/70 border-[#1A6FFF]/25 text-[#0B3FCC] hover:bg-white/90 backdrop-blur"
           onClick={() => setStep(rememberedAccounts.length ? "picker" : "phone_login")}
         >
           {t("Injira (telefone + PIN 4)", "Sign in (phone + 4-digit PIN)")}
         </Button>
       </div>
 
-      <p className="text-white/50 text-[11px] mt-8 text-center max-w-sm">
+      <p className="text-slate-500 text-[11px] mt-8 text-center max-w-sm">
         {t(
           "Ubundi ubwo: PIN ya imibare 4 gusa — shop yawe iribukwa.",
           "Next visits: 4-digit PIN only — your shop is remembered."

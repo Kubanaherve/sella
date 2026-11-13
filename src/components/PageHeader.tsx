@@ -43,7 +43,11 @@ export function PageHeader({
           )}
         </div>
       </div>
-      {right && <div className="flex items-center gap-2 shrink-0">{right}</div>}
+      {right && (
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 max-w-[55%]">
+          {right}
+        </div>
+      )}
     </header>
   );
 }

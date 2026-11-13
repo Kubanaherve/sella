@@ -33,7 +33,7 @@ export function SubscriptionGuard({ children }: { children: ReactNode }) {
   if (isLoading) {
     return (
       <div className="min-h-screen sella-hero-bg flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-white/30 border-t-white rounded-full animate-spin" />
+        <div className="w-10 h-10 border-4 border-[#1A6FFF]/25 border-t-[#1A6FFF] rounded-full animate-spin" />
       </div>
     );
   }

@@ -1,6 +1,9 @@
-// Flutterwave webhook — authenticate + verify + idempotent unlock
-
+/**
+ * Flutterwave webhook — verif-hash auth + activate SaaS subscription_payments
+ * (and legacy workspace payment_intents when present).
+ */
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import { activateSubscription } from "../_shared/flwEncrypt.ts";
 
 Deno.serve(async (req) => {
   try {
@@ -11,15 +14,48 @@ Deno.serve(async (req) => {
     }
 
     const payload = await req.json();
-    const txRef = payload?.data?.tx_ref || payload?.txRef;
+    const txRef = String(payload?.data?.tx_ref || payload?.txRef || "").trim();
     if (!txRef) return new Response("ok", { status: 200 });
 
-    // Delegate to same verify logic by invoking verify path inline
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const flwSecret = Deno.env.get("FLW_SECRET_KEY")!;
     const admin = createClient(supabaseUrl, serviceKey);
 
+    // Prefer SaaS subscription_payments (Paypack/card path)
+    const { data: subPay } = await admin
+      .from("subscription_payments")
+      .select("*")
+      .eq("reference_id", txRef)
+      .maybeSingle();
+
+    if (subPay) {
+      if (subPay.status === "completed") return new Response("already", { status: 200 });
+
+      const verifyRes = await fetch(
+        `https://api.flutterwave.com/v3/transactions/verify_by_reference?tx_ref=${encodeURIComponent(
+          txRef
+        )}`,
+        { headers: { Authorization: `Bearer ${flwSecret}` } }
+      );
+      const verified = await verifyRes.json();
+      const ok =
+        verified.status === "success" &&
+        String(verified.data?.status || "").toLowerCase() === "successful" &&
+        Number(verified.data?.amount) === Number(subPay.amount);
+
+      if (!ok) return new Response("not successful", { status: 200 });
+
+      await activateSubscription(
+        admin,
+        subPay,
+        String(verified.data.id || txRef),
+        "Flutterwave webhook auto-verified"
+      );
+      return new Response("ok", { status: 200 });
+    }
+
+    // Legacy workspace payment_intents
     const { data: intent } = await admin
       .from("payment_intents")
       .select("*")
@@ -27,23 +63,23 @@ Deno.serve(async (req) => {
       .maybeSingle();
     if (!intent) return new Response("unknown", { status: 200 });
 
-    const eventId = payload?.data?.id ? `flw_wh_${payload.data.id}` : `flw_wh_${txRef}_${Date.now()}`;
-    const { error: dupErr } = await admin.from("payment_events").insert({
+    const eventId = payload?.data?.id
+      ? `flw_wh_${payload.data.id}`
+      : `flw_wh_${txRef}_${Date.now()}`;
+    await admin.from("payment_events").insert({
       workspace_id: intent.workspace_id,
       payment_intent_id: intent.id,
       event_type: "webhook",
       provider_event_id: eventId,
       payload,
     });
-    if (dupErr) {
-      // duplicate webhook
-      return new Response("duplicate", { status: 200 });
-    }
 
     if (intent.status === "successful") return new Response("already", { status: 200 });
 
     const verifyRes = await fetch(
-      `https://api.flutterwave.com/v3/transactions/verify_by_reference?tx_ref=${encodeURIComponent(txRef)}`,
+      `https://api.flutterwave.com/v3/transactions/verify_by_reference?tx_ref=${encodeURIComponent(
+        txRef
+      )}`,
       { headers: { Authorization: `Bearer ${flwSecret}` } }
     );
     const verified = await verifyRes.json();
@@ -51,7 +87,8 @@ Deno.serve(async (req) => {
       verified.status === "success" &&
       verified.data?.status === "successful" &&
       Number(verified.data?.amount) === Number(intent.amount) &&
-      String(verified.data?.currency).toUpperCase() === String(intent.currency).toUpperCase();
+      String(verified.data?.currency).toUpperCase() ===
+        String(intent.currency).toUpperCase();
 
     if (!ok) return new Response("not successful", { status: 200 });
 

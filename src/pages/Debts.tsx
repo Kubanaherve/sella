@@ -17,7 +17,6 @@ import {
   Check,
   Users,
   Trash2,
-  Download,
   FileText,
   List,
   X,
@@ -28,9 +27,10 @@ import { ListPageSkeleton } from "@/components/ListPageSkeleton";
 import { hapticSuccess } from "@/lib/haptics";
 import {
   buildDebtWhatsAppMessage,
+  debtReportPdfBlob,
   downloadDebtReportPdf,
-  downloadInvoicePdf,
   formatItemsParen,
+  invoicePdfBlob,
   type InvoiceData,
   type InvoiceLine,
 } from "@/lib/invoicePdf";
@@ -41,8 +41,10 @@ import {
   shareDebtReminderNative,
   type ReminderStatus,
 } from "@/lib/whatsappReminder";
+import { printPdfBlob, sharePdfBlob } from "@/lib/sharePdf";
 import { WhatsAppReminderOverlay } from "@/components/WhatsAppReminderOverlay";
 import { BrandMark } from "@/components/BrandMark";
+import { GlassDocPreviewModal } from "@/components/GlassDocPreviewModal";
 
 interface Customer {
   id: string;
@@ -90,6 +92,10 @@ const DebtsPage = () => {
     today: string;
   } | null>(null);
   const [clientInvoicePreview, setClientInvoicePreview] = useState(false);
+  const [previewPdfUrl, setPreviewPdfUrl] = useState<string | null>(null);
+  const [previewBlob, setPreviewBlob] = useState<Blob | null>(null);
+  const [previewFileName, setPreviewFileName] = useState("sella.pdf");
+  const [previewLoading, setPreviewLoading] = useState(false);
   const [reminderStatus, setReminderStatus] = useState<ReminderStatus>("idle");
   const [reminderError, setReminderError] = useState<string | null>(null);
   const [reminderCustomerName, setReminderCustomerName] = useState<string | null>(
@@ -250,19 +256,141 @@ const DebtsPage = () => {
     }
   };
 
+  const revokePreviewUrl = useCallback(() => {
+    setPreviewPdfUrl((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
+    setPreviewBlob(null);
+  }, []);
+
+  const statementOptsFromList = (list: Customer[], today: string, grandTotal: number) => ({
+    shopName: String(shopName),
+    shopPhone: String(shopPhone || ""),
+    shopEmail,
+    shopLocation: "Kigali, Rwanda",
+    shopPayPhone: String(payPhone || shopPhone || ""),
+    reportDate: today,
+    generatedAtIso: new Date().toISOString(),
+    grandTotal,
+    language: getAppLanguage(),
+    rows: list.map((c) => {
+      const original = Number(c.total_amount ?? c.amount ?? 0);
+      const remaining = Number(c.amount || 0);
+      const paid = Math.max(0, original - remaining);
+      return {
+        name: c.name || "—",
+        phone: c.phone,
+        createdAt: c.created_at,
+        dueDate: c.due_date,
+        originalAmount: original,
+        paidAmount: paid,
+        remainingAmount: remaining,
+        status:
+          remaining <= 0
+            ? ("paid" as const)
+            : paid > 0
+              ? ("partial" as const)
+              : ("credit" as const),
+        lines: c.line_items.length
+          ? c.line_items
+          : [
+              {
+                name: parseItems(c.items),
+                quantity: 1,
+                unitPrice: remaining,
+                takenAt: c.created_at,
+              },
+            ],
+      };
+    }),
+  });
+
   const openPdfPreview = async () => {
+    setPreviewLoading(true);
+    revokePreviewUrl();
     try {
       const debts = await listActiveDebts();
       const list = debts.map(mapDebtToCustomer);
       const grandTotal = list.reduce((sum, c) => sum + Number(c.amount || 0), 0);
-      const today = new Date().toLocaleDateString("fr-RW", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      });
+      const today = new Date().toLocaleDateString(
+        getAppLanguage() === "en" ? "en-GB" : "fr-RW",
+        { year: "numeric", month: "long", day: "numeric" }
+      );
       setPdfPreview({ list, grandTotal, today });
+      const fileName = `ideni-sella-${new Date().toISOString().split("T")[0]}.pdf`;
+      setPreviewFileName(fileName);
+      const blob = await debtReportPdfBlob(
+        statementOptsFromList(list, today, grandTotal)
+      );
+      setPreviewBlob(blob);
+      setPreviewPdfUrl(URL.createObjectURL(blob));
     } catch {
       toast.error("Habaye ikosa mu gutegura preview");
+      setPdfPreview(null);
+    } finally {
+      setPreviewLoading(false);
+    }
+  };
+
+  const openClientInvoicePreview = async (customer: Customer) => {
+    setSelectedCustomer(customer);
+    setClientInvoicePreview(true);
+    setPreviewLoading(true);
+    revokePreviewUrl();
+    try {
+      const invoice = invoiceFromCustomer(customer);
+      const fileName = `invoice-sella-${invoice.invoiceNumber.replace(/[^\w-]+/g, "")}.pdf`;
+      setPreviewFileName(fileName);
+      const blob = await invoicePdfBlob(invoice);
+      setPreviewBlob(blob);
+      setPreviewPdfUrl(URL.createObjectURL(blob));
+    } catch {
+      toast.error("Habaye ikosa mu gutegura preview");
+      setClientInvoicePreview(false);
+    } finally {
+      setPreviewLoading(false);
+    }
+  };
+
+  const closeStatementPreview = () => {
+    setPdfPreview(null);
+    revokePreviewUrl();
+  };
+
+  const closeInvoicePreview = () => {
+    setClientInvoicePreview(false);
+    revokePreviewUrl();
+  };
+
+  const sendPreviewPdf = async () => {
+    if (!previewBlob) return toast.error("PDF ntirateguwe");
+    setIsDownloading(true);
+    try {
+      const result = await sharePdfBlob({
+        blob: previewBlob,
+        fileName: previewFileName,
+        title: "Sella PDF",
+        text: `${shopName} · ${previewFileName}`,
+      });
+      if (result === "shared") toast.success("PDF yoherejwe");
+      else if (result === "downloaded") toast.success("PDF yamanitswe");
+    } catch {
+      toast.error("Kohereza byanze");
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  const printPreviewPdf = async () => {
+    if (!previewBlob) return toast.error("PDF ntirateguwe");
+    setIsDownloading(true);
+    try {
+      await printPdfBlob(previewBlob);
+    } catch {
+      toast.error("Printinga byanze");
+    } finally {
+      setIsDownloading(false);
     }
   };
 
@@ -290,48 +418,12 @@ const DebtsPage = () => {
       }
 
       await downloadDebtReportPdf(
-        {
-          shopName: String(shopName),
-          shopPhone: String(shopPhone || ""),
-          shopEmail,
-          shopLocation: "Kigali, Rwanda",
-          shopPayPhone: String(payPhone || shopPhone || ""),
-          reportDate: today,
-          generatedAtIso: new Date().toISOString(),
-          grandTotal,
-          language: getAppLanguage(),
-          rows: list.map((c) => {
-            const original = Number(c.total_amount ?? c.amount ?? 0);
-            const remaining = Number(c.amount || 0);
-            const paid = Math.max(0, original - remaining);
-            return {
-              name: c.name || "—",
-              phone: c.phone,
-              createdAt: c.created_at,
-              dueDate: c.due_date,
-              originalAmount: original,
-              paidAmount: paid,
-              remainingAmount: remaining,
-              status:
-                remaining <= 0 ? "paid" : paid > 0 ? "partial" : "credit",
-              lines: c.line_items.length
-                ? c.line_items
-                : [
-                    {
-                      name: parseItems(c.items),
-                      quantity: 1,
-                      unitPrice: remaining,
-                      takenAt: c.created_at,
-                    },
-                  ],
-            };
-          }),
-        },
+        statementOptsFromList(list, today, grandTotal),
         `ideni-sella-${new Date().toISOString().split("T")[0]}.pdf`
       );
 
       toast.success(`PDF y'abakiriya ${list.length} yamanitswe!`);
-      setPdfPreview(null);
+      closeStatementPreview();
     } catch (err) {
       console.error("PDF error:", err);
       toast.error("Habaye ikosa mu gutegura PDF");
@@ -469,9 +561,22 @@ const DebtsPage = () => {
   const downloadClientInvoice = async (customer: Customer) => {
     setIsDownloading(true);
     try {
-      await downloadInvoicePdf(invoiceFromCustomer(customer));
-      toast.success("Invoice PDF yamanitswe");
-      setClientInvoicePreview(false);
+      if (previewBlob) {
+        await sharePdfBlob({
+          blob: previewBlob,
+          fileName: previewFileName,
+          title: "Sella Invoice",
+        });
+      } else {
+        const blob = await invoicePdfBlob(invoiceFromCustomer(customer));
+        await sharePdfBlob({
+          blob,
+          fileName: `invoice-sella-${customer.id.slice(0, 8)}.pdf`,
+          title: "Sella Invoice",
+        });
+      }
+      toast.success("Invoice PDF yoherejwe / yamanitswe");
+      closeInvoicePreview();
     } catch (e) {
       console.error(e);
       toast.error("Ntibashoboye gutegura PDF");
@@ -485,7 +590,7 @@ const DebtsPage = () => {
       toast.warning("Ntushobora kohereza ubutumwa kuri uyu mukiriya mbere yo kwishyura.");
     }
     // Close stacked overlays first so Kwishyura isn't trapped under the debt card
-    setClientInvoicePreview(false);
+    closeInvoicePreview();
     setSelectedCustomer(customer);
     setPaymentModalOpen(true);
   };
@@ -538,7 +643,7 @@ const DebtsPage = () => {
       toast.success("Byashyizweho neza");
       setPaymentModalOpen(false);
       setSelectedCustomer(null);
-      setClientInvoicePreview(false);
+      closeInvoicePreview();
       fetchCustomers(1, searchQuery);
       setPage(1);
 
@@ -602,10 +707,10 @@ const DebtsPage = () => {
             <Button
               onClick={() => navigate("/new-sale")}
               size="sm"
-              className="btn-navy h-8 px-3 text-xs"
+              className="btn-navy h-8 px-2.5 text-xs max-w-[9.5rem]"
             >
-              <Plus size={14} className="mr-1" />
-              {labels.addNew}
+              <Plus size={14} className="mr-1 shrink-0" />
+              <span className="truncate">Ongera</span>
             </Button>
           </div>
         }
@@ -624,25 +729,25 @@ const DebtsPage = () => {
           className="pl-3 bg-white border-slate-200 input-glow"
         />
 
-        <div className="rounded-2xl p-4 flex items-center justify-between shadow-navy text-white bg-gradient-to-br from-[#0b4fd9] to-[#1a6fff]">
-          <div>
+        <div className="glass-card-dark relative rounded-2xl p-4 flex items-center justify-between">
+          <div className="relative z-10">
             <p className="text-xs text-white/75">{labels.totalDebt}</p>
-            <p className="text-xl font-bold tabular-nums">
+            <p className="text-xl font-bold tabular-nums text-white">
               {formatCurrency(totalUnpaid)}
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="relative z-10 flex items-center gap-3">
             <button
               type="button"
               onClick={() => void openPdfPreview()}
               disabled={isDownloading}
-              className="flex items-center gap-1 text-xs text-white/85 hover:text-white transition-colors bg-white/15 rounded-full px-2.5 py-1.5"
+              className="flex items-center gap-1 text-xs text-white/90 hover:text-white transition-colors bg-white/15 rounded-full px-2.5 py-1.5 border border-white/20 backdrop-blur-md"
               title="Reba PDF mbere"
             >
               <FileText size={14} />
               <span className="text-[11px]">PDF</span>
             </button>
-            <div className="flex items-center gap-1 text-white/80">
+            <div className="flex items-center gap-1 text-white/85">
               <Users size={16} />
               <span className="text-sm">{customers.length}</span>
             </div>
@@ -665,7 +770,7 @@ const DebtsPage = () => {
               <button
                 type="button"
                 key={customer.id}
-                className="w-full text-left rounded-2xl border border-border bg-white p-4 shadow-sm active:scale-[0.99] transition-transform"
+                className="sella-list-card w-full text-left p-4 active:scale-[0.99] transition-transform"
                 onClick={() => setSelectedCustomer(customer)}
               >
                 <div className="flex items-center gap-3">
@@ -702,40 +807,42 @@ const DebtsPage = () => {
       {selectedCustomer && !paymentModalOpen && (
         <div className="fixed inset-0 z-[100] sella-overlay flex items-center justify-center p-4">
           <div
-            className="bg-white rounded-[28px] w-full max-w-[380px] aspect-auto max-h-[min(92vh,640px)] shadow-2xl animate-scale-in overflow-hidden flex flex-col relative z-10 border border-white/40"
+            className="sella-popup-glass rounded-[28px] w-full max-w-[380px] aspect-auto max-h-[min(92vh,640px)] animate-scale-in flex flex-col relative z-10"
             role="dialog"
             aria-modal="true"
           >
-            <div className="bg-gradient-to-br from-[#0b4fd9] to-[#1a6fff] px-5 pt-5 pb-4 text-white relative shrink-0">
+            <div className="sella-popup-header-glass px-5 pt-5 pb-4 relative shrink-0">
               <button
                 type="button"
                 onClick={() => {
                   setSelectedCustomer(null);
-                  setClientInvoicePreview(false);
+                  closeInvoicePreview();
                 }}
-                className="absolute right-3 top-3 w-9 h-9 rounded-[10px] bg-white/20 flex items-center justify-center text-white"
+                className="absolute right-3 top-3 z-10 w-9 h-9 rounded-full bg-white/20 border border-white/30 flex items-center justify-center text-white backdrop-blur-md"
                 aria-label="Funga"
               >
                 <X size={18} strokeWidth={2.5} />
               </button>
-              <div className="flex items-center gap-2 mb-2">
+              <div className="relative z-10 flex items-center gap-2 mb-2">
                 <BrandMark variant="icon" size="xs" framed={false} />
                 <p className="text-xs text-white/80 font-medium">Umukiriya · Ideni</p>
               </div>
-              <h2 className="text-xl font-bold truncate pr-10">{selectedCustomer.name}</h2>
-              <p className="text-3xl font-extrabold tabular-nums mt-2 text-amber-100">
+              <h2 className="relative z-10 text-xl font-bold truncate pr-10">
+                {selectedCustomer.name}
+              </h2>
+              <p className="relative z-10 text-3xl font-extrabold tabular-nums mt-2 text-amber-100">
                 {formatCurrency(selectedCustomer.amount)}
               </p>
-              <span className="inline-flex mt-2 text-[10px] font-bold uppercase tracking-wide bg-amber-400 text-amber-950 px-2.5 py-1 rounded-[8px]">
+              <span className="relative z-10 inline-flex mt-2 text-[10px] font-bold uppercase tracking-wide bg-white/20 border border-white/30 text-white px-2.5 py-1 rounded-full backdrop-blur-md">
                 Ideni
               </span>
-              <p className="text-[10px] text-white/70 mt-2">
+              <p className="relative z-10 text-[10px] text-white/70 mt-2">
                 Yafashe: {formatDate(selectedCustomer.created_at)}
               </p>
             </div>
 
-            <div className="px-4 py-3 space-y-3 overflow-y-auto flex-1 bg-white">
-              <div className="rounded-2xl bg-amber-50 border border-amber-100 p-3 space-y-1 text-[13px]">
+            <div className="relative z-10 px-4 py-3 space-y-3 overflow-y-auto flex-1">
+              <div className="rounded-2xl bg-white/50 border border-white/70 p-3 space-y-1 text-[13px] backdrop-blur-sm">
                 <p>
                   <span className="text-amber-800/70 font-medium">Ibyafashe: </span>
                   <span className="font-semibold text-slate-900">
@@ -819,7 +926,7 @@ const DebtsPage = () => {
               {/* Mini invoice preview */}
               <button
                 type="button"
-                onClick={() => setClientInvoicePreview(true)}
+                onClick={() => void openClientInvoicePreview(selectedCustomer)}
                 className="w-full text-left rounded-2xl border border-slate-200 overflow-hidden shadow-sm active:scale-[0.99]"
               >
                 <div className="bg-[#0B4FD9] px-3 py-2.5 flex items-center justify-between text-white">
@@ -879,284 +986,41 @@ const DebtsPage = () => {
         </div>
       )}
 
-      {/* Full invoice preview before download / WhatsApp */}
-      {selectedCustomer && clientInvoicePreview && (
-        <div className="fixed inset-0 z-[110] sella-overlay flex items-center justify-center p-4">
-          <div className="bg-slate-100 rounded-[24px] w-full max-w-md max-h-[92vh] shadow-2xl overflow-hidden flex flex-col">
-            <div className="bg-white px-4 py-3 border-b border-border flex items-center justify-between">
-              <div>
-                <h3 className="font-bold">Preview ya Invoice</h3>
-                <p className="text-[11px] text-muted-foreground">
-                  Uko PDF izagaragara · Generated by Sella
-                </p>
-              </div>
-              <button
-                type="button"
-                className="w-9 h-9 rounded-[10px] bg-muted flex items-center justify-center"
-                onClick={() => setClientInvoicePreview(false)}
-              >
-                <X size={18} />
-              </button>
-            </div>
-            <div className="flex-1 overflow-y-auto p-4">
-              <div className="bg-white rounded-sm shadow border border-slate-200 overflow-hidden mx-auto max-w-sm">
-                <div className="bg-[#0B4FD9] text-white px-3 py-4 flex items-start justify-between">
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <BrandMark variant="icon" size="xs" framed={false} />
-                      <span className="font-extrabold text-lg tracking-tight">INVOICE</span>
-                    </div>
-                    <p className="text-[10px] text-blue-100">Sella</p>
-                  </div>
-                  <p className="text-[10px] text-right text-blue-100">
-                    NO: INV-{selectedCustomer.id.slice(0, 8).toUpperCase()}
-                  </p>
-                </div>
-                <div className="grid grid-cols-2 gap-2 px-3 py-3 text-[11px] border-b border-slate-100">
-                  <div>
-                    <p className="font-bold text-slate-700">Bill To:</p>
-                    <p className="text-slate-600">{selectedCustomer.name}</p>
-                    <p className="text-slate-500">{selectedCustomer.phone}</p>
-                  </div>
-                  <div>
-                    <p className="font-bold text-slate-700">From:</p>
-                    <p className="text-slate-600">{shopName}</p>
-                    <p className="text-slate-500">{payPhone}</p>
-                  </div>
-                </div>
-                <p className="px-3 text-[10px] text-slate-500 pb-2">
-                  Date: {formatDate(selectedCustomer.created_at)}
-                </p>
-                <div className="bg-[#0B4FD9] text-white grid grid-cols-4 px-2 py-1.5 text-[9px] font-bold">
-                  <span className="col-span-2">Description</span>
-                  <span className="text-center">Qty</span>
-                  <span className="text-right">Total</span>
-                </div>
-                {(selectedCustomer.line_items.length
-                  ? selectedCustomer.line_items
-                  : [
-                      {
-                        name: selectedCustomer.items || "Ideni",
-                        quantity: 1,
-                        unitPrice: selectedCustomer.amount || 0,
-                      },
-                    ]
-                ).map((l, i) => (
-                  <div
-                    key={i}
-                    className="grid grid-cols-4 px-2 py-2 text-[10px] border-b border-slate-100 gap-1"
-                  >
-                    <span className="col-span-2 truncate">{l.name}</span>
-                    <span className="text-center">{l.quantity}</span>
-                    <span className="text-right font-semibold">
-                      {formatCurrency(l.unitPrice * l.quantity)}
-                    </span>
-                  </div>
-                ))}
-                <div className="flex justify-end p-3">
-                  <div className="bg-[#0B4FD9] text-white text-xs font-bold px-3 py-2 rounded-md">
-                    Sub Total {formatCurrency(selectedCustomer.amount)}
-                  </div>
-                </div>
-                <div className="px-3 pb-2 text-[10px] text-slate-600">
-                  <p className="font-bold">Kwishyura (MoMo): {payPhone}</p>
-                  <p className="text-right text-[#0B4FD9] font-bold text-sm mt-2">
-                    Murakoze kugana {shopName}
-                  </p>
-                </div>
-                <p className="text-center text-[9px] text-slate-400 border-t border-slate-100 py-2">
-                  Generated by Sella
-                </p>
-              </div>
-            </div>
-            <div className="bg-white border-t border-border px-4 py-3 flex gap-2">
-              <button
-                type="button"
-                className="flex-1 h-[52px] rounded-2xl border border-border font-bold text-sm"
-                onClick={() => setClientInvoicePreview(false)}
-              >
-                Subira
-              </button>
-              <button
-                type="button"
-                className="sella-btn-confirm flex-[1.3]"
-                disabled={isDownloading}
-                onClick={() => void downloadClientInvoice(selectedCustomer)}
-              >
-                <Download size={16} />
-                {isDownloading ? "…" : "Manura PDF"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Invoice preview — glass sheet fitted to device */}
+      <GlassDocPreviewModal
+        open={!!selectedCustomer && clientInvoicePreview}
+        onClose={closeInvoicePreview}
+        title="Preview ya Invoice"
+        subtitle="Uko PDF izagaragara ku telephone yawe"
+        pdfUrl={previewPdfUrl}
+        loading={previewLoading}
+        busy={isDownloading}
+        sendLabel="Send"
+        printLabel="Print"
+        onSend={() => {
+          if (selectedCustomer) void downloadClientInvoice(selectedCustomer);
+        }}
+        onPrint={() => void printPreviewPdf()}
+      />
 
-      {/* PDF preview before download — mirrors glass debtors statement */}
-      {pdfPreview && (
-        <div className="fixed inset-0 z-[60] sella-overlay flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <div className="w-full sm:max-w-lg max-h-[92vh] rounded-t-3xl sm:rounded-3xl shadow-xl flex flex-col overflow-hidden animate-fade-in bg-gradient-to-br from-sky-100 via-violet-100 to-cyan-100">
-            <div className="bg-white/90 backdrop-blur px-4 py-3 border-b border-white/60 flex items-center justify-between">
-              <div>
-                <h2 className="font-bold">Preview ya PDF</h2>
-                <p className="text-[11px] text-muted-foreground">
-                  Inyandiko y&apos;abadenyi · urutonde rwuzuye
-                </p>
-              </div>
-              <button
-                type="button"
-                className="w-8 h-8 rounded-full bg-muted flex items-center justify-center"
-                onClick={() => setPdfPreview(null)}
-                aria-label="Close"
-              >
-                <X size={16} />
-              </button>
-            </div>
-
-            <div className="flex-1 overflow-y-auto p-3 sm:p-4">
-              <div className="mx-auto max-w-md rounded-2xl bg-white/95 border border-sky-100 shadow-lg overflow-hidden">
-                <div className="px-4 pt-4 pb-3 border-b border-sky-100 flex items-start gap-3">
-                  <BrandMark variant="icon" size="sm" />
-                  <div className="min-w-0 flex-1">
-                    <p className="font-bold text-[#0b4fd9] truncate text-base">
-                      {String(shopName)}
-                    </p>
-                    <p className="text-[11px] text-sky-600/80">
-                      Inyandiko y&apos;Abadenyi
-                    </p>
-                    <p className="text-[10px] text-slate-500 mt-0.5">
-                      {pdfPreview.today}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="px-4 py-2.5 text-[11px] text-slate-600 space-y-0.5 border-b border-slate-100">
-                  {shopPhone ? <p>Telefone: {String(shopPhone)}</p> : null}
-                  {shopEmail ? <p>Email: {shopEmail}</p> : null}
-                  <p className="font-semibold text-[#0b4fd9] bg-sky-50 rounded-lg px-2 py-1.5 mt-1">
-                    Numero yo kwishyura (shop): {String(payPhone)}
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-3 gap-2 p-3 border-b border-slate-100">
-                  <div className="rounded-xl bg-slate-50 p-2.5 text-center">
-                    <p className="text-[9px] text-slate-500 uppercase tracking-wide">
-                      Abadenyi
-                    </p>
-                    <p className="font-bold text-sm tabular-nums">
-                      {pdfPreview.list.length}
-                    </p>
-                  </div>
-                  <div className="rounded-xl bg-rose-50 p-2.5 text-center col-span-2">
-                    <p className="text-[9px] text-rose-500 uppercase tracking-wide">
-                      Ideni ryose
-                    </p>
-                    <p className="font-bold text-sm text-rose-700 tabular-nums">
-                      {formatCurrency(pdfPreview.grandTotal)}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="divide-y divide-slate-100">
-                  {pdfPreview.list.slice(0, 8).map((c, i) => {
-                    const original = Number(c.total_amount ?? c.amount ?? 0);
-                    const remaining = Number(c.amount || 0);
-                    const paid = Math.max(0, original - remaining);
-                    return (
-                      <div key={c.id} className="px-3 py-3 text-[11px]">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="min-w-0">
-                            <p className="font-semibold text-slate-900 truncate">
-                              {i + 1}. {c.name}
-                            </p>
-                            <p className="text-slate-500">
-                              Telefone y&apos;umukiriya: {c.phone || "—"}
-                            </p>
-                          </div>
-                          <span
-                            className={`shrink-0 text-[9px] font-bold uppercase px-2 py-0.5 rounded-full ${
-                              paid > 0
-                                ? "bg-amber-100 text-amber-800"
-                                : "bg-sky-100 text-sky-800"
-                            }`}
-                          >
-                            {paid > 0 ? "Igice" : "Ideni"}
-                          </span>
-                        </div>
-                        <p className="text-slate-600 mt-1.5 leading-snug">
-                          {c.line_items.length
-                            ? c.line_items
-                                .map(
-                                  (l) =>
-                                    `${l.name} ×${l.quantity} (${formatCurrency(l.unitPrice)})`
-                                )
-                                .join(" · ")
-                            : parseItems(c.items)}
-                        </p>
-                        <div className="mt-2 grid grid-cols-3 gap-1 text-[10px]">
-                          <div>
-                            <p className="text-slate-400">Byose</p>
-                            <p className="font-semibold tabular-nums">
-                              {formatCurrency(original)}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-slate-400">Yishyuwe</p>
-                            <p className="font-semibold tabular-nums">
-                              {formatCurrency(paid)}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-slate-400">Asigaye</p>
-                            <p className="font-bold text-rose-600 tabular-nums">
-                              {formatCurrency(remaining)}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                  {pdfPreview.list.length > 8 && (
-                    <p className="px-3 py-2.5 text-[11px] text-slate-500 text-center">
-                      … n&apos;andi {pdfPreview.list.length - 8} mu PDF yuzuye
-                      (urupapuro, tables, summary)
-                    </p>
-                  )}
-                </div>
-
-                <div className="bg-slate-50 px-3 py-3 border-t border-slate-100 space-y-1">
-                  <div className="flex justify-between text-xs font-bold text-rose-700">
-                    <span>Ideni ryose</span>
-                    <span className="tabular-nums">
-                      {formatCurrency(pdfPreview.grandTotal)}
-                    </span>
-                  </div>
-                  <p className="text-[9px] text-slate-400 text-right">
-                    Generated by Sella
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white/95 border-t border-border px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] flex gap-2">
-              <Button
-                variant="outline"
-                className="flex-1 h-11"
-                onClick={() => setPdfPreview(null)}
-              >
-                Hagarika
-              </Button>
-              <Button
-                className="flex-[1.4] h-11 btn-navy font-bold gap-1.5"
-                disabled={isDownloading}
-                onClick={() => void downloadFullList(pdfPreview)}
-              >
-                <Download size={16} />
-                {isDownloading ? "…" : "Manura PDF"}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Debtors statement preview — glass sheet fitted to device */}
+      <GlassDocPreviewModal
+        open={!!pdfPreview}
+        onClose={closeStatementPreview}
+        title="Preview ya PDF"
+        subtitle={
+          pdfPreview
+            ? `Inyandiko y'abadenyi · ${pdfPreview.list.length} · ${pdfPreview.today}`
+            : "Inyandiko y'abadenyi"
+        }
+        pdfUrl={previewPdfUrl}
+        loading={previewLoading}
+        busy={isDownloading}
+        sendLabel="Send"
+        printLabel="Print"
+        onSend={() => void sendPreviewPdf()}
+        onPrint={() => void printPreviewPdf()}
+      />
 
       {/* ── Payment modal ── */}
       {selectedCustomer && paymentModalOpen && (

@@ -15,11 +15,13 @@ export function useCustomerSuggestions() {
       try {
         const data = await listClients();
         const uniqueCustomers = data.reduce((acc, customer) => {
+          const name = String(customer?.name || "").trim();
+          if (!name) return acc;
           const existing = acc.find(
-            (c) => c.name.toLowerCase() === customer.name.toLowerCase()
+            (c) => c.name.toLowerCase() === name.toLowerCase()
           );
           if (!existing) {
-            acc.push({ name: customer.name, phone: customer.phone });
+            acc.push({ name, phone: customer.phone ?? null });
           }
           return acc;
         }, [] as CustomerSuggestion[]);

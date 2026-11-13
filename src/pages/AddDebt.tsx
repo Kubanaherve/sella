@@ -40,11 +40,11 @@ type CartLine = {
 
 type Step = "cart" | "checkout";
 
-const METHODS: { value: PaymentMethod; label: string }[] = [
-  { value: "cash", label: "Cash" },
-  { value: "momo", label: "MTN MoMo" },
-  { value: "airtel", label: "Airtel Money" },
-  { value: "bank", label: "Banki" },
+const METHODS: { value: PaymentMethod; label: string; short: string }[] = [
+  { value: "cash", label: "Cash", short: "Cash" },
+  { value: "momo", label: "MTN MoMo", short: "MoMo" },
+  { value: "airtel", label: "Airtel Money", short: "Airtel" },
+  { value: "bank", label: "Banki", short: "Banki" },
 ];
 
 const NewSalePage: React.FC = () => {
@@ -312,9 +312,11 @@ const NewSalePage: React.FC = () => {
     }
   };
 
+  const sheetOpen = catalogOpen || !!qtyItem || confirmOpen;
+
   return (
-    <div className="min-h-screen bg-[hsl(214_60%_98%)] flex flex-col">
-      <header className="sella-app-header">
+    <div className="min-h-[100dvh] max-h-[100dvh] bg-[hsl(214_60%_98%)] flex flex-col overflow-hidden">
+      <header className="sella-app-header shrink-0">
         <button
           type="button"
           onClick={() =>
@@ -350,7 +352,7 @@ const NewSalePage: React.FC = () => {
       )}
 
       {step === "cart" ? (
-        <main className="flex-1 px-3 py-3 space-y-3 pb-28">
+        <main className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-3 py-3 space-y-3 pb-4">
           <button
             type="button"
             onClick={() => {
@@ -382,7 +384,10 @@ const NewSalePage: React.FC = () => {
           ) : (
             <section className="rounded-2xl border border-border bg-white overflow-hidden divide-y divide-border">
               {cart.map((c) => (
-                <div key={c.id} className="p-3.5 flex items-center gap-3">
+                <div
+                  key={c.id}
+                  className="p-3.5 flex flex-wrap items-center gap-x-3 gap-y-2"
+                >
                   <div className="w-11 h-11 rounded-xl bg-primary/10 text-primary font-bold flex items-center justify-center shrink-0">
                     {c.name.slice(0, 1).toUpperCase()}
                   </div>
@@ -392,7 +397,7 @@ const NewSalePage: React.FC = () => {
                       {formatCurrency(c.unitPrice)} × {c.quantity}
                     </p>
                   </div>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 ml-auto">
                     <button
                       type="button"
                       className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center"
@@ -416,7 +421,7 @@ const NewSalePage: React.FC = () => {
                       <Plus size={14} />
                     </button>
                   </div>
-                  <div className="text-right min-w-[4.5rem]">
+                  <div className="text-right shrink-0 min-w-[4.5rem]">
                     <p className="text-sm font-bold tabular-nums">
                       {formatCurrency(lineTotal(c.unitPrice, c.quantity))}
                     </p>
@@ -434,7 +439,7 @@ const NewSalePage: React.FC = () => {
           )}
         </main>
       ) : (
-        <main className="flex-1 px-3 py-3 space-y-4 pb-36">
+        <main className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-3 py-3 space-y-4 pb-4">
           <section className="rounded-2xl border border-border bg-white p-3 space-y-2">
             <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
               Agatebo
@@ -482,7 +487,7 @@ const NewSalePage: React.FC = () => {
                 setCustomerName(c.name);
                 setCustomerPhone(c.phone || "");
               }}
-              customers={customers}
+              suggestions={customers}
               placeholder={labels.customerName}
             />
             <Input
@@ -537,7 +542,7 @@ const NewSalePage: React.FC = () => {
                           )
                         }
                         className={cn(
-                          "h-11 px-3 rounded-xl text-xs font-bold border-2 transition-transform active:scale-95",
+                          "h-11 px-2.5 sm:px-3 rounded-xl text-[11px] sm:text-xs font-bold border-2 transition-transform active:scale-95 shrink-0",
                           active ? "scale-[1.02] shadow-sm" : "opacity-55"
                         )}
                         style={{
@@ -546,7 +551,8 @@ const NewSalePage: React.FC = () => {
                           borderColor: active ? style.border : "transparent",
                         }}
                       >
-                        {m.label}
+                        <span className="sm:hidden">{m.short}</span>
+                        <span className="hidden sm:inline">{m.label}</span>
                       </button>
                     );
                   })}
@@ -626,72 +632,78 @@ const NewSalePage: React.FC = () => {
         </main>
       )}
 
-      {/* Bottom bar */}
-      <div className="sella-fixed-bottom-bar">
-        {step === "cart" ? (
-          <button
-            type="button"
-            className="sella-btn-confirm text-base"
-            disabled={!cart.length}
-            onClick={() => {
-              void hapticLight();
-              setStep("checkout");
-            }}
-          >
-            <ShoppingCart size={18} />
-            Komeza kwishyura · {formatCurrency(merchandise)}
-          </button>
-        ) : (
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              className="h-[52px] flex-1 rounded-2xl"
-              onClick={() => setStep("cart")}
-            >
-              {labels.back}
-            </Button>
+      {/* Bottom bar — sticky in flex column so it stays in the viewport */}
+      {!sheetOpen && (
+        <div className="sella-fixed-bottom-bar">
+          {step === "cart" ? (
             <button
               type="button"
-              className="sella-btn-confirm flex-[1.5] text-base"
-              disabled={saving || !cart.length}
-              onClick={requestConfirm}
+              className="sella-btn-confirm text-base px-3"
+              disabled={!cart.length}
+              onClick={() => {
+                void hapticLight();
+                setStep("checkout");
+              }}
             >
-              <Check size={18} />
-              {saving
-                ? labels.saving
-                : `Emeza Kwishyura · ${formatCurrency(orderTotal)}`}
+              <ShoppingCart size={18} className="shrink-0" />
+              <span className="truncate">
+                Komeza · {formatCurrency(merchandise)}
+              </span>
             </button>
-          </div>
-        )}
-      </div>
+          ) : (
+            <div className="flex gap-2 min-w-0">
+              <Button
+                variant="outline"
+                className="h-[52px] flex-1 rounded-2xl shrink-0"
+                onClick={() => setStep("cart")}
+              >
+                {labels.back}
+              </Button>
+              <button
+                type="button"
+                className="sella-btn-confirm flex-[1.6] text-sm sm:text-base px-2 min-w-0"
+                disabled={saving || !cart.length}
+                onClick={requestConfirm}
+              >
+                <Check size={18} className="shrink-0" />
+                <span className="truncate">
+                  {saving
+                    ? labels.saving
+                    : `Emeza · ${formatCurrency(orderTotal)}`}
+                </span>
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Catalog popup */}
       {catalogOpen && (
         <div className="fixed inset-0 z-[70] sella-overlay flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <div className="w-full sm:max-w-lg max-h-[min(88dvh,100%)] bg-white rounded-t-3xl sm:rounded-3xl shadow-xl flex flex-col overflow-hidden animate-fade-in">
-            <div className="sella-sheet-top px-4 pb-3 border-b border-border flex items-center justify-between gap-2">
+          <div className="sella-sheet-glass w-full sm:max-w-lg h-[min(92dvh,100%)] rounded-t-3xl sm:rounded-3xl animate-fade-in">
+            <div className="sella-sheet-top px-4 pb-3 border-b border-[#1A6FFF]/10 flex items-center justify-between gap-2">
               <div>
-                <h2 className="font-bold text-lg">Ibicuruzwa</h2>
+                <h2 className="font-bold text-lg text-[#0B3FCC]">Ibicuruzwa</h2>
                 <p className="text-[11px] text-muted-foreground">
                   Hitamo ikintu · shyira umubare
                 </p>
               </div>
               <button
                 type="button"
-                className="w-9 h-9 rounded-full bg-muted flex items-center justify-center"
+                className="w-9 h-9 rounded-full sella-btn-glass"
                 onClick={() => setCatalogOpen(false)}
               >
                 <X size={18} />
               </button>
             </div>
-            <div className="px-4 py-3 space-y-2 border-b border-border">
+            <div className="px-4 py-3 space-y-2 border-b border-[#1A6FFF]/10">
               <div className="relative">
                 <Search
                   size={16}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-[#0B3FCC]/55"
                 />
                 <Input
-                  className="pl-9 h-11"
+                  className="sella-input-glass pl-9 h-11"
                   placeholder={labels.searchProducts}
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
@@ -706,10 +718,8 @@ const NewSalePage: React.FC = () => {
                       type="button"
                       onClick={() => setCategory(c)}
                       className={cn(
-                        "shrink-0 text-xs font-semibold px-3 py-1.5 rounded-full border",
-                        category === c
-                          ? "bg-primary text-white border-primary"
-                          : "bg-white border-border text-foreground"
+                        "sella-chip-glass shrink-0",
+                        category === c && "sella-chip-glass-active"
                       )}
                     >
                       {c === "all" ? labels.allCategories : c}
@@ -801,11 +811,11 @@ const NewSalePage: React.FC = () => {
       {/* Quantity popup */}
       {qtyItem && (
         <div className="fixed inset-0 z-[80] sella-overlay flex items-center justify-center p-4">
-          <div className="w-full max-w-sm bg-white rounded-3xl shadow-xl p-5 space-y-4 animate-scale-in">
-            <div className="flex items-start justify-between gap-2">
+          <div className="sella-popup-glass w-full max-w-sm rounded-3xl p-5 space-y-4 animate-scale-in">
+            <div className="relative z-10 flex items-start justify-between gap-2">
               <div>
                 <p className="text-xs text-muted-foreground">Umubare</p>
-                <h3 className="font-bold text-lg leading-tight">
+                <h3 className="font-bold text-lg leading-tight text-[#0B3FCC]">
                   {qtyItem.item_name}
                 </h3>
                 <p className="text-sm text-primary font-semibold mt-0.5">
@@ -814,16 +824,16 @@ const NewSalePage: React.FC = () => {
               </div>
               <button
                 type="button"
-                className="w-8 h-8 rounded-full bg-muted flex items-center justify-center"
+                className="w-8 h-8 rounded-full sella-btn-glass"
                 onClick={() => setQtyItem(null)}
               >
                 <X size={16} />
               </button>
             </div>
-            <div className="flex items-center justify-center gap-4 py-2">
+            <div className="relative z-10 flex items-center justify-center gap-4 py-2">
               <button
                 type="button"
-                className="w-12 h-12 rounded-2xl bg-muted flex items-center justify-center"
+                className="w-12 h-12 rounded-2xl sella-btn-glass"
                 onClick={() => setQtyDraft((q) => Math.max(1, q - 1))}
               >
                 <Minus size={20} />
@@ -840,7 +850,7 @@ const NewSalePage: React.FC = () => {
               />
               <button
                 type="button"
-                className="w-12 h-12 rounded-2xl bg-primary text-white flex items-center justify-center"
+                className="w-12 h-12 rounded-2xl sella-btn-glass-solid"
                 onClick={() =>
                   setQtyDraft((q) => Math.min(qtyItem.quantity, q + 1))
                 }
@@ -848,7 +858,7 @@ const NewSalePage: React.FC = () => {
                 <Plus size={20} />
               </button>
             </div>
-            <p className="text-center text-xs text-muted-foreground">
+            <p className="relative z-10 text-center text-xs text-muted-foreground">
               Max {qtyItem.quantity} · Igiteranyo{" "}
               <span className="font-bold text-foreground">
                 {formatCurrency(
@@ -856,24 +866,26 @@ const NewSalePage: React.FC = () => {
                 )}
               </span>
             </p>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="relative z-10 grid grid-cols-3 gap-2">
               {[1, 2, 3, 5, 10].filter((n) => n <= qtyItem.quantity).map((n) => (
                 <button
                   key={n}
                   type="button"
                   onClick={() => setQtyDraft(n)}
                   className={cn(
-                    "h-10 rounded-xl text-sm font-bold border",
-                    qtyDraft === n
-                      ? "bg-primary text-white border-primary"
-                      : "bg-muted/60 border-transparent"
+                    "sella-chip-glass h-10 justify-center",
+                    qtyDraft === n && "sella-chip-glass-active"
                   )}
                 >
                   {n}
                 </button>
               ))}
             </div>
-            <button type="button" className="sella-btn-confirm" onClick={confirmQty}>
+            <button
+              type="button"
+              className="relative z-10 sella-btn-confirm"
+              onClick={confirmQty}
+            >
               <Plus size={18} /> Ongeraho mu gatebo
             </button>
           </div>
@@ -883,18 +895,20 @@ const NewSalePage: React.FC = () => {
       {/* Perfect confirmation */}
       {confirmOpen && (
         <div className="fixed inset-0 z-[85] sella-overlay flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <div className="w-full sm:max-w-md bg-white rounded-t-3xl sm:rounded-3xl shadow-xl overflow-hidden animate-fade-in">
-            <div className="bg-gradient-to-br from-[#0b4fd9] to-[#1a6fff] px-5 pt-5 pb-4 text-white">
-              <p className="text-xs text-white/75 font-medium">Emeza igurisha</p>
-              <p className="text-3xl font-extrabold tabular-nums mt-1">
+          <div className="sella-sheet-glass w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl animate-fade-in">
+            <div className="sella-popup-header-glass px-5 pt-5 pb-4">
+              <p className="relative z-10 text-xs text-white/75 font-medium">
+                Emeza igurisha
+              </p>
+              <p className="relative z-10 text-3xl font-extrabold tabular-nums mt-1">
                 {formatCurrency(orderTotal)}
               </p>
-              <p className="text-xs text-white/80 mt-1">
+              <p className="relative z-10 text-xs text-white/80 mt-1">
                 {customerName.trim() || "Umukiriya wanyuze"} · {cartCount}{" "}
                 {cartCount === 1 ? "ikintu" : "ibintu"}
               </p>
             </div>
-            <div className="px-5 py-4 space-y-3 max-h-[40vh] overflow-y-auto">
+            <div className="relative z-10 px-5 py-4 space-y-3 max-h-[40vh] overflow-y-auto">
               {cart.map((c) => (
                 <div key={c.id} className="flex justify-between text-sm gap-2">
                   <span className="text-muted-foreground truncate">
@@ -928,10 +942,10 @@ const NewSalePage: React.FC = () => {
                 </div>
               </div>
             </div>
-            <div className="px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-2 flex gap-2">
+            <div className="relative z-10 px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-2 flex gap-2">
               <Button
                 variant="outline"
-                className="flex-1 h-12"
+                className="sella-btn-glass flex-1 h-12 rounded-xl border-0"
                 onClick={() => setConfirmOpen(false)}
                 disabled={saving}
               >

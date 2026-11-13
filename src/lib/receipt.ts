@@ -102,43 +102,39 @@ function labelMethod(m: PaymentMethod): string {
   }
 }
 
-/** Glass invoice-style A4 PDF (shared Sella PDF design system). */
+async function buildReceiptDoc(data: ReceiptData) {
+  const { buildBlueGlassReceiptPdf } = await import("@/lib/blueGlass/buildDocs");
+  const primary = data.payments[0];
+  const payment = toRwf(data.paid);
+  const previousBalance = toRwf(data.remaining) + payment;
+  return buildBlueGlassReceiptPdf({
+    shopName: data.shopName,
+    shopPhone: data.shopPhone,
+    shopEmail: data.shopEmail,
+    shopLocation: "Kigali, Rwanda",
+    receiptNumber: data.receiptNumber,
+    invoiceNumber: data.receiptNumber,
+    createdAt: data.createdAt,
+    customerName: data.customerName,
+    customerPhone: data.customerPhone,
+    customerLocation: "Kigali, Rwanda",
+    method: primary ? labelMethod(primary.method) : "Payment",
+    reference: primary?.referenceNumber || data.receiptNumber,
+    previousBalance,
+    payment,
+    thankYouMessage: data.thankYouMessage,
+  });
+}
+
+/** Blue-glass receipt PDF matching the official Sella HTML reference. */
 export async function downloadReceiptPdf(data: ReceiptData): Promise<string> {
-  const { downloadInvoicePdf } = await import("@/lib/invoicePdf");
   const filename = `sella-receipt-${data.receiptNumber}.pdf`;
-  const status =
-    data.paymentStatus === "paid"
-      ? "paid"
-      : data.paymentStatus === "partial"
-        ? "partial"
-        : "credit";
-  await downloadInvoicePdf(
-    {
-      invoiceNumber: data.receiptNumber,
-      createdAt: data.createdAt,
-      shopName: data.shopName,
-      shopPhone: data.shopPhone || "",
-      shopEmail: data.shopEmail,
-      customerName: data.customerName,
-      customerPhone: data.customerPhone,
-      customerLocation: "Kigali, Rwanda",
-      lines: data.lines.map((l) => ({
-        name: l.name,
-        quantity: l.quantity,
-        unitPrice: l.unitPrice,
-        takenAt: data.createdAt,
-      })),
-      total: data.total,
-      paid: data.paid,
-      remaining: data.remaining,
-      payPhone: data.shopPhone || "—",
-      kind: "receipt",
-      status,
-      note:
-        data.thankYouMessage ||
-        undefined,
-    },
-    filename
-  );
+  const doc = await buildReceiptDoc(data);
+  doc.save(filename);
   return filename;
+}
+
+export async function receiptPdfBlob(data: ReceiptData): Promise<Blob> {
+  const doc = await buildReceiptDoc(data);
+  return doc.output("blob");
 }

@@ -34,7 +34,7 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-const SPLASH_KEY = "sella_splash_seen_v2_neon";
+const SPLASH_KEY = "sella_splash_seen_v4_ambient_write";
 
 const App = () => {
   const [showSplash, setShowSplash] = useState(() => {

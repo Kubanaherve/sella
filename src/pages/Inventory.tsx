@@ -253,8 +253,7 @@ const InventoryPage: React.FC = () => {
     }
   };
 
-  const fieldClass =
-    "w-full h-11 rounded-xl border border-border bg-slate-50 px-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/25 focus:border-primary/40";
+  const fieldClass = "sella-input-glass rounded-xl";
 
   return (
     <div className="sella-page">
@@ -268,7 +267,7 @@ const InventoryPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => navigate("/import-inventory")}
-                className="h-9 px-2.5 rounded-xl bg-primary/10 text-primary flex items-center gap-1.5 text-xs font-bold active:scale-95"
+                className="sella-btn-glass h-9 px-2.5 rounded-xl text-xs"
                 aria-label="Import"
               >
                 <Upload size={14} />
@@ -278,7 +277,7 @@ const InventoryPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setShowAddForm(true)}
-              className="h-9 px-3 rounded-xl bg-primary text-white flex items-center gap-1.5 text-xs font-bold active:scale-95 shadow-sm"
+              className="sella-btn-glass-solid h-9 px-3 rounded-xl text-xs"
             >
               <Plus size={14} strokeWidth={2.5} />
               Ongeraho
@@ -290,37 +289,34 @@ const InventoryPage: React.FC = () => {
       <div className="sella-page-body space-y-4">
         {!canWrite && <WriteGate actionLabel="Guhindura ububiko" />}
 
-        {/* KPI strip */}
-        <section className="grid grid-cols-2 gap-2.5">
-          <div className="sella-stat">
-            <p className="sella-stat-label">Agaciro k'ububiko</p>
-            <p className="sella-stat-value text-[1.15rem]">
+        {/* Glass hero value card */}
+        <section className="glass-card-dark relative p-4">
+          <div className="relative z-10">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-white/75">
+              Agaciro k'ububiko
+            </p>
+            <p className="mt-1.5 text-[1.65rem] font-extrabold tabular-nums tracking-tight text-white">
               {formatCurrency(stats.totalSell)}
             </p>
-            <p className="text-[10px] text-muted-foreground mt-1">
-              Igiciro cyo kugurisha
-            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <span className="inline-flex items-center rounded-full bg-white/15 px-2.5 py-1 text-[10px] font-bold text-white/95 backdrop-blur-md border border-white/20">
+                Inyungu {formatCurrency(stats.profit)}
+              </span>
+              <span className="inline-flex items-center rounded-full bg-white/15 px-2.5 py-1 text-[10px] font-bold text-white/95 backdrop-blur-md border border-white/20">
+                Margin {stats.margin.toFixed(1)}%
+              </span>
+            </div>
           </div>
-          <div className="sella-stat">
-            <p className="sella-stat-label">Inyungu yateganyijwe</p>
-            <p
-              className={cn(
-                "sella-stat-value text-[1.15rem]",
-                stats.profit >= 0 ? "text-emerald-700" : "text-rose-600"
-              )}
-            >
-              {formatCurrency(stats.profit)}
-            </p>
-            <p className="text-[10px] text-muted-foreground mt-1">
-              Margin {stats.margin.toFixed(1)}%
-            </p>
-          </div>
+        </section>
+
+        {/* KPI strip */}
+        <section className="grid grid-cols-2 gap-2.5">
           <div className="sella-stat flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-sky-50 text-sky-700 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-[#1A6FFF]/12 text-[#0B3FCC] flex items-center justify-center border border-white/60 backdrop-blur-sm">
               <Boxes size={18} />
             </div>
             <div>
-              <p className="text-lg font-extrabold tabular-nums leading-none">
+              <p className="text-lg font-extrabold tabular-nums leading-none text-[#0B3FCC]">
                 {stats.units}
               </p>
               <p className="text-[10px] text-muted-foreground mt-1">
@@ -332,12 +328,12 @@ const InventoryPage: React.FC = () => {
             type="button"
             onClick={() => setFilter(filter === "low" ? "all" : "low")}
             className={cn(
-              "sella-stat text-left transition-colors",
-              filter === "low" && "ring-2 ring-amber-400/50"
+              "sella-stat text-left transition-shadow",
+              filter === "low" && "ring-2 ring-[#1A6FFF]/35"
             )}
           >
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-amber-400/15 text-amber-700 flex items-center justify-center border border-white/50 backdrop-blur-sm">
                 <AlertTriangle size={18} />
               </div>
               <div>
@@ -358,14 +354,14 @@ const InventoryPage: React.FC = () => {
             <div className="relative">
               <Search
                 size={16}
-                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground"
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#0B3FCC]/55"
               />
               <input
                 type="search"
                 placeholder="Shakisha izina, SKU, icyiciro…"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-11 rounded-2xl border border-border bg-white pl-10 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                className="sella-input-glass pl-10 pr-10"
               />
               {searchQuery && (
                 <button
@@ -392,10 +388,8 @@ const InventoryPage: React.FC = () => {
                   type="button"
                   onClick={() => setFilter(key)}
                   className={cn(
-                    "shrink-0 h-8 px-3 rounded-full text-xs font-bold border transition-colors",
-                    filter === key
-                      ? "bg-primary text-white border-primary"
-                      : "bg-white text-muted-foreground border-border"
+                    "sella-chip-glass shrink-0",
+                    filter === key && "sella-chip-glass-active"
                   )}
                 >
                   {label}
@@ -409,10 +403,8 @@ const InventoryPage: React.FC = () => {
                     setCategoryFilter(categoryFilter === c ? "all" : c)
                   }
                   className={cn(
-                    "shrink-0 h-8 px-3 rounded-full text-xs font-semibold border",
-                    categoryFilter === c
-                      ? "bg-sky-600 text-white border-sky-600"
-                      : "bg-white text-slate-600 border-border"
+                    "sella-chip-glass shrink-0",
+                    categoryFilter === c && "sella-chip-glass-active"
                   )}
                 >
                   {c}
@@ -423,31 +415,33 @@ const InventoryPage: React.FC = () => {
         )}
 
         {/* Product list */}
-        <section className="space-y-2">
+        <section className="space-y-2.5">
           {isLoading && items.length === 0 ? (
             <ListPageSkeleton rows={5} />
           ) : filteredItems.length === 0 ? (
-            <EmptyState
-              icon={PackageOpen}
-              title={
-                searchQuery || filter !== "all"
-                  ? "Nta kintu kibonetse"
-                  : "Ububiko burimo ubusa"
-              }
-              description={
-                searchQuery || filter !== "all"
-                  ? "Hindura filter cyangwa search."
-                  : "Ongeraho ibicuruzwa cyangwa kuzana CSV/Excel."
-              }
-              actionLabel={
-                searchQuery || filter !== "all" ? undefined : "Ongeraho ikintu"
-              }
-              onAction={
-                searchQuery || filter !== "all"
-                  ? undefined
-                  : () => setShowAddForm(true)
-              }
-            />
+            <div className="glass-card">
+              <EmptyState
+                icon={PackageOpen}
+                title={
+                  searchQuery || filter !== "all"
+                    ? "Nta kintu kibonetse"
+                    : "Ububiko burimo ubusa"
+                }
+                description={
+                  searchQuery || filter !== "all"
+                    ? "Hindura filter cyangwa search."
+                    : "Ongeraho ibicuruzwa cyangwa kuzana CSV/Excel."
+                }
+                actionLabel={
+                  searchQuery || filter !== "all" ? undefined : "Ongeraho ikintu"
+                }
+                onAction={
+                  searchQuery || filter !== "all"
+                    ? undefined
+                    : () => setShowAddForm(true)
+                }
+              />
+            </div>
           ) : (
             filteredItems.map((item) => {
               const pastel = pastelForName(item.item_name);
@@ -455,13 +449,10 @@ const InventoryPage: React.FC = () => {
               const profit = item.selling_price - item.cost_price;
               const low = item.quantity <= (item.min_quantity ?? 3);
               return (
-                <article
-                  key={item.id}
-                  className="rounded-2xl bg-white border border-border/80 shadow-sm overflow-hidden"
-                >
+                <article key={item.id} className="sella-list-card">
                   <div className="p-3.5 flex gap-3">
                     <div
-                      className="w-12 h-12 rounded-2xl font-extrabold flex items-center justify-center shrink-0 text-base"
+                      className="w-12 h-12 rounded-2xl font-extrabold flex items-center justify-center shrink-0 text-base border border-white/70 shadow-sm backdrop-blur-sm"
                       style={{ background: pastel.bg, color: pastel.fg }}
                     >
                       {item.item_name.slice(0, 1).toUpperCase()}
@@ -479,7 +470,7 @@ const InventoryPage: React.FC = () => {
                           </p>
                         </div>
                         <span
-                          className="shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full"
+                          className="shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full border border-white/50 backdrop-blur-sm"
                           style={{ background: stock.bg, color: stock.color }}
                         >
                           {stock.label}
@@ -487,15 +478,15 @@ const InventoryPage: React.FC = () => {
                       </div>
 
                       <div className="mt-2.5 grid grid-cols-3 gap-2">
-                        <div className="rounded-xl bg-slate-50 px-2 py-1.5">
+                        <div className="rounded-xl bg-white/45 border border-white/60 px-2 py-1.5 backdrop-blur-sm">
                           <p className="text-[9px] text-muted-foreground font-medium">
                             Gurisha
                           </p>
-                          <p className="text-xs font-extrabold tabular-nums truncate">
+                          <p className="text-xs font-extrabold tabular-nums truncate text-[#0B3FCC]">
                             {formatCurrency(item.selling_price)}
                           </p>
                         </div>
-                        <div className="rounded-xl bg-slate-50 px-2 py-1.5">
+                        <div className="rounded-xl bg-white/45 border border-white/60 px-2 py-1.5 backdrop-blur-sm">
                           <p className="text-[9px] text-muted-foreground font-medium">
                             Stock
                           </p>
@@ -508,7 +499,7 @@ const InventoryPage: React.FC = () => {
                             {item.quantity}
                           </p>
                         </div>
-                        <div className="rounded-xl bg-slate-50 px-2 py-1.5">
+                        <div className="rounded-xl bg-white/45 border border-white/60 px-2 py-1.5 backdrop-blur-sm">
                           <p className="text-[9px] text-muted-foreground font-medium">
                             Inyungu
                           </p>
@@ -532,7 +523,7 @@ const InventoryPage: React.FC = () => {
                             setEditingCostPrice(String(item.cost_price));
                             setEditingQuantity(String(item.quantity));
                           }}
-                          className="flex-1 h-9 rounded-xl bg-primary/10 text-primary text-xs font-bold flex items-center justify-center gap-1.5 active:scale-[0.98]"
+                          className="sella-btn-glass flex-1 h-9 rounded-xl text-xs"
                         >
                           <Pencil size={13} />
                           Hindura
@@ -540,7 +531,7 @@ const InventoryPage: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => void handleDelete(item.id)}
-                          className="w-9 h-9 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center active:scale-95"
+                          className="w-9 h-9 rounded-xl bg-rose-500/10 text-rose-600 border border-rose-200/60 flex items-center justify-center active:scale-95 backdrop-blur-sm"
                           aria-label="Siba"
                         >
                           <Trash2 size={14} />
@@ -549,7 +540,7 @@ const InventoryPage: React.FC = () => {
                     </div>
                   </div>
                   {low && (
-                    <div className="px-3.5 py-1.5 bg-amber-50 border-t border-amber-100 text-[10px] font-semibold text-amber-800 flex items-center gap-1.5">
+                    <div className="px-3.5 py-1.5 bg-amber-400/12 border-t border-amber-200/40 text-[10px] font-semibold text-amber-900 flex items-center gap-1.5 backdrop-blur-sm">
                       <AlertTriangle size={12} />
                       Ongera stock — hasigaye {item.quantity}
                     </div>
@@ -564,12 +555,12 @@ const InventoryPage: React.FC = () => {
           <button
             type="button"
             onClick={() => navigate("/import-inventory")}
-            className="w-full rounded-2xl border border-dashed border-primary/35 bg-primary/[0.04] px-4 py-3.5 flex items-center gap-3 text-left"
+            className="glass-card w-full px-4 py-3.5 flex items-center gap-3 text-left border-dashed"
           >
-            <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+            <div className="relative z-10 w-10 h-10 rounded-xl bg-[#1A6FFF]/12 text-[#0B3FCC] flex items-center justify-center border border-white/60">
               <Upload size={18} />
             </div>
-            <div className="min-w-0">
+            <div className="relative z-10 min-w-0">
               <p className="text-sm font-bold text-foreground">
                 Kuzana CSV / Excel
               </p>
@@ -584,10 +575,12 @@ const InventoryPage: React.FC = () => {
       {/* Add sheet */}
       {showAddForm && (
         <div className="fixed inset-0 z-[80] sella-overlay flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <div className="w-full sm:max-w-md max-h-[90dvh] bg-white rounded-t-3xl sm:rounded-3xl shadow-xl flex flex-col overflow-hidden">
-            <div className="sella-sheet-top px-4 pb-3 border-b border-border flex items-center justify-between">
+          <div className="sella-sheet-glass w-full sm:max-w-md max-h-[90dvh] rounded-t-3xl sm:rounded-3xl">
+            <div className="sella-sheet-top px-4 pb-3 border-b border-[#1A6FFF]/10 flex items-center justify-between">
               <div>
-                <h2 className="font-bold text-base">Ongeraho ikicuruzwa</h2>
+                <h2 className="font-bold text-base text-[#0B3FCC]">
+                  Ongeraho ikicuruzwa
+                </h2>
                 <p className="text-[11px] text-muted-foreground">
                   Stock · igiciro · icyiciro
                 </p>
@@ -595,7 +588,7 @@ const InventoryPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowAddForm(false)}
-                className="w-9 h-9 rounded-full bg-muted flex items-center justify-center"
+                className="w-9 h-9 rounded-full sella-btn-glass"
                 aria-label="Funga"
               >
                 <X size={16} />
@@ -695,7 +688,7 @@ const InventoryPage: React.FC = () => {
                 </div>
               </div>
               {newSellingPrice && newCostPrice && (
-                <div className="rounded-xl bg-emerald-50 border border-emerald-100 px-3 py-2.5 flex justify-between text-sm">
+                <div className="rounded-xl bg-emerald-400/12 border border-emerald-200/50 px-3 py-2.5 flex justify-between text-sm backdrop-blur-sm">
                   <span className="text-emerald-800/80 flex items-center gap-1.5">
                     <TrendingUp size={14} /> Inyungu
                   </span>
@@ -708,11 +701,11 @@ const InventoryPage: React.FC = () => {
                 </div>
               )}
             </div>
-            <div className="p-4 border-t border-border flex gap-2 pb-[max(1rem,var(--sella-safe-bottom))]">
+            <div className="p-4 border-t border-[#1A6FFF]/10 flex gap-2 pb-[max(1rem,var(--sella-safe-bottom))]">
               <button
                 type="button"
                 onClick={() => setShowAddForm(false)}
-                className="flex-1 h-11 rounded-xl border border-border font-semibold text-sm"
+                className="sella-btn-glass flex-1 h-11 rounded-xl text-sm"
               >
                 Bireke
               </button>
@@ -720,7 +713,7 @@ const InventoryPage: React.FC = () => {
                 type="button"
                 disabled={isAdding || !canWrite}
                 onClick={() => void handleAddItem()}
-                className="flex-[1.4] h-11 rounded-xl bg-primary text-white font-bold text-sm disabled:opacity-50"
+                className="sella-btn-glass-solid flex-[1.4] h-11 rounded-xl text-sm disabled:opacity-50"
               >
                 {isAdding ? "…" : "Emeza"}
               </button>
@@ -732,13 +725,13 @@ const InventoryPage: React.FC = () => {
       {/* Edit sheet */}
       {editingId && (
         <div className="fixed inset-0 z-[85] sella-overlay flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <div className="w-full sm:max-w-md bg-white rounded-t-3xl sm:rounded-3xl shadow-xl overflow-hidden">
-            <div className="sella-sheet-top px-4 pb-3 border-b border-border flex items-center justify-between">
-              <h2 className="font-bold">Hindura stock / igiciro</h2>
+          <div className="sella-sheet-glass w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl">
+            <div className="sella-sheet-top px-4 pb-3 border-b border-[#1A6FFF]/10 flex items-center justify-between">
+              <h2 className="font-bold text-[#0B3FCC]">Hindura stock / igiciro</h2>
               <button
                 type="button"
                 onClick={() => setEditingId(null)}
-                className="w-9 h-9 rounded-full bg-muted flex items-center justify-center"
+                className="w-9 h-9 rounded-full sella-btn-glass"
               >
                 <X size={16} />
               </button>
@@ -780,18 +773,18 @@ const InventoryPage: React.FC = () => {
                 </div>
               </div>
             </div>
-            <div className="p-4 border-t border-border flex gap-2 pb-[max(1rem,var(--sella-safe-bottom))]">
+            <div className="p-4 border-t border-[#1A6FFF]/10 flex gap-2 pb-[max(1rem,var(--sella-safe-bottom))]">
               <button
                 type="button"
                 onClick={() => setEditingId(null)}
-                className="flex-1 h-11 rounded-xl border border-border font-semibold text-sm"
+                className="sella-btn-glass flex-1 h-11 rounded-xl text-sm"
               >
                 Bireke
               </button>
               <button
                 type="button"
                 onClick={() => void handleSaveEdit(editingId)}
-                className="flex-[1.4] h-11 rounded-xl bg-primary text-white font-bold text-sm"
+                className="sella-btn-glass-solid flex-[1.4] h-11 rounded-xl text-sm"
               >
                 Bika
               </button>

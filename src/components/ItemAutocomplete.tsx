@@ -85,7 +85,7 @@ export const ItemAutocomplete = ({
       />
       
       {isOpen && filteredSuggestions.length > 0 && (
-        <div className="absolute z-50 w-full mt-1 bg-background border border-border rounded-xl shadow-lg overflow-hidden animate-fade-in">
+        <div className="sella-popup-glass absolute z-50 w-full mt-1 rounded-xl overflow-hidden animate-fade-in">
           {filteredSuggestions.map((item, index) => (
             <button
               key={index}

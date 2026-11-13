@@ -105,8 +105,14 @@ export const MERCHANT = {
   accountName: import.meta.env.VITE_BANK_ACCOUNT_NAME || "Sella",
   accountNumber: import.meta.env.VITE_BANK_ACCOUNT_NUMBER || "000XXXXXXX",
   swift: import.meta.env.VITE_BANK_SWIFT || "BKIGRWRW",
+  /** MTN MoMo Pay / merchant code shown for manual transfers */
   momoCode: import.meta.env.VITE_MOMO_MERCHANT_CODE || "*182*8*1#",
-  momoPhone: import.meta.env.VITE_MOMO_MERCHANT_PHONE || "+2507XXXXXXX",
+  momoPhone: import.meta.env.VITE_MOMO_MERCHANT_PHONE || "+2507XXXXXXXX",
+  momoName: import.meta.env.VITE_MOMO_MERCHANT_NAME || "Sella",
+  /** Airtel Money merchant (manual) — replace placeholders when you have the account */
+  airtelCode: import.meta.env.VITE_AIRTEL_MERCHANT_CODE || "*500*1#",
+  airtelPhone: import.meta.env.VITE_AIRTEL_MERCHANT_PHONE || "+2507XXXXXXXX",
+  airtelName: import.meta.env.VITE_AIRTEL_MERCHANT_NAME || "Sella",
 } as const;
 
 export const REVIEWER_DEMO_PHONE = "+250780000000";

@@ -20,7 +20,7 @@ export function CustomerAutocomplete({
   value,
   onChange,
   onSelect,
-  suggestions,
+  suggestions = [],
   placeholder,
   className,
 }: CustomerAutocompleteProps) {
@@ -29,13 +29,16 @@ export function CustomerAutocomplete({
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (value.length >= 2) {
-      const filtered = suggestions.filter(s =>
-        s.name.toLowerCase().includes(value.toLowerCase())
-      ).slice(0, 5);
+    const query = value.trim().toLowerCase();
+    if (query.length >= 2) {
+      const list = Array.isArray(suggestions) ? suggestions : [];
+      const filtered = list
+        .filter((s) => typeof s?.name === "string" && s.name.toLowerCase().includes(query))
+        .slice(0, 5);
       setActiveSuggestions(filtered);
       setShowSuggestions(filtered.length > 0);
     } else {
+      setActiveSuggestions([]);
       setShowSuggestions(false);
     }
   }, [value, suggestions]);
@@ -56,30 +59,33 @@ export function CustomerAutocomplete({
   };
 
   return (
-    <div ref={wrapperRef} className="relative">
+    <div ref={wrapperRef} className="relative min-w-0">
       <Input
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className={cn("bg-white/50 input-glow", className)}
+        autoComplete="off"
+        className={cn("bg-white/50 input-glow min-w-0", className)}
         onFocus={() => {
           if (activeSuggestions.length > 0) {
             setShowSuggestions(true);
           }
         }}
       />
-      {showSuggestions && (
-        <div className="absolute z-50 w-full mt-1 bg-background border border-border rounded-lg shadow-lg overflow-hidden">
+      {showSuggestions && activeSuggestions.length > 0 && (
+        <div className="sella-popup-glass absolute z-50 left-0 right-0 mt-1 max-h-48 overflow-y-auto rounded-xl">
           {activeSuggestions.map((customer, index) => (
             <button
-              key={index}
+              key={`${customer.name}-${customer.phone ?? ""}-${index}`}
               type="button"
               onClick={() => handleSelect(customer)}
-              className="w-full px-3 py-2 text-left hover:bg-muted transition-colors flex justify-between items-center"
+              className="w-full px-3 py-2.5 text-left hover:bg-muted transition-colors flex justify-between items-center gap-2 min-w-0"
             >
-              <span className="font-medium text-sm">{customer.name}</span>
+              <span className="font-medium text-sm truncate">{customer.name}</span>
               {customer.phone && (
-                <span className="text-xs text-muted-foreground">{customer.phone}</span>
+                <span className="text-xs text-muted-foreground shrink-0 tabular-nums">
+                  {customer.phone}
+                </span>
               )}
             </button>
           ))}

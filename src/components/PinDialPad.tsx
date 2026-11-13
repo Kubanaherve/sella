@@ -55,11 +55,13 @@ export function PinDialPad({
   return (
     <div className="flex flex-col items-center w-full">
       {displayName && (
-        <p className="text-white/85 text-base font-medium mb-1 tracking-tight">
+        <p className="text-[#0B3FCC] text-base font-medium mb-1 tracking-tight">
           Muraho, {displayName}
         </p>
       )}
-      <p className="text-white/50 text-xs mb-6">Injiza PIN yawe · {maxLength} digits</p>
+      <p className="text-slate-500 text-xs mb-6">
+        Injiza PIN yawe · {maxLength} digits
+      </p>
 
       <div className={cn("flex gap-3.5 mb-3", shake && "animate-[shake_0.4s_ease-in-out]")}>
         {Array.from({ length: maxLength }).map((_, i) => (
@@ -68,8 +70,8 @@ export function PinDialPad({
             className={cn(
               "w-3.5 h-3.5 rounded-full transition-all duration-200",
               i < pin.length
-                ? "bg-white scale-125 shadow-md shadow-white/30"
-                : "bg-white/25"
+                ? "bg-[#1A6FFF] scale-125 shadow-md shadow-[#1A6FFF]/35"
+                : "bg-[#1A6FFF]/20"
             )}
           />
         ))}
@@ -77,9 +79,9 @@ export function PinDialPad({
 
       <div className="h-5 mb-4">
         {isLoading ? (
-          <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto" />
+          <div className="w-5 h-5 border-2 border-[#1A6FFF]/25 border-t-[#1A6FFF] rounded-full animate-spin mx-auto" />
         ) : errorMessage ? (
-          <p className="text-rose-200 text-xs text-center">{errorMessage}</p>
+          <p className="text-rose-600 text-xs text-center">{errorMessage}</p>
         ) : null}
       </div>
 
@@ -97,7 +99,7 @@ export function PinDialPad({
                 aria-label="Delete"
                 onClick={handleDelete}
                 disabled={isLoading || pin.length === 0}
-                className="w-[72px] h-[72px] rounded-full flex items-center justify-center text-white/75 hover:bg-white/10 active:bg-white/20 transition-all disabled:opacity-25 mx-auto"
+                className="w-[72px] h-[72px] rounded-full flex items-center justify-center text-[#0B3FCC]/75 hover:bg-white/60 active:bg-white/80 transition-all disabled:opacity-25 mx-auto"
               >
                 <Delete size={26} />
               </button>
@@ -110,7 +112,7 @@ export function PinDialPad({
               type="button"
               onClick={() => handlePress(digit)}
               disabled={isLoading}
-              className="w-[72px] h-[72px] rounded-full bg-white/12 backdrop-blur-md flex items-center justify-center text-[28px] font-semibold text-white hover:bg-white/20 active:bg-white/30 active:scale-95 transition-all disabled:opacity-50 mx-auto shadow-[0_8px_24px_rgba(0,0,0,0.18)]"
+              className="w-[72px] h-[72px] rounded-full bg-white/70 backdrop-blur-md border border-[#1A6FFF]/15 flex items-center justify-center text-[28px] font-semibold text-[#0B3FCC] hover:bg-white/90 active:bg-white active:scale-95 transition-all disabled:opacity-50 mx-auto shadow-[0_8px_24px_rgba(11,63,204,0.12)]"
             >
               {digit}
             </button>

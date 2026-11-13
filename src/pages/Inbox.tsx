@@ -230,30 +230,36 @@ const InboxPage = () => {
       </main>
 
       {selectedCustomer && (
-        <div className="fixed inset-0 bg-black/90 flex justify-center items-end sm:items-center p-4 z-50">
-          <div className="bg-white/100 rounded-2xl w-full sm:max-w-md p-6 space-y-6 shadow-xl">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold truncate">
+        <div className="fixed inset-0 sella-overlay flex justify-center items-end sm:items-center p-4 z-50">
+          <div className="sella-popup-glass rounded-3xl w-full sm:max-w-md p-6 space-y-6">
+            <div className="relative z-10 flex justify-between items-center">
+              <h2 className="text-2xl font-bold truncate text-[#0B3FCC]">
                 {selectedCustomer.name}
               </h2>
-              <button onClick={() => setSelectedCustomer(null)}>✕</button>
+              <button
+                type="button"
+                className="w-9 h-9 rounded-full sella-btn-glass"
+                onClick={() => setSelectedCustomer(null)}
+              >
+                ✕
+              </button>
             </div>
 
-            <div className="text-center space-y-2">
+            <div className="relative z-10 text-center space-y-2">
               {selectedCustomer.items && (
                 <p className="text-sm">
                   Ibyo yafashe: {selectedCustomer.items}
                 </p>
               )}
-              <p className="text-xl font-semibold">
+              <p className="text-xl font-semibold text-[#0B3FCC]">
                 {formatCurrency(selectedCustomer.amount || 0)}
               </p>
             </div>
 
-            <div className="flex gap-2">
+            <div className="relative z-10 flex gap-2">
               {selectedCustomer.phone && (
                 <Button
-                  className="w-full"
+                  className="w-full btn-navy"
                   onClick={() =>
                     sendWhatsAppToCustomer(selectedCustomer)
                   }

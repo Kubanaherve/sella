@@ -18,17 +18,17 @@ export const UI = {
   neonMagenta: "#D033FF",
 } as const;
 
-/** Soft pastel chip for product / category tiles */
+/** Soft glass-blue pastel chips for product / category tiles */
 export function pastelForName(name: string): { bg: string; fg: string } {
   const palette = [
-    { bg: "#FEF3C7", fg: "#92400E" }, // gold / warm
-    { bg: "#DBEAFE", fg: "#1E40AF" }, // blue / silver
-    { bg: "#FCE7F3", fg: "#9D174D" }, // rose
-    { bg: "#D1FAE5", fg: "#065F46" }, // mint
-    { bg: "#E0E7FF", fg: "#3730A3" }, // indigo
-    { bg: "#FFEDD5", fg: "#9A3412" }, // orange
-    { bg: "#E0F2FE", fg: "#075985" }, // sky
-    { bg: "#F3E8FF", fg: "#6B21A8" }, // soft violet (accent only)
+    { bg: "rgba(219, 234, 254, 0.92)", fg: "#1E40AF" }, // ice blue
+    { bg: "rgba(224, 242, 254, 0.92)", fg: "#0369A1" }, // sky
+    { bg: "rgba(224, 231, 255, 0.92)", fg: "#3730A3" }, // indigo glass
+    { bg: "rgba(207, 250, 254, 0.9)", fg: "#0E7490" }, // cyan glass
+    { bg: "rgba(236, 254, 255, 0.92)", fg: "#155E75" }, // aqua
+    { bg: "rgba(239, 246, 255, 0.95)", fg: "#1D4ED8" }, // soft primary
+    { bg: "rgba(219, 234, 254, 0.85)", fg: "#1E3A8A" }, // deep ice
+    { bg: "rgba(186, 230, 253, 0.88)", fg: "#075985" }, // bright sky
   ];
   let h = 0;
   for (let i = 0; i < name.length; i++) h = (h + name.charCodeAt(i) * (i + 1)) % 997;

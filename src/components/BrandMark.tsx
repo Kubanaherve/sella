@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import { BRAND } from "@/lib/brand";
 import sellaIcon from "@/assets/brand/sella-icon.png";
+import { GlassWordmark } from "@/components/GlassWordmark";
 
 type Variant = "icon" | "logo" | "full";
 type Size = "xs" | "sm" | "md" | "lg" | "xl" | "hero";
@@ -24,6 +25,15 @@ const SIZE_PX: Record<Size, string> = {
   hero: "h-36 w-36 sm:h-[10.5rem] sm:w-[10.5rem]",
 };
 
+const WORDMARK_SIZE: Record<Size, "sm" | "md" | "lg" | "xl" | "hero"> = {
+  xs: "sm",
+  sm: "sm",
+  md: "md",
+  lg: "lg",
+  xl: "xl",
+  hero: "hero",
+};
+
 /**
  * Official Sella mark — glossy neon S-bag app icon (full squircle).
  */
@@ -36,7 +46,8 @@ export function BrandMark({
   float = false,
   framed = true,
 }: BrandMarkProps) {
-  void variant;
+  const showScript =
+    variant === "logo" || variant === "full" || showWordmark;
 
   return (
     <div className={cn("inline-flex flex-col items-center", className)}>
@@ -57,15 +68,12 @@ export function BrandMark({
           draggable={false}
         />
       </div>
-      {showWordmark && (
-        <span
-          className={cn(
-            "mt-3 text-2xl font-bold tracking-tight text-white",
-            wordmarkClassName
-          )}
-        >
-          {BRAND.name}
-        </span>
+      {showScript && (
+        <GlassWordmark
+          size={WORDMARK_SIZE[size]}
+          glow={variant === "logo" || variant === "full"}
+          className={cn("mt-3", wordmarkClassName)}
+        />
       )}
     </div>
   );

@@ -92,7 +92,7 @@ const PaymentModal = ({
         if (!open) handleClose();
       }}
     >
-      <DialogContent className="sm:max-w-md z-[130]">
+      <DialogContent className="sm:max-w-md z-[130] rounded-3xl">
         <DialogHeader>
           <DialogTitle>Kwishyura kwa {customerName}</DialogTitle>
           <DialogDescription>
@@ -100,7 +100,7 @@ const PaymentModal = ({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
+        <div className="relative z-10 space-y-4 py-4">
           <div className="space-y-2">
             <Label>Uburyo bwo kwishyura</Label>
             <div className="grid grid-cols-2 gap-2">
@@ -109,10 +109,10 @@ const PaymentModal = ({
                   key={m.value}
                   type="button"
                   onClick={() => setPaymentMethod(m.value)}
-                  className={`text-xs font-medium rounded-lg border px-3 py-2 transition-all ${
+                  className={`text-xs font-bold rounded-xl px-3 py-2.5 transition-all border ${
                     paymentMethod === m.value
-                      ? "bg-primary text-primary-foreground border-primary"
-                      : "bg-muted/50 border-border hover:bg-muted"
+                      ? "sella-chip-glass-active border-transparent"
+                      : "sella-chip-glass justify-center"
                   }`}
                 >
                   {m.label}
