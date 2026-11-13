@@ -31,7 +31,7 @@ export function PageHeader({
               if (typeof backTo === "number") navigate(backTo);
               else navigate(backTo);
             }}
-            className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 active:scale-95 transition-transform"
+            className="w-9 h-9 rounded-2xl bg-primary/10 dark:bg-white/10 flex items-center justify-center shrink-0 active:scale-95 transition-transform border border-primary/10 dark:border-white/10"
           >
             <ArrowLeft size={18} className="text-primary" />
           </button>

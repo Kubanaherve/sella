@@ -44,6 +44,7 @@ import {
 import CardCheckoutModal, {
   type CardPayload,
 } from "@/components/payment/CardCheckoutModal";
+import { detectRwandaNetwork } from "@/lib/phone";
 import { toast } from "sonner";
 
 function channelLabel(c: BillingChannel): string {
@@ -73,7 +74,19 @@ const SubscribePage = () => {
   const { subscription, refreshSubscription, mode, profile, user } = useAuth();
   const channels = useMemo(() => preferredBillingChannels(), []);
   const [plan, setPlan] = useState<BillingPlan>("monthly");
-  const [phone, setPhone] = useState("");
+  const [phone, setPhone] = useState(() => {
+    const raw = (profile && "phone" in profile && profile.phone) || "";
+    return raw.replace(/^\+?250/, "0");
+  });
+
+  useEffect(() => {
+    if (!phone && profile) {
+      const raw = ("phone" in profile && profile.phone) || "";
+      if (raw) {
+        setPhone(raw.replace(/^\+?250/, "0"));
+      }
+    }
+  }, [profile, phone]);
   const [channel, setChannel] = useState<BillingChannel>(channels[0]);
   const [referenceId, setReferenceId] = useState("");
   const [proof, setProof] = useState<File | null>(null);
@@ -514,26 +527,55 @@ const SubscribePage = () => {
 
         {(channel === "paypack_mtn" || channel === "paypack_airtel") && (
           <div className="glass-card p-4 space-y-3">
-            <div className="flex items-center gap-3">
-              {channel === "paypack_mtn" ? (
-                <MtnLogo className="h-10" />
-              ) : (
-                <AirtelLogo className="h-12" />
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                {channel === "paypack_mtn" ? (
+                  <MtnLogo className="h-10" />
+                ) : (
+                  <AirtelLogo className="h-12" />
+                )}
+                <div>
+                  <p className="text-sm font-semibold">
+                    {channel === "paypack_mtn" ? "MTN Mobile Money (MoMo)" : "Airtel Money"}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground">
+                    Phone that will approve the charge
+                  </p>
+                </div>
+              </div>
+              {phone.length >= 3 && (
+                <span
+                  className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                    detectRwandaNetwork(phone) === "mtn"
+                      ? "bg-amber-400/20 text-amber-700 dark:text-amber-300 border border-amber-400/30"
+                      : detectRwandaNetwork(phone) === "airtel"
+                        ? "bg-red-400/20 text-red-700 dark:text-red-300 border border-red-400/30"
+                        : "bg-slate-400/20 text-muted-foreground"
+                  }`}
+                >
+                  {detectRwandaNetwork(phone) === "mtn"
+                    ? "MTN RW"
+                    : detectRwandaNetwork(phone) === "airtel"
+                      ? "Airtel RW"
+                      : "Rwanda"}
+                </span>
               )}
-              <p className="text-sm font-semibold">
-                Phone that will approve the charge
-              </p>
             </div>
             <Input
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="07xxxxxxxx"
+              onChange={(e) => {
+                const val = e.target.value;
+                setPhone(val);
+                const net = detectRwandaNetwork(val);
+                if (net === "mtn" && channel === "paypack_airtel") setChannel("paypack_mtn");
+                else if (net === "airtel" && channel === "paypack_mtn") setChannel("paypack_airtel");
+              }}
+              placeholder="078xxxxxxx"
               inputMode="tel"
-              className="input-glow"
+              className="input-glow text-base font-semibold tracking-wide"
             />
             <p className="text-[11px] text-muted-foreground">
-              You get a prompt on this phone. Subscription activates only after
-              Paypack confirms — not when you tap Pay.
+              Urahita ubona ubutumwa bwa MoMo (*182#) kuri telefone yawe bwo kwemeza ukoresheje PIN yawe. Access unlocks immediately.
             </p>
           </div>
         )}
@@ -661,7 +703,27 @@ const SubscribePage = () => {
           </div>
         )}
 
-        {statusMsg && (
+        {pendingPaymentId && (channel === "paypack_mtn" || channel === "paypack_airtel") ? (
+          <div className="glass-card p-4 space-y-3 border border-amber-400/40 bg-amber-500/10 dark:bg-amber-400/5">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-amber-400/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                <Smartphone className="animate-pulse" size={20} />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-bold text-amber-900 dark:text-amber-200">
+                  {channel === "paypack_mtn" ? "MTN MoMo" : "Airtel Money"} Prompt Sent
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Reba kuri {phone} wemeze umubare w&apos;ibanga (PIN)
+                </p>
+              </div>
+            </div>
+            <div className="rounded-xl bg-white/40 dark:bg-white/5 p-2.5 text-xs text-muted-foreground flex items-center gap-2">
+              <Loader2 className="animate-spin text-primary shrink-0" size={14} />
+              <span>{statusMsg || "Waiting for your phone confirmation…"}</span>
+            </div>
+          </div>
+        ) : statusMsg ? (
           <div className="rounded-xl border border-primary/20 bg-primary/5 px-3 py-2 text-sm text-primary flex items-start gap-2">
             {busy ? (
               <Loader2 size={16} className="mt-0.5 shrink-0 animate-spin" />
@@ -670,7 +732,7 @@ const SubscribePage = () => {
             )}
             <span>{statusMsg}</span>
           </div>
-        )}
+        ) : null}
 
         {testModeHint && pendingPaymentId && (
           <div className="glass-card p-4 space-y-2 border border-amber-300/60">

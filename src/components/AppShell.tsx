@@ -113,8 +113,8 @@ export function AppShell() {
                 cn("sella-tab", isActive && "sella-tab-active")
               }
             >
-              <Icon size={22} strokeWidth={2.25} />
-              <span>{label}</span>
+              <Icon size={21} strokeWidth={2.2} aria-hidden />
+              <span className="truncate max-w-full px-0.5 leading-tight">{label}</span>
             </NavLink>
           ))}
         </nav>

@@ -2,7 +2,7 @@ import { BRAND } from "@/lib/brand";
 
 /** Cache keys safe to wipe on account switch — never wipe remembered shops / last phone. */
 const EPHEMERAL_PREFIXES = [
-  "dashboard_stats_cache",
+  "dashboard_stats_cache", // legacy + dashboard_stats_cache:<userId>
   `${BRAND.storagePrefix}active_workspace_id`,
   `${BRAND.storagePrefix}session_profile_id`,
 ];

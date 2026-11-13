@@ -42,15 +42,15 @@ function providerLabel(method: string): string {
 function statusTone(status: string): string {
   switch (status) {
     case "completed":
-      return "bg-emerald-100 text-emerald-800";
+      return "bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300";
     case "pending":
-      return "bg-amber-100 text-amber-900";
+      return "bg-amber-100 text-amber-900 dark:bg-amber-500/20 dark:text-amber-300";
     case "expired_pending":
-      return "bg-orange-100 text-orange-900";
+      return "bg-orange-100 text-orange-900 dark:bg-orange-500/20 dark:text-orange-300";
     case "cancelled":
-      return "bg-slate-200 text-slate-700";
+      return "bg-slate-200 text-slate-700 dark:bg-white/10 dark:text-slate-300";
     default:
-      return "bg-red-100 text-red-800";
+      return "bg-red-100 text-red-800 dark:bg-rose-500/20 dark:text-rose-300";
   }
 }
 

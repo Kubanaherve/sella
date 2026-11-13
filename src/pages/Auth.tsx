@@ -338,7 +338,23 @@ const AuthPage = () => {
       toast.success(t("Murakaza neza!", "Welcome back!"));
       navigate("/dashboard");
     } catch (e) {
-      const msg = e instanceof Error ? e.message : labels.invalidPin;
+      const raw = e instanceof Error ? e.message : "";
+      let msg = labels.invalidPin;
+      if (/invalid|wrong|incorrect|pin/i.test(raw)) {
+        msg = labels.invalidPin;
+      } else if (/network|fetch|Failed to fetch|timeout/i.test(raw)) {
+        msg = t(
+          "Nta interineti / seriveri ntiboneka. Gerageza nanone.",
+          "Network or server unavailable. Try again."
+        );
+      } else if (/non-2xx|Edge Function|FunctionsHttpError/i.test(raw)) {
+        msg = t(
+          "Kwinjira byanze. Reba PIN cyangwa gerageza nanone.",
+          "Sign-in failed. Check your PIN or try again."
+        );
+      } else if (raw && raw.length < 120 && !/[{}]/.test(raw)) {
+        msg = raw;
+      }
       setPinError(msg);
       setPinResetToken((n) => n + 1);
     } finally {

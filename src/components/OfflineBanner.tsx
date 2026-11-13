@@ -39,11 +39,11 @@ export function OfflineBanner() {
 
   return (
     <div
-      className="sticky top-0 z-[70] bg-slate-900 text-white text-center text-xs px-3"
+      className="sticky top-0 z-[70] mx-2 mt-1 rounded-2xl bg-slate-900/95 text-white text-center text-xs px-3 shadow-lg shadow-black/20 backdrop-blur-md border border-white/10"
       style={{
         paddingTop:
-          "calc(max(env(safe-area-inset-top, 0px), var(--sella-safe-top-floor, 0px)) + 0.35rem)",
-        paddingBottom: "0.35rem",
+          "calc(max(env(safe-area-inset-top, 0px), var(--sella-safe-top-floor, 0px)) * 0.15 + 0.45rem)",
+        paddingBottom: "0.45rem",
       }}
     >
       {!online

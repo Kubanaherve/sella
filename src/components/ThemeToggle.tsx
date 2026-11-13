@@ -23,7 +23,7 @@ export function ThemeToggle({ className, compact = false }: Props) {
         toggleAppearance();
       }}
       className={cn(
-        "sella-press inline-flex items-center justify-center gap-2 rounded-2xl border border-primary/20 bg-primary/10 text-primary transition-colors",
+        "sella-press inline-flex items-center justify-center gap-2 rounded-2xl border border-primary/20 dark:border-white/15 bg-primary/10 dark:bg-white/10 text-primary dark:text-[#9EC4FF] transition-colors shadow-sm",
         compact ? "h-10 w-10" : "h-12 w-full px-4 font-semibold text-sm",
         className
       )}

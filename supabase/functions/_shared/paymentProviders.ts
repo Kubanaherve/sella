@@ -6,6 +6,8 @@
  * only completes when a signed test webhook / admin approve arrives.
  */
 
+import { toPaypackLocalPhone } from "./phone.ts";
+
 export type ProviderId = "paypack" | "airtel_open_api" | "mtn_momo" | "test";
 
 export type CollectInput = {
@@ -117,8 +119,8 @@ async function collectPaypack(input: CollectInput): Promise<CollectResult> {
       Accept: "application/json",
     },
     body: JSON.stringify({
-      number: input.phoneE164.replace("+", ""),
-      amount: input.amountRwf,
+      number: toPaypackLocalPhone(input.phoneE164),
+      amount: Math.round(input.amountRwf),
       environment: Deno.env.get("PAYPACK_ENV") || "production",
     }),
   });

@@ -19,7 +19,8 @@ export function sumRwf(values: Iterable<Rwf>): Rwf {
 
 export function lineTotal(unitPrice: Rwf, quantity: number): Rwf {
   const q = Math.max(0, Math.floor(Number(quantity) || 0));
-  return toRwf(unitPrice) * q;
+  const u = Math.max(0, toRwf(unitPrice));
+  return u * q;
 }
 
 export function clampPaid(amount: Rwf, due: Rwf): Rwf {

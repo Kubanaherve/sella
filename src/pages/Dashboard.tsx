@@ -47,8 +47,12 @@ interface DashboardStats {
 
 type Period = "today" | "week";
 
-const loadCachedStats = (): DashboardStats | null => {
-  const cached = localStorage.getItem("dashboard_stats_cache");
+function statsCacheKey(userKey: string | null | undefined): string {
+  return userKey ? `dashboard_stats_cache:${userKey}` : "dashboard_stats_cache";
+}
+
+const loadCachedStats = (userKey?: string | null): DashboardStats | null => {
+  const cached = localStorage.getItem(statsCacheKey(userKey));
   if (!cached) return null;
   try {
     return JSON.parse(cached) as DashboardStats;
@@ -96,7 +100,11 @@ const DashboardPage = () => {
       ? String(profile.business_name)
       : null;
 
-  const cached = loadCachedStats();
+  const cacheUserKey =
+    (profile && "user_id" in profile && profile.user_id) ||
+    (profile && "id" in profile && profile.id) ||
+    null;
+  const cached = loadCachedStats(cacheUserKey);
   const [stats, setStats] = useState<DashboardStats>(
     cached || {
       totalUnpaid: 0,
@@ -136,7 +144,7 @@ const DashboardPage = () => {
         targetMoney: newStats.targetMoney,
       };
       setStats(next);
-      localStorage.setItem("dashboard_stats_cache", JSON.stringify(next));
+      localStorage.setItem(statsCacheKey(cacheUserKey), JSON.stringify(next));
 
       const debts = await listActiveDebts();
       await notifyDebtAlerts(
@@ -158,7 +166,7 @@ const DashboardPage = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [cacheUserKey]);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {

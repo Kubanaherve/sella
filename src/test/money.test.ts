@@ -17,6 +17,12 @@ describe("money helpers", () => {
     expect(lineTotal(25000, 2)).toBe(50000);
   });
 
+  it("clamps negative unit price and quantity", () => {
+    expect(lineTotal(-5000, 2)).toBe(0);
+    expect(lineTotal(5000, -2)).toBe(0);
+    expect(lineTotal(-5000, -2)).toBe(0);
+  });
+
   it("handles split payment MoMo + cash", () => {
     const r = normalizePaymentSlices(
       [

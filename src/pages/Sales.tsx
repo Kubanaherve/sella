@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/lib/kinyarwanda";
 import { getDateKeyFromIso, isDateInFilter } from "@/lib/reporting";
 import { getDailyReports, listRecentSales, resetSalesMoney, setAppSetting } from "@/db/api";

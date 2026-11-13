@@ -223,6 +223,7 @@ const NewSalePage: React.FC = () => {
   };
 
   const handleSubmit = async () => {
+    if (saving) return; // prevent double-confirm / double-submit
     setConfirmOpen(false);
     const slices = paySlices
       .map((p) => ({
