@@ -19,12 +19,12 @@ async function initNativeChrome() {
   } catch {
     /* plugin optional in web */
   }
-  // Keep native splash until React SellaSplash mounts, then hide quickly
+  // Stage 1 → 2: keep native splash until React splash paints, then crossfade
   try {
     const { SplashScreen } = await import("@capacitor/splash-screen");
     window.setTimeout(() => {
-      void SplashScreen.hide({ fadeOutDuration: 420 });
-    }, 220);
+      void SplashScreen.hide({ fadeOutDuration: 280 });
+    }, 160);
   } catch {
     /* ignore */
   }

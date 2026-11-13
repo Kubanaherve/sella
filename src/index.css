@@ -72,6 +72,14 @@
       linear-gradient(165deg, #f7f9ff 0%, #e8eefc 48%, #d9e4fa 100%);
     --sella-ambient-image: url("/brand/sella-glass-ambient.jpg");
 
+    /* Motion system (see src/lib/motion.ts) */
+    --sella-ease: cubic-bezier(0.22, 1, 0.36, 1);
+    --sella-motion-micro: 150ms;
+    --sella-motion-button: 140ms;
+    --sella-motion-nav: 220ms;
+    --sella-motion-card: 240ms;
+    --sella-motion-modal: 200ms;
+
     --sidebar-background: 214 60% 98%;
     --sidebar-foreground: 222 30% 25%;
     --sidebar-primary: 217 100% 55%;
@@ -503,7 +511,8 @@
   }
 
   .sella-btn-glass {
-    @apply inline-flex items-center justify-center gap-1.5 font-bold active:scale-[0.98] transition-transform;
+    @apply inline-flex items-center justify-center gap-1.5 font-bold active:scale-[0.98];
+    transition: transform var(--sella-motion-button) var(--sella-ease);
     background: rgba(26, 111, 255, 0.1);
     border: 1px solid rgba(26, 111, 255, 0.16);
     color: #0b3fcc;
@@ -512,7 +521,8 @@
   }
 
   .sella-btn-glass-solid {
-    @apply inline-flex items-center justify-center gap-1.5 font-bold text-white active:scale-[0.98] transition-transform;
+    @apply inline-flex items-center justify-center gap-1.5 font-bold text-white active:scale-[0.98];
+    transition: transform var(--sella-motion-button) var(--sella-ease);
     background: var(--gradient-glass-blue);
     border: 1px solid rgba(255, 255, 255, 0.28);
     box-shadow:
@@ -827,18 +837,70 @@
   25%, 75% { opacity: 0; }
 }
 
-/* ── Sella splash signature ───────────────────────────────────────── */
+/* ── Sella splash (stage 2) — white + liquid glass write ──────────── */
+.sella-splash-root {
+  transition: opacity 320ms var(--sella-ease);
+}
+
+.sella-splash-root--light {
+  background: #b9d4ff;
+}
+
+.sella-splash-root--out {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.sella-splash-light-atmosphere {
+  background:
+    radial-gradient(ellipse 95% 65% at 10% 6%, rgba(90, 200, 250, 0.72), transparent 56%),
+    radial-gradient(ellipse 85% 60% at 94% 94%, rgba(26, 111, 255, 0.55), transparent 54%),
+    radial-gradient(ellipse 75% 55% at 48% 40%, rgba(11, 63, 204, 0.22), transparent 66%),
+    radial-gradient(ellipse 60% 45% at 80% 18%, rgba(90, 200, 250, 0.4), transparent 60%),
+    linear-gradient(165deg, #cfe4ff 0%, #a8cbff 45%, #8fb8ff 72%, #7aa8ff 100%);
+}
+
 .sella-splash-mark {
-  animation: sella-mark-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: sella-mark-in 0.55s var(--sella-ease) both;
+}
+
+.sella-logo-stage {
+  opacity: 0;
+  transform: scale(0.88) translateY(10px);
+  pointer-events: none;
+  transition:
+    opacity 480ms var(--sella-ease),
+    transform 480ms var(--sella-ease);
+}
+
+.sella-logo-stage--in {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+  pointer-events: auto;
+}
+
+.sella-logo-mark {
+  position: relative;
+  z-index: 1;
+}
+
+.sella-logo-mark .sella-logo-aura {
+  position: absolute;
+  inset: -30%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(90, 200, 250, 0.34) 0%, transparent 68%);
+  filter: blur(18px);
+  pointer-events: none;
+  z-index: 0;
 }
 
 .sella-glass-script {
-  animation: sella-glass-script-in 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.35s both;
+  animation: sella-glass-script-in 0.9s var(--sella-ease) 0.35s both;
   filter: drop-shadow(0 0 28px rgba(90, 200, 250, 0.35));
 }
 
 .sella-glass-script-write {
-  animation: sella-glass-script-in 0.85s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: sella-glass-script-in 0.85s var(--sella-ease) both;
   filter: drop-shadow(0 10px 28px rgba(11, 63, 204, 0.28));
 }
 
@@ -855,42 +917,102 @@
   }
 }
 
-.sella-signature-stroke {
-  fill: none;
-  stroke: #ffffff;
-  stroke-width: 1.8;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-dasharray: 480;
-  stroke-dashoffset: 480;
-  animation: sella-sign-write 1.65s cubic-bezier(0.45, 0, 0.2, 1) 0.4s forwards;
+/* Liquid-glass wordmark write reveal (clip left → right) */
+.sella-signature {
+  overflow: visible;
 }
 
-.sella-signature-fill {
-  fill: url(#sigFill);
+.sella-signature-write {
+  overflow: hidden;
+  clip-path: inset(0 100% 0 0);
+  filter: drop-shadow(0 10px 28px rgba(26, 111, 255, 0.28));
+}
+
+.sella-signature--playing .sella-signature-write {
+  animation: sella-liquid-write 1.15s var(--sella-ease) forwards;
+}
+
+.sella-signature-img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+@keyframes sella-liquid-write {
+  0% {
+    clip-path: inset(0 100% 0 0);
+  }
+  100% {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+.sella-signature--instant .sella-signature-write {
+  clip-path: inset(0 0 0 0);
+  animation: none;
+}
+
+.sella-signature-settle {
+  animation: sella-signature-settle 0.4s var(--sella-ease) both;
+}
+
+@keyframes sella-signature-settle {
+  from {
+    transform: scale(1.02);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+.sella-splash-progress {
+  width: min(56vw, 180px);
   opacity: 0;
-  animation: sella-fill-in 0.45s ease-out 1.85s forwards;
+  transition: opacity 280ms var(--sella-ease);
 }
 
-.sella-signature-underline {
-  stroke-dasharray: 280;
-  stroke-dashoffset: 280;
-  animation: sella-sign-write 0.65s ease-out 2s forwards;
+.sella-splash-progress--run {
+  opacity: 1;
 }
 
-@keyframes sella-fill-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+.sella-splash-progress--fade {
+  opacity: 0;
+  transition: opacity 420ms var(--sella-ease);
+}
+
+.sella-splash-progress-track {
+  height: 3px;
+  border-radius: 999px;
+  background: rgba(26, 111, 255, 0.12);
+  overflow: hidden;
+}
+
+.sella-splash-progress-fill {
+  height: 100%;
+  width: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #0b3fcc, #1a6fff 55%, #5ac8fa);
+  box-shadow: 0 0 12px rgba(90, 200, 250, 0.45);
+}
+
+.sella-splash-progress--run .sella-splash-progress-fill {
+  animation: sella-progress-fill 1.45s var(--sella-ease) 0.12s forwards;
+}
+
+@keyframes sella-progress-fill {
+  0% { width: 0%; }
+  70% { width: 78%; }
+  100% { width: 100%; }
 }
 
 .sella-splash-tag {
-  animation: sella-tag-in 0.5s ease-out 2.1s both;
+  animation: sella-tag-in 0.4s var(--sella-ease) both;
 }
 
 @keyframes sella-mark-in {
   from {
     opacity: 0;
-    transform: scale(0.82) translateY(12px);
+    transform: scale(0.9) translateY(8px);
   }
   to {
     opacity: 1;
@@ -898,28 +1020,58 @@
   }
 }
 
-@keyframes sella-sign-write {
-  to {
-    stroke-dashoffset: 0;
-  }
-}
-
 @keyframes sella-tag-in {
   from {
     opacity: 0;
+    transform: translateY(6px);
     letter-spacing: 0.4em;
   }
   to {
-    opacity: 0.75;
-    letter-spacing: 0.22em;
+    opacity: 0.9;
+    transform: translateY(0);
+    letter-spacing: 0.32em;
   }
 }
+
+/* Interactive feedback helpers */
+.sella-press {
+  transition: transform var(--sella-motion-button) var(--sella-ease);
+}
+.sella-press:active {
+  transform: scale(0.98);
+}
+
+.sella-card-enter {
+  animation: sella-card-enter var(--sella-motion-card) var(--sella-ease) both;
+}
+
+@keyframes sella-card-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.sella-stagger > *:nth-child(1) { animation-delay: 0ms; }
+.sella-stagger > *:nth-child(2) { animation-delay: 40ms; }
+.sella-stagger > *:nth-child(3) { animation-delay: 80ms; }
+.sella-stagger > *:nth-child(4) { animation-delay: 120ms; }
+.sella-stagger > *:nth-child(5) { animation-delay: 160ms; }
+.sella-stagger > *:nth-child(6) { animation-delay: 200ms; }
 
 .sella-btn-confirm {
   @apply w-full font-bold text-white rounded-2xl flex items-center justify-center gap-2;
   min-height: 52px;
   background: #16a34a;
   box-shadow: 0 10px 24px rgba(22, 163, 74, 0.35);
+  transition: transform var(--sella-motion-button) var(--sella-ease), opacity 140ms ease;
+}
+.sella-btn-confirm:active:not(:disabled) {
+  transform: scale(0.98);
 }
 
 .sella-btn-confirm:disabled {
@@ -966,6 +1118,24 @@
     linear-gradient(135deg, #0b3fcc 0%, #1a6fff 48%, #5ac8fa 100%);
 }
 
+.sella-pay-card-front.is-visa {
+  background:
+    radial-gradient(ellipse 70% 60% at 85% 15%, rgba(255, 255, 255, 0.22), transparent 50%),
+    linear-gradient(145deg, #1a1f71 0%, #1a56db 45%, #0ea5e9 100%);
+}
+
+.sella-pay-card-front.is-mastercard {
+  background:
+    radial-gradient(ellipse 60% 50% at 20% 80%, rgba(247, 158, 27, 0.35), transparent 55%),
+    linear-gradient(145deg, #1a1a2e 0%, #16213e 40%, #0f3460 100%);
+}
+
+.sella-pay-card-front.is-amex {
+  background:
+    radial-gradient(ellipse 70% 60% at 90% 10%, rgba(255, 255, 255, 0.18), transparent 50%),
+    linear-gradient(145deg, #016fd0 0%, #2e77bc 50%, #6bb3e8 100%);
+}
+
 .sella-pay-card-back {
   transform: rotateY(180deg);
   background: linear-gradient(145deg, #0a2a7a 0%, #1347c4 55%, #1a6fff 100%);
@@ -996,7 +1166,7 @@
 /* ── In-app page transitions (glass / light bloom) ─────────────────── */
 /* Opacity only — filter/transform create containing blocks that trap fixed UI. */
 .sella-page-enter {
-  animation: sella-page-enter 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: sella-page-enter var(--sella-motion-nav) var(--sella-ease) both;
 }
 
 @keyframes sella-page-enter {
@@ -1025,10 +1195,32 @@
   .sella-page-enter,
   .sella-fab-menu,
   .sella-splash-mark,
-  .sella-signature-stroke,
-  .sella-signature-fill,
-  .sella-signature-underline,
-  .sella-splash-tag {
+  .sella-logo-stage,
+  .sella-signature-write,
+  .sella-signature-settle,
+  .sella-splash-tag,
+  .sella-splash-progress-fill,
+  .sella-card-enter {
     animation: none !important;
+    transition: none !important;
+  }
+
+  .sella-logo-stage,
+  .sella-logo-stage--in {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
+
+  .sella-signature-write {
+    clip-path: inset(0 0 0 0) !important;
+  }
+
+  .sella-splash-progress-fill {
+    width: 100% !important;
+  }
+
+  .sella-stagger > * {
+    animation-delay: 0ms !important;
   }
 }

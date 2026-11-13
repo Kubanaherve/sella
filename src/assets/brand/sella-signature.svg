@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 120" fill="none" aria-label="Sella">
+  <defs>
+    <linearGradient id="sellaSigStroke" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#5AC8FA"/>
+      <stop offset="45%" stop-color="#1A6FFF"/>
+      <stop offset="100%" stop-color="#0B3FCC"/>
+    </linearGradient>
+  </defs>
+  <path fill="none" stroke="url(#sellaSigStroke)" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"
+    d="M 36 72 C 40 48, 58 34, 78 38 C 98 42, 108 62, 96 76 C 84 90, 58 94, 44 82 C 52 78, 70 70, 92 66 C 118 60, 138 48, 152 42 C 168 36, 184 40, 178 56 C 172 72, 148 78, 136 68 C 148 66, 168 58, 186 52 C 198 48, 204 36, 200 28 C 196 42, 204 78, 208 96 C 210 78, 218 48, 232 42 C 246 36, 252 28, 248 24 C 246 40, 254 78, 258 96 C 262 78, 278 48, 302 44 C 322 40, 338 52, 332 68 C 326 84, 302 90, 286 80 C 300 76, 318 70, 336 74"/>
+  <path fill="none" stroke="url(#sellaSigStroke)" stroke-width="2.4" stroke-linecap="round"
+    d="M 48 102 C 110 112, 210 114, 318 98"/>
+</svg>

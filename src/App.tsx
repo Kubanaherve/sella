@@ -8,6 +8,8 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { SubscriptionGuard } from "./components/SubscriptionGuard";
 import { AppShell } from "./components/AppShell";
 import { SellaSplash } from "./components/SellaSplash";
+import { ErrorBoundary } from "./components/ErrorBoundary";
+import { ConfigGate } from "./components/ConfigGate";
 import AuthPage from "./pages/Auth";
 import DashboardPage from "./pages/Dashboard";
 import AddDebtPage from "./pages/AddDebt";
@@ -25,6 +27,8 @@ import ImportCustomersPage from "./pages/ImportCustomers";
 import ImportInventoryPage from "./pages/ImportInventory";
 import AccountPage from "./pages/Account";
 import AdminPaymentsPage from "./pages/AdminPayments";
+import AdminDashboardPage from "./pages/AdminDashboard";
+import NotificationsPage from "./pages/Notifications";
 import LegalTermsPage from "./pages/LegalTerms";
 import PrivacyPolicyPage from "./pages/PrivacyPolicy";
 import MorePage from "./pages/More";
@@ -34,7 +38,7 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-const SPLASH_KEY = "sella_splash_seen_v4_ambient_write";
+const SPLASH_KEY = "sella_splash_seen_v9_capital_Sella";
 
 const App = () => {
   const [showSplash, setShowSplash] = useState(() => {
@@ -55,8 +59,10 @@ const App = () => {
   }, []);
 
   return (
+  <ErrorBoundary label="root">
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
+      <ConfigGate>
       <AuthProvider>
         {showSplash && <SellaSplash onDone={finishSplash} />}
         <Toaster />
@@ -72,23 +78,25 @@ const App = () => {
               <Route path="/install" element={<InstallPage />} />
 
               <Route element={<AppShell />}>
-                <Route path="/dashboard" element={<DashboardPage />} />
-                <Route path="/debts" element={<DebtsPage />} />
-                <Route path="/sales" element={<SalesPage />} />
-                <Route path="/inventory" element={<InventoryPage />} />
+                <Route path="/dashboard" element={<ErrorBoundary label="dashboard"><DashboardPage /></ErrorBoundary>} />
+                <Route path="/debts" element={<ErrorBoundary label="debts"><DebtsPage /></ErrorBoundary>} />
+                <Route path="/sales" element={<ErrorBoundary label="sales"><SalesPage /></ErrorBoundary>} />
+                <Route path="/inventory" element={<ErrorBoundary label="inventory"><InventoryPage /></ErrorBoundary>} />
                 <Route path="/more" element={<MorePage />} />
                 <Route path="/assistant" element={<AssistantPage />} />
                 <Route path="/clients" element={<ClientsPage />} />
                 <Route path="/inbox" element={<InboxPage />} />
-                <Route path="/add-debt" element={<AddDebtPage />} />
-                <Route path="/new-sale" element={<AddDebtPage />} />
+                <Route path="/add-debt" element={<ErrorBoundary label="sale"><AddDebtPage /></ErrorBoundary>} />
+                <Route path="/new-sale" element={<ErrorBoundary label="sale"><AddDebtPage /></ErrorBoundary>} />
                 <Route path="/receipt-settings" element={<ReceiptSettingsPage />} />
                 <Route path="/account" element={<AccountPage />} />
-                <Route path="/subscribe" element={<SubscribePage />} />
+                <Route path="/subscribe" element={<ErrorBoundary label="subscribe"><SubscribePage /></ErrorBoundary>} />
                 <Route path="/billing" element={<BillingPage />} />
                 <Route path="/import-customers" element={<ImportCustomersPage />} />
                 <Route path="/import-inventory" element={<ImportInventoryPage />} />
                 <Route path="/admin/payments" element={<AdminPaymentsPage />} />
+                <Route path="/admin" element={<AdminDashboardPage />} />
+                <Route path="/notifications" element={<NotificationsPage />} />
               </Route>
 
               <Route path="*" element={<NotFound />} />
@@ -96,8 +104,10 @@ const App = () => {
           </SubscriptionGuard>
         </BrowserRouter>
       </AuthProvider>
+      </ConfigGate>
     </TooltipProvider>
   </QueryClientProvider>
+  </ErrorBoundary>
   );
 };
 

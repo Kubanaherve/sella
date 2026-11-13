@@ -298,7 +298,7 @@ const DashboardPage = () => {
         ) : (
           <>
             {/* Hero money card — bold centered take */}
-            <section className="glass-card relative rounded-3xl px-4 pt-4 pb-5 animate-fade-in">
+            <section className="glass-card relative rounded-3xl px-4 pt-4 pb-5 sella-card-enter">
               <div className="relative z-10 flex items-center justify-between gap-2 mb-5">
                 <div className="inline-flex items-center gap-1.5 rounded-full bg-[#1A6FFF]/12 border border-white/60 px-2.5 py-1 max-w-[55%] backdrop-blur-sm">
                   <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
@@ -391,8 +391,8 @@ const DashboardPage = () => {
               </div>
             </section>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="sella-stat animate-fade-in">
+            <div className="grid grid-cols-2 gap-3 sella-stagger">
+              <div className="sella-stat sella-card-enter">
                 <p className="text-[10px] text-muted-foreground mb-1">
                   {labels.totalUnpaid}
                 </p>
@@ -400,7 +400,7 @@ const DashboardPage = () => {
                   {formatCurrency(stats.totalUnpaid)}
                 </p>
               </div>
-              <div className="sella-stat animate-fade-in" style={{ animationDelay: "0.05s" }}>
+              <div className="sella-stat sella-card-enter">
                 <div className="flex items-center gap-1.5 mb-1">
                   <Users size={12} className="text-primary" />
                   <p className="text-[10px] text-muted-foreground">{labels.customers}</p>
@@ -417,7 +417,7 @@ const DashboardPage = () => {
                 void hapticLight();
                 navigate("/assistant");
               }}
-              className="w-full rounded-2xl border border-primary/20 bg-primary/5 px-4 py-3 flex items-center gap-3 text-left active:scale-[0.99] transition-transform"
+              className="w-full rounded-2xl border border-primary/20 bg-primary/5 px-4 py-3 flex items-center gap-3 text-left sella-press"
             >
               <div className="w-10 h-10 rounded-xl bg-primary/15 text-primary flex items-center justify-center">
                 <MessageCircle size={18} />

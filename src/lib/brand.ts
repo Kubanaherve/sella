@@ -14,6 +14,10 @@ export const BRAND = {
   publicGlassScriptHero: "/brand/sella-glass-script-hero.jpg",
   publicGlassAmbient: "/brand/sella-glass-ambient.jpg",
   publicGlassLockup: "/brand/sella-glass-lockup.jpg",
+  /** Mission-led splash foundation (local; generated for Sella) */
+  publicSplashFoundation: "/brand/sella-splash-foundation.jpg",
+  /** Liquid-glass cursive wordmark for splash write animation */
+  publicLiquidGlassScript: "/brand/sella-liquid-glass-script.png",
   description: "Gukurikirana amadeni, igurisha n'ibicuruzwa bya business yawe",
   appId: "com.sella.app",
   bundleId: "com.sella.app",

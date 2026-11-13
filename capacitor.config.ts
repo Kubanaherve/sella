@@ -16,9 +16,12 @@ const config: CapacitorConfig = {
     SplashScreen: {
       launchShowDuration: 0,
       launchAutoHide: false,
-      backgroundColor: "#040816",
+      // Match React blue splash skin — avoids flash before stage 2
+      backgroundColor: "#B9D4FF",
       showSpinner: false,
       androidScaleType: "CENTER_CROP",
+      splashFullScreen: true,
+      splashImmersive: true,
     },
     StatusBar: {
       style: "DARK",

@@ -1,88 +1,119 @@
-import { useEffect, useState } from "react";
-import { BrandMark } from "@/components/BrandMark";
-import { GlassWordmark } from "@/components/GlassWordmark";
+import { useEffect, useRef, useState } from "react";
+import { SellaLogoMark } from "@/components/SellaLogoMark";
+import { SellaSignature } from "@/components/SellaSignature";
 import { BRAND } from "@/lib/brand";
-import glassAmbient from "@/assets/brand/sella-glass-ambient.jpg";
+import { MOTION, prefersReducedMotion, SPLASH_TIMING } from "@/lib/motion";
 
 type Props = {
   onDone: () => void;
   minMs?: number;
 };
 
-type Phase = "write" | "fade" | "logo" | "out";
+type Phase = "hold" | "write" | "cross" | "logo" | "tag" | "out";
 
 /**
- * Splash: handwritten Sella writes → fades out → glass logo on soft ambient field.
+ * White splash:
+ * 1) write liquid-glass “sella”
+ * 2) progress bar fills
+ * 3) word fades out → coded SVG logo fades in (same glass skin)
+ * 4) bar fades → tagline → exit
  */
-export function SellaSplash({ onDone, minMs = 4200 }: Props) {
-  const [phase, setPhase] = useState<Phase>("write");
+export function SellaSplash({ onDone, minMs = MOTION.splashMax }: Props) {
+  const [phase, setPhase] = useState<Phase>("hold");
+  const doneRef = useRef(false);
+  const reduced = prefersReducedMotion();
 
   useEffect(() => {
-    const tFade = window.setTimeout(() => setPhase("fade"), 1700);
-    const tLogo = window.setTimeout(() => setPhase("logo"), 2300);
-    const tOut = window.setTimeout(() => setPhase("out"), minMs);
-    const tDone = window.setTimeout(onDone, minMs + 520);
-    return () => {
-      window.clearTimeout(tFade);
-      window.clearTimeout(tLogo);
-      window.clearTimeout(tOut);
-      window.clearTimeout(tDone);
+    const finish = () => {
+      if (doneRef.current) return;
+      doneRef.current = true;
+      onDone();
     };
-  }, [minMs, onDone]);
 
-  const showScript = phase === "write" || phase === "fade";
-  const showLogo = phase === "logo" || phase === "out";
+    if (reduced) {
+      setPhase("logo");
+      const t = window.setTimeout(finish, Math.min(520, minMs));
+      return () => window.clearTimeout(t);
+    }
+
+    const timers: number[] = [];
+    const at = (ms: number, fn: () => void) => {
+      timers.push(window.setTimeout(fn, ms));
+    };
+
+    at(SPLASH_TIMING.writeStart, () => setPhase("write"));
+    at(SPLASH_TIMING.wordOut, () => setPhase("cross"));
+    at(SPLASH_TIMING.logoIn, () => setPhase("logo"));
+    at(SPLASH_TIMING.tagline, () => setPhase("tag"));
+    at(Math.min(SPLASH_TIMING.exitStart, Math.max(0, minMs - MOTION.splashExit)), () =>
+      setPhase("out")
+    );
+    at(Math.min(SPLASH_TIMING.done, minMs), finish);
+
+    return () => {
+      timers.forEach((id) => window.clearTimeout(id));
+    };
+  }, [minMs, onDone, reduced]);
+
+  const wordLeaving = phase === "cross";
+  const showLogo = phase === "logo" || phase === "tag" || phase === "out" || reduced;
+  const showBar = phase === "write" || phase === "cross" || phase === "logo";
+  const barFading = phase === "logo" || phase === "tag" || phase === "out";
+  const showTag = phase === "tag" || phase === "out";
 
   return (
     <div
-      className={`fixed inset-0 z-[200] flex flex-col items-center justify-center overflow-hidden transition-opacity duration-500 ease-out ${
-        phase === "out" ? "opacity-0 pointer-events-none" : "opacity-100"
+      className={`sella-splash-root sella-splash-root--light fixed inset-0 z-[200] flex flex-col items-center justify-center overflow-hidden ${
+        phase === "out" ? "sella-splash-root--out" : ""
       }`}
       aria-hidden={phase === "out"}
     >
-      <img
-        src={glassAmbient}
-        alt=""
-        className="pointer-events-none absolute inset-0 h-full w-full object-cover"
-        draggable={false}
-      />
-      <div className="pointer-events-none absolute inset-0 sella-glass-ambient-veil" />
+      <div className="pointer-events-none absolute inset-0 sella-splash-light-atmosphere" />
 
-      <div className="relative z-10 flex min-h-[220px] w-full flex-col items-center justify-center px-8">
-        {/* Handwritten Sella — writes then disappears */}
-        <div
-          className={`absolute flex flex-col items-center transition-all duration-500 ease-out ${
-            showScript && phase === "write"
-              ? "opacity-100 scale-100 translate-y-0"
-              : showScript && phase === "fade"
-                ? "opacity-0 scale-95 translate-y-2 blur-sm"
-                : "opacity-0 scale-90 pointer-events-none"
-          }`}
-        >
-          <div className="sella-glass-script-write">
-            <GlassWordmark size="hero" glow />
+      <div className="relative z-10 flex w-full max-w-sm flex-col items-center px-8">
+        {/* Shared stage so word → logo crossfade stays centered */}
+        <div className="relative flex h-[168px] w-full items-center justify-center sm:h-[184px]">
+          {(phase === "write" || phase === "cross") && (
+            <div
+              className={`absolute inset-x-0 flex justify-center transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+                wordLeaving
+                  ? "opacity-0 scale-95 translate-y-1 blur-[2px]"
+                  : "opacity-100 scale-100"
+              }`}
+            >
+              <div className="w-[min(86vw,300px)]">
+                <SellaSignature className="sella-signature--playing" />
+              </div>
+            </div>
+          )}
+
+          <div
+            className={`sella-logo-stage absolute flex flex-col items-center ${
+              showLogo ? "sella-logo-stage--in" : ""
+            }`}
+          >
+            <SellaLogoMark size="hero" />
           </div>
-          <p className="mt-5 text-[11px] font-semibold uppercase tracking-[0.32em] text-[#0B3FCC]/90 sella-splash-tag">
-            {BRAND.tagline}
-          </p>
         </div>
 
-        {/* Logo reveal on soft glass field */}
         <div
-          className={`flex flex-col items-center transition-all duration-700 ease-out ${
-            showLogo
-              ? "opacity-100 scale-100 translate-y-0"
-              : "opacity-0 scale-90 translate-y-4 pointer-events-none"
+          className={`sella-splash-progress mt-2 ${
+            showBar ? "sella-splash-progress--run" : "opacity-0"
+          } ${barFading ? "sella-splash-progress--fade" : ""}`}
+          aria-hidden
+        >
+          <div className="sella-splash-progress-track">
+            <div className="sella-splash-progress-fill" />
+          </div>
+        </div>
+
+        <p
+          className={`mt-5 text-center text-[11px] font-semibold uppercase tracking-[0.32em] text-[#0B3FCC]/85 ${
+            showTag ? "sella-splash-tag" : "opacity-0"
           }`}
         >
-          <div className="sella-splash-mark relative">
-            <div className="absolute inset-[-28%] rounded-[36%] bg-[radial-gradient(circle,rgba(90,200,250,0.35)_0%,transparent_70%)] blur-2xl" />
-            <BrandMark variant="icon" size="hero" framed={false} />
-          </div>
-          <p className="mt-6 text-[11px] font-semibold uppercase tracking-[0.32em] text-[#0B3FCC]/85">
-            {BRAND.tagline}
-          </p>
-        </div>
+          {BRAND.tagline}
+        </p>
       </div>
     </div>
   );
