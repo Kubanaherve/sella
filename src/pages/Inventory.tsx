@@ -312,11 +312,11 @@ const InventoryPage: React.FC = () => {
         {/* KPI strip */}
         <section className="grid grid-cols-2 gap-2.5">
           <div className="sella-stat flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#1A6FFF]/12 text-[#0B3FCC] flex items-center justify-center border border-white/60 backdrop-blur-sm">
+            <div className="w-10 h-10 rounded-xl bg-[#1A6FFF]/12 text-[#0B3FCC] dark:text-[#5AC8FA] flex items-center justify-center border border-white/60 dark:border-white/10 backdrop-blur-sm">
               <Boxes size={18} />
             </div>
             <div>
-              <p className="text-lg font-extrabold tabular-nums leading-none text-[#0B3FCC]">
+              <p className="text-lg font-extrabold tabular-nums leading-none text-[#0B3FCC] dark:text-[#5AC8FA]">
                 {stats.units}
               </p>
               <p className="text-[10px] text-muted-foreground mt-1">
@@ -333,11 +333,11 @@ const InventoryPage: React.FC = () => {
             )}
           >
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-400/15 text-amber-700 flex items-center justify-center border border-white/50 backdrop-blur-sm">
+              <div className="w-10 h-10 rounded-xl bg-amber-400/15 text-amber-700 dark:text-amber-400 flex items-center justify-center border border-white/50 dark:border-white/10 backdrop-blur-sm">
                 <AlertTriangle size={18} />
               </div>
               <div>
-                <p className="text-lg font-extrabold tabular-nums leading-none text-amber-800">
+                <p className="text-lg font-extrabold tabular-nums leading-none text-amber-800 dark:text-amber-300">
                   {stats.low}
                 </p>
                 <p className="text-[10px] text-muted-foreground mt-1">
@@ -354,7 +354,7 @@ const InventoryPage: React.FC = () => {
             <div className="relative">
               <Search
                 size={16}
-                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#0B3FCC]/55"
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-primary/60 dark:text-primary-foreground/60"
               />
               <input
                 type="search"
@@ -478,35 +478,37 @@ const InventoryPage: React.FC = () => {
                       </div>
 
                       <div className="mt-2.5 grid grid-cols-3 gap-2">
-                        <div className="rounded-xl bg-white/45 border border-white/60 px-2 py-1.5 backdrop-blur-sm">
+                        <div className="glass-sub-card px-2 py-1.5">
                           <p className="text-[9px] text-muted-foreground font-medium">
                             Gurisha
                           </p>
-                          <p className="text-xs font-extrabold tabular-nums truncate text-[#0B3FCC]">
+                          <p className="text-xs font-extrabold tabular-nums truncate text-[#0B3FCC] dark:text-[#5AC8FA]">
                             {formatCurrency(item.selling_price)}
                           </p>
                         </div>
-                        <div className="rounded-xl bg-white/45 border border-white/60 px-2 py-1.5 backdrop-blur-sm">
+                        <div className="glass-sub-card px-2 py-1.5">
                           <p className="text-[9px] text-muted-foreground font-medium">
                             Stock
                           </p>
                           <p
                             className={cn(
                               "text-xs font-extrabold tabular-nums",
-                              low && "text-amber-700"
+                              low ? "text-amber-700 dark:text-amber-400" : "text-foreground"
                             )}
                           >
                             {item.quantity}
                           </p>
                         </div>
-                        <div className="rounded-xl bg-white/45 border border-white/60 px-2 py-1.5 backdrop-blur-sm">
+                        <div className="glass-sub-card px-2 py-1.5">
                           <p className="text-[9px] text-muted-foreground font-medium">
                             Inyungu
                           </p>
                           <p
                             className={cn(
                               "text-xs font-extrabold tabular-nums truncate",
-                              profit >= 0 ? "text-emerald-700" : "text-rose-600"
+                              profit >= 0
+                                ? "text-emerald-700 dark:text-emerald-400"
+                                : "text-rose-600 dark:text-rose-400"
                             )}
                           >
                             {formatCurrency(profit)}
@@ -578,7 +580,7 @@ const InventoryPage: React.FC = () => {
           <div className="sella-sheet-glass w-full sm:max-w-md max-h-[90dvh] rounded-t-3xl sm:rounded-3xl">
             <div className="sella-sheet-top px-4 pb-3 border-b border-[#1A6FFF]/10 flex items-center justify-between">
               <div>
-                <h2 className="font-bold text-base text-[#0B3FCC]">
+                <h2 className="font-bold text-base text-[#0B3FCC] dark:text-[#E8F2FF]">
                   Ongeraho ikicuruzwa
                 </h2>
                 <p className="text-[11px] text-muted-foreground">
@@ -727,7 +729,7 @@ const InventoryPage: React.FC = () => {
         <div className="fixed inset-0 z-[85] sella-overlay flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div className="sella-sheet-glass w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl">
             <div className="sella-sheet-top px-4 pb-3 border-b border-[#1A6FFF]/10 flex items-center justify-between">
-              <h2 className="font-bold text-[#0B3FCC]">Hindura stock / igiciro</h2>
+              <h2 className="font-bold text-[#0B3FCC] dark:text-[#E8F2FF]">Hindura stock / igiciro</h2>
               <button
                 type="button"
                 onClick={() => setEditingId(null)}

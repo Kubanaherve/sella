@@ -510,7 +510,7 @@ const SubscribePage = () => {
                 <p className="font-semibold flex items-center gap-2">
                   <Building2 size={16} /> Bank details
                 </p>
-                <div className="rounded-xl bg-white/60 p-3 space-y-1 text-[13px]">
+                <div className="rounded-xl bg-white/60 dark:bg-white/5 border border-white/40 dark:border-white/10 p-3 space-y-1 text-[13px] backdrop-blur-sm">
                   <p>
                     Bank: <strong>{MERCHANT.bankName}</strong>
                   </p>
@@ -533,7 +533,7 @@ const SubscribePage = () => {
                   <AirtelLogo className="h-10" />
                   <p className="font-semibold">Airtel Money merchant</p>
                 </div>
-                <div className="rounded-xl bg-white/60 p-3 space-y-1 text-[13px]">
+                <div className="rounded-xl bg-white/60 dark:bg-white/5 border border-white/40 dark:border-white/10 p-3 space-y-1 text-[13px] backdrop-blur-sm">
                   <p>
                     Name: <strong>{MERCHANT.airtelName}</strong>
                   </p>
@@ -551,7 +551,7 @@ const SubscribePage = () => {
                   <MtnLogo className="h-9" />
                   <p className="font-semibold">MTN MoMo merchant</p>
                 </div>
-                <div className="rounded-xl bg-white/60 p-3 space-y-1 text-[13px]">
+                <div className="rounded-xl bg-white/60 dark:bg-white/5 border border-white/40 dark:border-white/10 p-3 space-y-1 text-[13px] backdrop-blur-sm">
                   <p>
                     Name: <strong>{MERCHANT.momoName}</strong>
                   </p>

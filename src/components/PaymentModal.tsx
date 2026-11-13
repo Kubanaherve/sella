@@ -154,8 +154,8 @@ const PaymentModal = ({
           )}
 
           {remainingAfterPayment > 0 && Number(paymentAmount) > 0 && (
-            <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
-              <p className="text-sm text-amber-800">
+            <div className="p-3 bg-amber-50/80 dark:bg-amber-500/15 border border-amber-200 dark:border-amber-500/30 rounded-xl backdrop-blur-sm">
+              <p className="text-sm text-amber-800 dark:text-amber-200">
                 Amafaranga azasigara:{" "}
                 <strong>{formatCurrency(remainingAfterPayment)}</strong>
               </p>

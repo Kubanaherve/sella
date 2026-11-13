@@ -114,7 +114,7 @@ function normalizeHeader(h: string): string {
   return h
     .trim()
     .toLowerCase()
-    .replace(/[\s\-]+/g, "_")
+    .replace(/[\s-]+/g, "_")
     .replace(/[^\w]/g, "");
 }
 
@@ -141,7 +141,7 @@ function cellString(v: unknown): string {
 
 function parseMoney(raw: string): number | null {
   if (!raw.trim()) return null;
-  const cleaned = raw.replace(/[^\d.,\-]/g, "").replace(/,/g, "");
+  const cleaned = raw.replace(/[^\d.,-]/g, "").replace(/,/g, "");
   if (!cleaned) return null;
   const n = Number(cleaned);
   if (!Number.isFinite(n)) return null;
@@ -150,7 +150,7 @@ function parseMoney(raw: string): number | null {
 
 function parseQty(raw: string): number | null {
   if (!raw.trim()) return null;
-  const cleaned = raw.replace(/,/g, "").replace(/[^\d.\-]/g, "");
+  const cleaned = raw.replace(/,/g, "").replace(/[^\d.-]/g, "");
   const n = Number(cleaned);
   if (!Number.isFinite(n)) return null;
   return n;

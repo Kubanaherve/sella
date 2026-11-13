@@ -795,7 +795,7 @@ const AuthPage = () => {
           </Button>
         )}
         <Button
-          className={`w-full h-12 text-base ${rememberedAccounts.length ? "bg-white/70 border border-[#1A6FFF]/25 text-[#0B3FCC] hover:bg-white/90 backdrop-blur" : "btn-gold"}`}
+          className={`w-full h-12 text-base ${rememberedAccounts.length ? "bg-white/70 dark:bg-white/10 border border-[#1A6FFF]/25 dark:border-white/15 text-[#0B3FCC] dark:text-[#E8F2FF] hover:bg-white/90 dark:hover:bg-white/20 backdrop-blur" : "btn-gold"}`}
           variant={rememberedAccounts.length ? "outline" : "default"}
           onClick={() => setStep("register")}
         >
@@ -803,7 +803,7 @@ const AuthPage = () => {
         </Button>
         <Button
           variant="outline"
-          className="w-full h-12 bg-white/70 border-[#1A6FFF]/25 text-[#0B3FCC] hover:bg-white/90 backdrop-blur"
+          className="w-full h-12 bg-white/70 dark:bg-white/10 border border-[#1A6FFF]/25 dark:border-white/15 text-[#0B3FCC] dark:text-[#E8F2FF] hover:bg-white/90 dark:hover:bg-white/20 backdrop-blur"
           onClick={() => setStep(rememberedAccounts.length ? "picker" : "phone_login")}
         >
           {t("Injira (telefone + PIN 4)", "Sign in (phone + 4-digit PIN)")}

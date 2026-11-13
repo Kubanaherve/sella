@@ -178,7 +178,9 @@ const MorePage = () => {
                 >
                   <div
                     className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                      row.danger ? "bg-rose-50 text-rose-600" : "bg-primary/10 text-primary"
+                      row.danger
+                        ? "bg-rose-50 dark:bg-rose-500/15 text-rose-600 dark:text-rose-400"
+                        : "bg-primary/10 dark:bg-primary/20 text-primary dark:text-[#5AC8FA]"
                     }`}
                   >
                     <Icon size={18} />
@@ -186,7 +188,7 @@ const MorePage = () => {
                   <div className="flex-1 min-w-0">
                     <p
                       className={`text-sm font-semibold truncate ${
-                        row.danger ? "text-rose-600" : ""
+                        row.danger ? "text-rose-600 dark:text-rose-400" : "text-foreground"
                       }`}
                     >
                       {row.label}

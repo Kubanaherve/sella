@@ -378,46 +378,47 @@ const ReportsPage = () => {
             {reports.map((report) => (
               <div
                 key={report.date}
-                className={`bg-white rounded-2xl border p-4 space-y-3 shadow-sm ${
-                  isToday(report.date) ? "border-green-400/60" : "border-slate-200"
-                }`}
+                className={cn(
+                  "sella-list-card p-4 space-y-3",
+                  isToday(report.date) && "ring-2 ring-emerald-500/40"
+                )}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Calendar size={14} className="text-muted-foreground" />
-                    <span className="text-xs font-semibold">
+                    <span className="text-xs font-semibold text-foreground">
                       {formatDateLabel(report.date)}
                       {isToday(report.date) && (
-                        <span className="ml-2 text-[10px] bg-green-500 text-white px-1.5 py-0.5 rounded-full">
+                        <span className="ml-2 text-[10px] bg-green-500 text-white px-1.5 py-0.5 rounded-full font-bold">
                           Uyu munsi
                         </span>
                       )}
                     </span>
                   </div>
 
-                  <span className="text-sm font-bold text-blue-700">
+                  <span className="text-sm font-bold text-primary dark:text-[#5AC8FA]">
                     {formatCurrency(report.expectedTotal)}
                   </span>
                 </div>
 
                 <div className="grid grid-cols-3 gap-2">
-                  <div className="bg-green-50 rounded-lg p-2">
-                    <p className="text-[10px] text-green-500">Amafaranga yinjijwe</p>
-                    <p className="text-sm font-bold text-green-700">
+                  <div className="rounded-xl bg-emerald-50/80 dark:bg-emerald-500/15 border border-emerald-200/50 dark:border-emerald-500/25 p-2 backdrop-blur-sm">
+                    <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">Amafaranga yinjijwe</p>
+                    <p className="text-sm font-bold text-emerald-700 dark:text-emerald-300">
                       {formatCurrency(report.receivedTotal)}
                     </p>
                   </div>
 
-                  <div className="bg-red-50 rounded-lg p-2">
-                    <p className="text-[10px] text-red-500">Ideni ritarishyurwa</p>
-                    <p className="text-sm font-bold text-red-700">
+                  <div className="rounded-xl bg-rose-50/80 dark:bg-rose-500/15 border border-rose-200/50 dark:border-rose-500/25 p-2 backdrop-blur-sm">
+                    <p className="text-[10px] text-rose-600 dark:text-rose-400 font-medium">Ideni ritarishyurwa</p>
+                    <p className="text-sm font-bold text-rose-700 dark:text-rose-300">
                       {formatCurrency(report.unpaidDebt)}
                     </p>
                   </div>
 
-                  <div className="bg-blue-50 rounded-lg p-2">
-                    <p className="text-[10px] text-blue-500">Igiteranyo cyose</p>
-                    <p className="text-sm font-bold text-blue-700">
+                  <div className="rounded-xl bg-blue-50/80 dark:bg-blue-500/15 border border-blue-200/50 dark:border-blue-500/25 p-2 backdrop-blur-sm">
+                    <p className="text-[10px] text-primary dark:text-sky-400 font-medium">Igiteranyo cyose</p>
+                    <p className="text-sm font-bold text-primary dark:text-sky-300">
                       {formatCurrency(report.expectedTotal)}
                     </p>
                   </div>

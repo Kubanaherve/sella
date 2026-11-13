@@ -726,7 +726,7 @@ const DebtsPage = () => {
           value={searchQuery}
           onChange={e => setSearchQuery(e.target.value)}
           placeholder={labels.search + "..."}
-          className="pl-3 bg-white border-slate-200 input-glow"
+          className="pl-3 bg-white/70 dark:bg-white/5 border-border dark:border-white/10 input-glow"
         />
 
         <div className="glass-card-dark relative rounded-2xl p-4 flex items-center justify-between">
@@ -786,13 +786,10 @@ const DebtsPage = () => {
                     )}
                   </div>
                   <div className="text-right shrink-0">
-                    <p
-                      className="font-extrabold tabular-nums text-sm"
-                      style={{ color: "#D97706" }}
-                    >
+                    <p className="font-extrabold tabular-nums text-sm text-amber-600 dark:text-amber-400">
                       {formatCurrency(customer.amount)}
                     </p>
-                    <span className="text-[9px] font-bold uppercase text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded-full">
+                    <span className="text-[9px] font-bold uppercase text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-500/20 border border-transparent dark:border-amber-500/30 px-2 py-0.5 rounded-full">
                       Ideni
                     </span>
                   </div>

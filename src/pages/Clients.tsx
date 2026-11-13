@@ -138,7 +138,7 @@ const ClientsPage = () => {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Andika izina..."
-                className="bg-white border-slate-200 input-glow text-base h-11"
+                className="bg-white/70 dark:bg-white/5 border-border dark:border-white/10 input-glow text-base h-11"
                 autoComplete="off"
               />
             </div>
@@ -154,7 +154,7 @@ const ClientsPage = () => {
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="07X XXX XXXX"
-                className="bg-white border-slate-200 input-glow text-base h-11"
+                className="bg-white/70 dark:bg-white/5 border-border dark:border-white/10 input-glow text-base h-11"
                 inputMode="tel"
                 autoComplete="off"
               />
@@ -196,18 +196,18 @@ const ClientsPage = () => {
               {clients.map((client) => (
                 <div
                   key={client.id}
-                  className="bg-white border border-slate-200 rounded-xl p-3.5 flex items-center justify-between animate-fade-in shadow-sm"
+                  className="sella-list-card p-3.5 flex items-center justify-between animate-fade-in"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <User size={18} className="text-primary" />
+                    <div className="w-10 h-10 rounded-full bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
+                      <User size={18} className="text-primary dark:text-[#5AC8FA]" />
                     </div>
                     <div>
-                      <p className="font-medium text-sm">{client.name}</p>
+                      <p className="font-medium text-sm text-foreground">{client.name}</p>
                       {client.phone && (
                         <a
                           href={`tel:${client.phone}`}
-                          className="text-xs text-primary flex items-center gap-1"
+                          className="text-xs text-primary dark:text-[#5AC8FA] flex items-center gap-1"
                         >
                           <Phone size={10} />
                           {client.phone}

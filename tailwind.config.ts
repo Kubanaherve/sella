@@ -112,6 +112,7 @@ export default {
       },
       boxShadow: {
         'glass': '0 8px 24px rgba(11, 31, 28, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.5)',
+        'glass-dark': '0 16px 40px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.14), inset 0 0 0 1px rgba(255, 255, 255, 0.05)',
         'gold': '0 10px 24px rgba(234, 88, 12, 0.2)',
         'navy': '0 10px 24px rgba(15, 118, 110, 0.25)',
         'premium': '0 16px 40px rgba(11, 31, 28, 0.12)',

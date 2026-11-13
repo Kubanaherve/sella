@@ -217,29 +217,29 @@ const DashboardPage = () => {
       icon: Plus,
       label: labels.newSale,
       path: "/new-sale",
-      tone: "bg-blue-50 text-blue-900",
-      iconTone: "bg-blue-100 text-blue-700",
+      tone: "bg-blue-50/80 text-blue-900 border border-blue-100/60 dark:bg-blue-500/15 dark:text-blue-200 dark:border-blue-400/20 backdrop-blur-md",
+      iconTone: "bg-blue-100 text-blue-700 dark:bg-blue-500/25 dark:text-blue-200",
     },
     {
       icon: List,
       label: labels.debtList,
       path: "/debts",
-      tone: "bg-sky-50 text-sky-900",
-      iconTone: "bg-sky-100 text-sky-700",
+      tone: "bg-sky-50/80 text-sky-900 border border-sky-100/60 dark:bg-sky-500/15 dark:text-sky-200 dark:border-sky-400/20 backdrop-blur-md",
+      iconTone: "bg-sky-100 text-sky-700 dark:bg-sky-500/25 dark:text-sky-200",
     },
     {
       icon: TrendingUp,
       label: labels.salesTab,
       path: "/sales",
-      tone: "bg-indigo-50 text-indigo-900",
-      iconTone: "bg-indigo-100 text-indigo-700",
+      tone: "bg-indigo-50/80 text-indigo-900 border border-indigo-100/60 dark:bg-indigo-500/15 dark:text-indigo-200 dark:border-indigo-400/20 backdrop-blur-md",
+      iconTone: "bg-indigo-100 text-indigo-700 dark:bg-indigo-500/25 dark:text-indigo-200",
     },
     {
       icon: Package,
       label: labels.inventoryTitle,
       path: "/inventory",
-      tone: "bg-slate-50 text-slate-800",
-      iconTone: "bg-slate-100 text-slate-700",
+      tone: "bg-slate-50/80 text-slate-800 border border-slate-200/60 dark:bg-slate-700/25 dark:text-slate-200 dark:border-slate-500/20 backdrop-blur-md",
+      iconTone: "bg-slate-100 text-slate-700 dark:bg-slate-700/50 dark:text-slate-200",
     },
   ];
 
@@ -308,7 +308,7 @@ const DashboardPage = () => {
                 </div>
 
                 <div
-                  className="inline-flex rounded-full bg-muted p-0.5"
+                  className="inline-flex rounded-full bg-muted/80 dark:bg-white/10 p-0.5 backdrop-blur-md border border-transparent dark:border-white/10"
                   role="group"
                   aria-label="Period"
                 >
@@ -319,10 +319,10 @@ const DashboardPage = () => {
                       setPeriod("today");
                     }}
                     className={cn(
-                      "px-3 py-1.5 rounded-full text-[11px] font-semibold transition-colors",
+                      "px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all",
                       period === "today"
-                        ? "bg-white text-foreground shadow-sm"
-                        : "text-muted-foreground"
+                        ? "bg-white text-foreground shadow-sm dark:bg-white/20 dark:text-white dark:shadow-[0_2px_8px_rgba(0,0,0,0.3)]"
+                        : "text-muted-foreground hover:text-foreground"
                     )}
                   >
                     {labels.today}
@@ -334,10 +334,10 @@ const DashboardPage = () => {
                       setPeriod("week");
                     }}
                     className={cn(
-                      "px-3 py-1.5 rounded-full text-[11px] font-semibold transition-colors",
+                      "px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all",
                       period === "week"
-                        ? "bg-white text-foreground shadow-sm"
-                        : "text-muted-foreground"
+                        ? "bg-white text-foreground shadow-sm dark:bg-white/20 dark:text-white dark:shadow-[0_2px_8px_rgba(0,0,0,0.3)]"
+                        : "text-muted-foreground hover:text-foreground"
                     )}
                   >
                     {labels.week}
@@ -360,8 +360,8 @@ const DashboardPage = () => {
                     {moneyParts.suffix}
                   </span>
                 </p>
-                <div className="mt-3 inline-flex items-center rounded-full bg-emerald-50 px-3 py-1">
-                  <span className="text-[11px] font-semibold text-emerald-700">
+                <div className="mt-3 inline-flex items-center rounded-full bg-emerald-50 dark:bg-emerald-500/15 border border-emerald-200/50 dark:border-emerald-500/25 px-3 py-1 backdrop-blur-sm">
+                  <span className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
                     {labels.salesValue}: {formatCurrency(periodSales)}
                   </span>
                 </div>
@@ -369,7 +369,7 @@ const DashboardPage = () => {
 
               <div className="mt-6 grid grid-cols-2 gap-3 border-t border-border pt-4">
                 <div className="text-center px-1">
-                  <div className="inline-flex items-center justify-center gap-1 text-emerald-600 mb-1">
+                  <div className="inline-flex items-center justify-center gap-1 text-emerald-600 dark:text-emerald-400 mb-1">
                     <ArrowUpRight size={14} strokeWidth={2.5} />
                     <span className="text-sm font-bold tabular-nums text-foreground">
                       {formatCurrency(periodSales)}
@@ -378,7 +378,7 @@ const DashboardPage = () => {
                   <p className="text-[11px] text-muted-foreground">{labels.salesValue}</p>
                 </div>
                 <div className="text-center px-1 border-l border-border">
-                  <div className="inline-flex items-center justify-center gap-1 text-rose-600 mb-1">
+                  <div className="inline-flex items-center justify-center gap-1 text-rose-600 dark:text-rose-400 mb-1">
                     <ArrowDownRight size={14} strokeWidth={2.5} />
                     <span className="text-sm font-bold tabular-nums text-foreground">
                       {formatCurrency(periodDebt)}
@@ -396,16 +396,16 @@ const DashboardPage = () => {
                 <p className="text-[10px] text-muted-foreground mb-1">
                   {labels.totalUnpaid}
                 </p>
-                <p className="text-base font-bold text-rose-600 tabular-nums">
+                <p className="text-base font-bold text-rose-600 dark:text-rose-400 tabular-nums">
                   {formatCurrency(stats.totalUnpaid)}
                 </p>
               </div>
               <div className="sella-stat sella-card-enter">
                 <div className="flex items-center gap-1.5 mb-1">
-                  <Users size={12} className="text-primary" />
+                  <Users size={12} className="text-primary dark:text-[#5AC8FA]" />
                   <p className="text-[10px] text-muted-foreground">{labels.customers}</p>
                 </div>
-                <p className="text-base font-bold text-primary tabular-nums">
+                <p className="text-base font-bold text-primary dark:text-[#5AC8FA] tabular-nums">
                   {stats.totalCustomers}
                 </p>
               </div>
@@ -417,9 +417,9 @@ const DashboardPage = () => {
                 void hapticLight();
                 navigate("/assistant");
               }}
-              className="w-full rounded-2xl border border-primary/20 bg-primary/5 px-4 py-3 flex items-center gap-3 text-left sella-press"
+              className="w-full rounded-2xl border border-primary/20 bg-primary/5 dark:bg-primary/10 dark:border-primary/30 px-4 py-3 flex items-center gap-3 text-left sella-press backdrop-blur-md"
             >
-              <div className="w-10 h-10 rounded-xl bg-primary/15 text-primary flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-primary/15 dark:bg-primary/25 text-primary dark:text-[#5AC8FA] flex items-center justify-center">
                 <MessageCircle size={18} />
               </div>
               <div className="min-w-0 flex-1">
@@ -428,7 +428,7 @@ const DashboardPage = () => {
                   {labels.assistantHint}
                 </p>
               </div>
-              <ChevronRight size={16} className="text-primary shrink-0" />
+              <ChevronRight size={16} className="text-primary dark:text-[#5AC8FA] shrink-0" />
             </button>
 
             <div>

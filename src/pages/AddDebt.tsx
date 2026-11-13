@@ -384,7 +384,7 @@ const NewSalePage: React.FC = () => {
           </button>
 
           {cart.length === 0 ? (
-            <div className="rounded-2xl border border-border bg-white p-8 text-center">
+            <div className="sella-list-card p-8 text-center">
               <ShoppingCart className="mx-auto text-primary/40 mb-3" size={36} />
               <p className="font-semibold text-foreground">Agatebo karimo ubusa</p>
               <p className="text-xs text-muted-foreground mt-1">
@@ -392,7 +392,7 @@ const NewSalePage: React.FC = () => {
               </p>
             </div>
           ) : (
-            <section className="rounded-2xl border border-border bg-white overflow-hidden divide-y divide-border">
+            <section className="sella-list-card overflow-hidden divide-y divide-border/60">
               {cart.map((c) => (
                 <div
                   key={c.id}
@@ -450,7 +450,7 @@ const NewSalePage: React.FC = () => {
         </main>
       ) : (
         <main className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-3 py-3 space-y-4 pb-4">
-          <section className="rounded-2xl border border-border bg-white p-3 space-y-2">
+          <section className="sella-list-card p-3 space-y-2">
             <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
               Agatebo
             </h2>
@@ -486,7 +486,7 @@ const NewSalePage: React.FC = () => {
             </div>
           </section>
 
-          <section className="rounded-2xl border border-border bg-white p-3 space-y-2">
+          <section className="sella-list-card p-3 space-y-2">
             <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
               Umukiriya {remaining > 0 ? "(ngombwa)" : "(si ngombwa)"}
             </h2>
@@ -521,7 +521,7 @@ const NewSalePage: React.FC = () => {
             )}
           </section>
 
-          <section className="rounded-2xl border border-border bg-white p-3 space-y-3">
+          <section className="sella-list-card p-3 space-y-3">
             <div className="flex items-center justify-between">
               <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                 Ubwishyu

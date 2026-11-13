@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { BRAND } from "@/lib/brand";
 
 const LegalTermsPage = () => (
-  <div className="min-h-screen bg-white text-slate-900 p-6 max-w-2xl mx-auto pb-[max(2rem,env(safe-area-inset-bottom),var(--sella-safe-bottom-floor))] pt-[max(1.5rem,calc(var(--sella-safe-top-floor)+0.75rem),env(safe-area-inset-top))]">
+  <div className="min-h-screen bg-transparent text-foreground p-6 max-w-2xl mx-auto pb-[max(2rem,env(safe-area-inset-bottom),var(--sella-safe-bottom-floor))] pt-[max(1.5rem,calc(var(--sella-safe-top-floor)+0.75rem),env(safe-area-inset-top))]">
     <Link to="/" className="text-sm text-primary">← Back</Link>
     <h1 className="text-2xl font-bold mt-4 mb-2">{BRAND.name} Terms of Service</h1>
     <p className="text-xs text-muted-foreground mb-6">Last updated: 12 November 2026</p>

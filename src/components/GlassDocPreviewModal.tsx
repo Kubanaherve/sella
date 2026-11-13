@@ -124,13 +124,13 @@ export function GlassDocPreviewModal({
           className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_90%_55%_at_0%_0%,rgba(90,200,250,0.16),transparent_55%),radial-gradient(ellipse_70%_50%_at_100%_100%,rgba(26,111,255,0.1),transparent_50%)]"
         />
 
-        <div className="relative z-10 flex shrink-0 items-center gap-2 border-b border-[#1A6FFF]/10 px-3 py-2">
+        <div className="relative z-10 flex shrink-0 items-center gap-2 border-b border-[#1A6FFF]/10 dark:border-white/10 px-3 py-2">
           <div className="min-w-0 flex-1">
-            <h2 className="truncate text-[13px] font-bold text-[#0B3FCC]">
+            <h2 className="truncate text-[13px] font-bold text-[#0B3FCC] dark:text-[#E8F2FF]">
               {title}
             </h2>
             {subtitle ? (
-              <p className="truncate text-[10px] leading-tight text-slate-500">
+              <p className="truncate text-[10px] leading-tight text-slate-500 dark:text-slate-400">
                 {subtitle}
               </p>
             ) : null}
@@ -139,7 +139,7 @@ export function GlassDocPreviewModal({
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#1A6FFF]/15 bg-white text-[#0B3FCC] active:scale-95"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border/60 bg-white/80 dark:bg-white/10 text-foreground dark:text-white active:scale-95 transition-colors"
           >
             <X size={15} strokeWidth={2.5} />
           </button>
@@ -148,14 +148,14 @@ export function GlassDocPreviewModal({
         <div className="relative z-10 min-h-0 overflow-hidden px-2.5 py-2">
           <div
             className={cn(
-              "w-full overflow-hidden rounded-xl border border-[#1A6FFF]/10 bg-[#e8eefc]",
+              "w-full overflow-hidden rounded-xl border border-[#1A6FFF]/10 dark:border-white/10 bg-[#e8eefc] dark:bg-slate-900/60",
               showLoader || (!pages.length && !rasterError && !children)
                 ? "flex min-h-[12rem] items-center justify-center"
                 : "max-h-[min(52dvh,26rem)]"
             )}
           >
             {showLoader ? (
-              <div className="flex flex-col items-center justify-center gap-2 py-10 text-[#0B3FCC]">
+              <div className="flex flex-col items-center justify-center gap-2 py-10 text-[#0B3FCC] dark:text-[#5AC8FA]">
                 <Loader2 className="animate-spin" size={22} />
                 <p className="text-[11px] font-semibold">Gutegura preview…</p>
               </div>
@@ -177,26 +177,26 @@ export function GlassDocPreviewModal({
               <iframe
                 title={title}
                 src={`${pdfUrl}#toolbar=0&navpanes=0&scrollbar=0&view=FitH`}
-                className="h-[min(48dvh,24rem)] w-full bg-[#edf0fa]"
+                className="h-[min(48dvh,24rem)] w-full bg-[#edf0fa] dark:bg-slate-900"
               />
             ) : children ? (
               <div className="max-h-[min(52dvh,26rem)] overflow-y-auto overscroll-contain p-2">
                 <div className="mx-auto w-full">{children}</div>
               </div>
             ) : (
-              <div className="p-4 text-center text-xs text-slate-500">
+              <div className="p-4 text-center text-xs text-slate-500 dark:text-slate-400">
                 Nta preview iboneka
               </div>
             )}
           </div>
         </div>
 
-        <div className="relative z-10 grid shrink-0 grid-cols-2 gap-2 border-t border-[#1A6FFF]/10 bg-white/90 px-2.5 py-2">
+        <div className="relative z-10 grid shrink-0 grid-cols-2 gap-2 border-t border-[#1A6FFF]/10 dark:border-white/10 bg-white/90 dark:bg-slate-900/80 px-2.5 py-2">
           <button
             type="button"
             disabled={!canAct || !onSend}
             onClick={() => onSend?.()}
-            className="flex h-10 items-center justify-center gap-1.5 rounded-xl border border-[#1A6FFF]/20 bg-white text-[13px] font-bold text-[#0B3FCC] active:scale-[0.98] disabled:opacity-40"
+            className="flex h-10 items-center justify-center gap-1.5 rounded-xl border border-[#1A6FFF]/20 dark:border-white/15 bg-white dark:bg-white/10 text-[13px] font-bold text-[#0B3FCC] dark:text-[#5AC8FA] active:scale-[0.98] disabled:opacity-40"
           >
             {busy ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
             {sendLabel}

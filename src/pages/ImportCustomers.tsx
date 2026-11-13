@@ -79,7 +79,7 @@ const ImportCustomersPage = () => {
           Paste a JSON array of customers. Rows with the same name + phone are skipped.
         </p>
         <textarea
-          className="w-full h-56 rounded-xl border border-slate-200 p-3 text-xs font-mono bg-white"
+          className="w-full h-56 rounded-xl border border-border/80 dark:border-white/10 p-3 text-xs font-mono bg-white/70 dark:bg-white/5 text-foreground backdrop-blur-md outline-none focus:border-primary"
           placeholder='[{"name":"Marie","phone":"0788..."}]'
           value={raw}
           onChange={(e) => setRaw(e.target.value)}

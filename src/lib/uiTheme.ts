@@ -20,6 +20,26 @@ export const UI = {
 
 /** Soft glass-blue pastel chips for product / category tiles */
 export function pastelForName(name: string): { bg: string; fg: string } {
+  const isDark =
+    typeof document !== "undefined" &&
+    document.documentElement.classList.contains("dark");
+
+  if (isDark) {
+    const darkPalette = [
+      { bg: "rgba(30, 58, 138, 0.45)", fg: "#93C5FD" }, // ice blue glass
+      { bg: "rgba(14, 116, 144, 0.45)", fg: "#67E8F9" }, // cyan glass
+      { bg: "rgba(67, 56, 202, 0.45)", fg: "#A5B4FC" }, // indigo glass
+      { bg: "rgba(88, 28, 135, 0.45)", fg: "#D8B4FE" }, // purple glass
+      { bg: "rgba(3, 105, 161, 0.45)", fg: "#7DD3FC" }, // sky glass
+      { bg: "rgba(29, 78, 216, 0.45)", fg: "#93C5FD" }, // royal glass
+      { bg: "rgba(19, 78, 74, 0.45)", fg: "#5EEAD4" }, // teal glass
+      { bg: "rgba(76, 29, 149, 0.45)", fg: "#C4B5FD" }, // violet glass
+    ];
+    let h = 0;
+    for (let i = 0; i < name.length; i++) h = (h + name.charCodeAt(i) * (i + 1)) % 997;
+    return darkPalette[h % darkPalette.length];
+  }
+
   const palette = [
     { bg: "rgba(219, 234, 254, 0.92)", fg: "#1E40AF" }, // ice blue
     { bg: "rgba(224, 242, 254, 0.92)", fg: "#0369A1" }, // sky
@@ -36,6 +56,16 @@ export function pastelForName(name: string): { bg: string; fg: string } {
 }
 
 export function stockTone(qty: number): { label: string; color: string; bg: string } {
+  const isDark =
+    typeof document !== "undefined" &&
+    document.documentElement.classList.contains("dark");
+
+  if (isDark) {
+    if (qty <= 0) return { label: "Byashize", color: "#F87171", bg: "rgba(239, 68, 68, 0.2)" };
+    if (qty < 5) return { label: "Bike", color: "#FBBF24", bg: "rgba(245, 158, 11, 0.2)" };
+    return { label: "Hariho", color: "#4ADE80", bg: "rgba(34, 197, 94, 0.2)" };
+  }
+
   if (qty <= 0) return { label: "Byashize", color: "#B91C1C", bg: "#FEE2E2" };
   if (qty < 5) return { label: "Bike", color: UI.lowStock, bg: UI.creditBg };
   return { label: "Hariho", color: UI.goodStock, bg: UI.cashBg };

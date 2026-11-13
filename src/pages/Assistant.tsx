@@ -76,7 +76,7 @@ export default function AssistantPage() {
               type="button"
               disabled={busy}
               onClick={() => void ask(s)}
-              className="text-[11px] font-medium rounded-full border border-border bg-white px-3 py-1.5 text-foreground active:scale-[0.98] disabled:opacity-50"
+              className="text-[11px] font-medium rounded-full border border-border/80 dark:border-white/10 bg-white/70 dark:bg-white/10 px-3 py-1.5 text-foreground backdrop-blur-md active:scale-[0.98] disabled:opacity-50"
             >
               {s}
             </button>
@@ -97,7 +97,7 @@ export default function AssistantPage() {
                   "max-w-[88%] rounded-2xl px-3.5 py-2.5 text-sm whitespace-pre-wrap leading-relaxed",
                   m.role === "user"
                     ? "bg-primary text-primary-foreground rounded-br-md"
-                    : "bg-white border border-border text-foreground rounded-bl-md shadow-sm"
+                    : "bg-white/80 dark:bg-white/10 border border-border/80 dark:border-white/10 text-foreground rounded-bl-md shadow-sm backdrop-blur-md"
                 )}
               >
                 {m.role === "assistant" && (
@@ -120,7 +120,7 @@ export default function AssistantPage() {
       </div>
 
       <form
-        className="fixed inset-x-0 z-40 mx-auto max-w-lg border-t border-border bg-white/95 backdrop-blur px-3 py-3"
+        className="fixed inset-x-0 z-40 mx-auto max-w-lg border-t border-border/70 dark:border-white/10 bg-white/80 dark:bg-slate-900/85 backdrop-blur-2xl px-3 py-3"
         style={{
           bottom: "calc(3.75rem + env(safe-area-inset-bottom))",
         }}

@@ -204,7 +204,7 @@ export default function ImportInventoryPage() {
               className={`shrink-0 text-[10px] font-semibold px-2.5 py-1 rounded-full border ${
                 STEPS.indexOf(step) >= i
                   ? "bg-primary text-white border-primary"
-                  : "bg-white text-muted-foreground border-border"
+                  : "bg-white/70 dark:bg-white/10 text-muted-foreground border-border/80 dark:border-white/10 backdrop-blur-sm"
               }`}
             >
               {i + 1}. {s}
@@ -278,7 +278,7 @@ export default function ImportInventoryPage() {
                 >
                   <p className="flex-1 text-sm font-medium truncate">{header}</p>
                   <select
-                    className="h-9 rounded-lg border border-border bg-white text-xs px-2 max-w-[48%]"
+                    className="h-9 rounded-lg border border-border/80 dark:border-white/10 bg-white/70 dark:bg-white/10 text-foreground text-xs px-2 max-w-[48%] backdrop-blur-md"
                     value={mapping[header] || "skip"}
                     onChange={(e) =>
                       setMapping((m) => ({

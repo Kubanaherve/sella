@@ -90,15 +90,15 @@
     --sidebar-ring: 217 100% 55%;
   }
 
-  /* Manual dark glass — Sella blues (not system-driven) */
+  /* Manual dark glass — Sella blues & macOS liquid glass */
   .dark {
-    --background: 222 52% 8%;
+    --background: 224 71% 4%;
     --foreground: 214 60% 96%;
 
-    --card: 222 42% 12%;
+    --card: 222 44% 10%;
     --card-foreground: 214 60% 96%;
 
-    --popover: 222 42% 12%;
+    --popover: 222 44% 10%;
     --popover-foreground: 214 60% 96%;
 
     --primary: 217 100% 58%;
@@ -116,15 +116,15 @@
     --destructive: 0 62% 48%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 222 28% 22%;
-    --input: 222 28% 22%;
+    --border: 222 28% 22% / 0.55;
+    --input: 222 28% 22% / 0.7;
     --ring: 217 100% 58%;
 
-    --glass-bg: 222 40% 14% / 0.72;
-    --glass-border: 214 80% 80% / 0.18;
-    --glass-shadow: 217 90% 40% / 0.28;
-    --glass-highlight: 0 0% 100% / 0.12;
-    --glass-blue-wash: 217 100% 55% / 0.14;
+    --glass-bg: 222 42% 12% / 0.72;
+    --glass-border: 214 80% 90% / 0.12;
+    --glass-shadow: 217 90% 40% / 0.32;
+    --glass-highlight: 0 0% 100% / 0.15;
+    --glass-blue-wash: 217 100% 55% / 0.16;
 
     --gradient-gold: linear-gradient(135deg, #0b3fcc, #1a6fff);
     --gradient-navy: linear-gradient(135deg, #040816, #0b3fcc);
@@ -140,7 +140,7 @@
       radial-gradient(ellipse 80% 60% at 95% 85%, #0b3fcc 0%, transparent 50%),
       linear-gradient(165deg, #040816 0%, #0a1a44 48%, #0b3fcc 100%);
 
-    --sidebar-background: 222 52% 8%;
+    --sidebar-background: 224 71% 4%;
     --sidebar-foreground: 214 60% 96%;
     --sidebar-primary: 217 100% 58%;
     --sidebar-primary-foreground: 0 0% 100%;
@@ -179,13 +179,14 @@
   }
 
   html.dark body {
-    background-color: #040816;
+    background-color: #040817;
     background-image:
-      radial-gradient(ellipse 80% 50% at 100% -10%, hsl(217 80% 40% / 0.35), transparent),
-      radial-gradient(ellipse 60% 40% at -10% 20%, hsl(214 70% 35% / 0.3), transparent),
-      linear-gradient(165deg, #040816 0%, #0a1a44 55%, #0b3fcc 140%);
-    background-size: auto, auto, auto;
-    background-attachment: fixed, fixed, fixed;
+      radial-gradient(ellipse 90% 60% at 100% -10%, hsl(217 90% 50% / 0.28), transparent 60%),
+      radial-gradient(ellipse 70% 50% at -10% 25%, hsl(199 95% 45% / 0.2), transparent 55%),
+      radial-gradient(ellipse 60% 50% at 50% 110%, hsl(222 90% 30% / 0.35), transparent 65%),
+      linear-gradient(170deg, #030713 0%, #060e24 45%, #08163e 100%);
+    background-size: auto, auto, auto, auto;
+    background-attachment: fixed, fixed, fixed, fixed;
   }
 
   :root {
@@ -295,6 +296,20 @@
     );
   }
 
+  .dark .sella-app-header {
+    background: linear-gradient(
+      180deg,
+      rgba(8, 16, 36, 0.82) 0%,
+      rgba(4, 8, 22, 0.75) 100%
+    );
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.12) inset,
+      0 12px 30px rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(24px) saturate(190%);
+    -webkit-backdrop-filter: blur(24px) saturate(190%);
+  }
+
   .sella-tabbar {
     @apply fixed bottom-0 inset-x-0 z-50 mx-auto max-w-lg;
     @apply grid grid-cols-5 gap-0 border-t backdrop-blur-2xl;
@@ -311,6 +326,20 @@
       0 -12px 32px rgba(11, 63, 204, 0.1);
   }
 
+  .dark .sella-tabbar {
+    background: linear-gradient(
+      180deg,
+      rgba(10, 20, 44, 0.82) 0%,
+      rgba(4, 8, 22, 0.94) 100%
+    );
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.12) inset,
+      0 -14px 36px rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(24px) saturate(190%);
+    -webkit-backdrop-filter: blur(24px) saturate(190%);
+  }
+
   .sella-tab {
     @apply flex flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-semibold tracking-wide;
     @apply text-muted-foreground active:scale-95;
@@ -320,9 +349,18 @@
       background-color 220ms ease;
   }
 
+  .dark .sella-tab {
+    color: hsl(var(--muted-foreground));
+  }
+
   .sella-tab-active {
     @apply text-primary relative;
     transform: translateY(-1px);
+  }
+
+  .dark .sella-tab-active {
+    color: #5ac8fa;
+    text-shadow: 0 0 12px rgba(90, 200, 250, 0.4);
   }
 
   .sella-tab-active::before {
@@ -335,6 +373,11 @@
     height: 3px;
     border-radius: 999px;
     background: hsl(var(--primary));
+  }
+
+  .dark .sella-tab-active::before {
+    background: linear-gradient(90deg, #1a6fff, #5ac8fa);
+    box-shadow: 0 0 8px rgba(90, 200, 250, 0.7);
   }
 
   .sella-tab-active svg {
@@ -364,6 +407,14 @@
       env(safe-area-inset-bottom, 0px),
       var(--sella-safe-bottom-floor, 0px)
     );
+  }
+
+  .dark .sella-fixed-bottom-bar {
+    background: rgba(6, 14, 32, 0.92);
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(24px) saturate(190%);
+    -webkit-backdrop-filter: blur(24px) saturate(190%);
   }
 
   .sella-fixed-bottom-bar-above-tabs {
@@ -400,6 +451,13 @@
     border-color: rgba(255, 255, 255, 0.7);
   }
 
+  .dark .sella-fab-menu-item {
+    background: rgba(14, 25, 54, 0.9);
+    border-color: rgba(255, 255, 255, 0.14);
+    color: hsl(var(--foreground));
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5);
+  }
+
   .sella-stat {
     @apply relative overflow-hidden rounded-2xl p-3.5;
     background: linear-gradient(
@@ -413,6 +471,20 @@
       0 10px 28px rgba(11, 63, 204, 0.08);
     backdrop-filter: blur(18px);
     -webkit-backdrop-filter: blur(18px);
+  }
+
+  .dark .sella-stat {
+    background: linear-gradient(
+      160deg,
+      rgba(16, 28, 56, 0.7) 0%,
+      rgba(8, 15, 33, 0.78) 100%
+    );
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.14) inset,
+      0 12px 30px rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(20px) saturate(190%);
+    -webkit-backdrop-filter: blur(20px) saturate(190%);
   }
 
   .sella-stat-label {
@@ -438,6 +510,20 @@
     -webkit-backdrop-filter: blur(16px);
   }
 
+  .dark .sella-list-card {
+    background: linear-gradient(
+      165deg,
+      rgba(16, 28, 58, 0.7) 0%,
+      rgba(7, 14, 32, 0.8) 100%
+    );
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.12) inset,
+      0 14px 34px rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(20px) saturate(190%);
+    -webkit-backdrop-filter: blur(20px) saturate(190%);
+  }
+
   .sella-chip {
     @apply inline-flex items-center h-7 px-2.5 rounded-full text-[11px] font-bold border;
   }
@@ -449,11 +535,26 @@
     color: #0b3fcc;
   }
 
+  .dark .sella-chip-glass {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.11);
+    color: #9ec4ff;
+  }
+
   .sella-chip-glass-active {
     background: var(--gradient-glass-blue);
     border-color: transparent;
     color: #fff;
     box-shadow: 0 8px 18px rgba(26, 111, 255, 0.28);
+  }
+
+  .dark .sella-chip-glass-active {
+    background: var(--gradient-glass-blue);
+    border-color: rgba(90, 200, 250, 0.4);
+    color: #fff;
+    box-shadow:
+      0 0 16px rgba(26, 111, 255, 0.4),
+      0 1px 0 rgba(255, 255, 255, 0.25) inset;
   }
 
   .sella-input-glass {
@@ -466,11 +567,28 @@
     -webkit-backdrop-filter: blur(12px);
   }
 
+  .dark .sella-input-glass {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.12);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.08) inset;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    color: hsl(var(--foreground));
+  }
+
   .sella-input-glass:focus {
     border-color: rgba(26, 111, 255, 0.35);
     box-shadow:
       0 0 0 3px rgba(26, 111, 255, 0.14),
       0 1px 0 rgba(255, 255, 255, 0.7) inset;
+  }
+
+  .dark .sella-input-glass:focus {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(90, 200, 250, 0.45);
+    box-shadow:
+      0 0 0 3px rgba(26, 111, 255, 0.3),
+      0 1px 0 rgba(255, 255, 255, 0.14) inset;
   }
 
   .sella-sheet-glass {
@@ -486,6 +604,20 @@
       0 24px 60px rgba(11, 63, 204, 0.22);
     backdrop-filter: blur(22px);
     -webkit-backdrop-filter: blur(22px);
+  }
+
+  .dark .sella-sheet-glass {
+    background: linear-gradient(
+      180deg,
+      rgba(14, 25, 52, 0.92) 0%,
+      rgba(5, 11, 26, 0.96) 100%
+    );
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.18) inset,
+      0 28px 70px rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(30px) saturate(190%);
+    -webkit-backdrop-filter: blur(30px) saturate(190%);
   }
 
   /* Centered popup / dialog glass panel */
@@ -504,6 +636,20 @@
     -webkit-backdrop-filter: blur(24px);
   }
 
+  .dark .sella-popup-glass {
+    background: linear-gradient(
+      165deg,
+      rgba(15, 26, 54, 0.92) 0%,
+      rgba(6, 12, 28, 0.96) 100%
+    );
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.18) inset,
+      0 26px 65px rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(32px) saturate(190%);
+    -webkit-backdrop-filter: blur(32px) saturate(190%);
+  }
+
   .sella-popup-glass::before {
     content: "";
     pointer-events: none;
@@ -514,6 +660,15 @@
       rgba(255, 255, 255, 0.28) 0%,
       transparent 40%,
       rgba(26, 111, 255, 0.05) 100%
+    );
+  }
+
+  .dark .sella-popup-glass::before {
+    background: linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.12) 0%,
+      transparent 40%,
+      rgba(90, 200, 250, 0.06) 100%
     );
   }
 
@@ -545,6 +700,13 @@
     color: #0b3fcc;
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
+  }
+
+  .dark .sella-btn-glass {
+    background: rgba(26, 111, 255, 0.18);
+    border-color: rgba(90, 200, 250, 0.25);
+    color: #9ec4ff;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.1) inset;
   }
 
   .sella-btn-glass-solid {
@@ -628,6 +790,21 @@
     -webkit-backdrop-filter: blur(18px);
   }
 
+  .dark .glass-card {
+    background: linear-gradient(
+      160deg,
+      rgba(17, 30, 60, 0.72) 0%,
+      rgba(8, 15, 34, 0.8) 100%
+    );
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.15) inset,
+      0 16px 40px rgba(0, 0, 0, 0.5),
+      0 0 24px rgba(26, 111, 255, 0.08);
+    backdrop-filter: blur(24px) saturate(190%);
+    -webkit-backdrop-filter: blur(24px) saturate(190%);
+  }
+
   .glass-card::before {
     content: "";
     pointer-events: none;
@@ -641,12 +818,37 @@
     );
   }
 
+  .dark .glass-card::before {
+    background: linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.1) 0%,
+      transparent 42%,
+      rgba(90, 200, 250, 0.06) 100%
+    );
+  }
+
   .glass-card-dark {
     @apply relative overflow-hidden rounded-2xl border border-white/25 p-5 shadow-lg text-white;
     background: var(--gradient-glass-blue);
     box-shadow:
       0 1px 0 rgba(255, 255, 255, 0.28) inset,
       0 16px 40px rgba(11, 63, 204, 0.28);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+  }
+
+  .dark .glass-card-dark {
+    background: linear-gradient(
+      145deg,
+      rgba(8, 42, 142, 0.88) 0%,
+      rgba(20, 85, 210, 0.82) 55%,
+      rgba(56, 189, 248, 0.65) 100%
+    );
+    border-color: rgba(255, 255, 255, 0.22);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.28) inset,
+      0 20px 48px rgba(0, 0, 0, 0.55),
+      0 0 20px rgba(26, 111, 255, 0.2);
   }
 
   .glass-card-dark::before {
@@ -660,6 +862,16 @@
       transparent 45%,
       rgba(90, 200, 250, 0.12) 100%
     );
+  }
+
+  .glass-sub-card {
+    @apply rounded-xl border border-white/60 bg-white/45 backdrop-blur-sm transition-colors;
+  }
+
+  .dark .glass-sub-card {
+    border-color: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.05);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06) inset;
   }
 
   .gold-glow {
@@ -1173,6 +1385,11 @@
   border-color: rgba(255, 255, 255, 0.55);
 }
 
+.dark .sella-pay-method {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
 .sella-pay-method.is-active {
   border-color: transparent;
   box-shadow:
@@ -1181,10 +1398,24 @@
   background: rgba(255, 255, 255, 0.78);
 }
 
+.dark .sella-pay-method.is-active {
+  background: rgba(26, 111, 255, 0.22);
+  border-color: rgba(90, 200, 250, 0.45);
+  box-shadow:
+    0 0 0 2px rgba(90, 200, 250, 0.35),
+    0 12px 30px rgba(0, 0, 0, 0.4);
+}
+
 .sella-overlay {
   background: rgba(7, 26, 74, 0.42);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
+}
+
+.dark .sella-overlay {
+  background: rgba(2, 6, 18, 0.65);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
 }
 
 /* ── In-app page transitions (glass / light bloom) ─────────────────── */
