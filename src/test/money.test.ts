@@ -9,8 +9,14 @@ import {
 
 describe("money helpers", () => {
   it("rounds to integer RWF", () => {
-    expect(toRwf(1000.4)).toBe(1000);
-    expect(toRwf(1000.6)).toBe(1001);
+  expect(toRwf(1000.4)).toBe(1000);
+  expect(toRwf(1000.6)).toBe(1001);
+  // PaymentModal / form paths parse string amounts
+  expect(toRwf("1500")).toBe(1500);
+  expect(toRwf("")).toBe(0);
+  expect(toRwf("abc")).toBe(0);
+  expect(toRwf(null)).toBe(0);
+  expect(toRwf(undefined)).toBe(0);
   });
 
   it("computes line totals", () => {

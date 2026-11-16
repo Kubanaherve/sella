@@ -30,6 +30,9 @@ verify_jwt = false
 [functions.flutterwave-webhook]
 verify_jwt = false
 
+[functions.reset-pin]
+verify_jwt = false
+
 [functions.update-pin]
 verify_jwt = true
 
@@ -40,4 +43,7 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.approve-manual-payment]
+verify_jwt = true
+
+[functions.admin-clear-rate-limit]
 verify_jwt = true

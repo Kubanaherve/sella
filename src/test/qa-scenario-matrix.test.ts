@@ -284,3 +284,35 @@ describe("QA matrix: combined checkout stress", () => {
     expect(n).toBe(300);
   });
 });
+
+describe("QA matrix: billing & offline oversell safety", () => {
+  it("preferred billing channels never exposes an un-webhooked MoMo provider", async () => {
+    const { preferredBillingChannels } = await import("@/services/billing");
+    const channels = preferredBillingChannels();
+    // Instant MoMo must be Paypack (has signed webhook). Raw Open API without webhook is forbidden.
+    expect(channels).toContain("paypack_mtn");
+    expect(channels).toContain("paypack_airtel");
+    expect(channels).not.toContain("mtn_direct");
+    expect(channels).not.toContain("mtn_collection");
+    expect(channels).not.toContain("apple_iap"); // Stays hidden until StoreKit wired
+  });
+
+  it("receipt structure preserves queuedOffline flag", async () => {
+    const { buildWhatsAppReceiptMessage } = await import("@/lib/receipt");
+    const msg = buildWhatsAppReceiptMessage({
+      shopName: "Test Shop",
+      receiptNumber: "R-1234",
+      createdAt: new Date().toISOString(),
+      customerName: "Alice",
+      lines: [{ name: "Watch", quantity: 1, unitPrice: 5000 }],
+      total: 5000,
+      paid: 5000,
+      remaining: 0,
+      payments: [{ method: "cash", amount: 5000 }],
+      paymentStatus: "paid",
+      queuedOffline: true,
+    });
+    expect(msg).toContain("Test Shop");
+    expect(msg).toContain("5.000 FRW");
+  });
+});

@@ -302,6 +302,7 @@ const NewSalePage: React.FC = () => {
             : result.paid > 0
               ? "partial"
               : "credit",
+        queuedOffline: Boolean(result.queuedOffline),
       };
 
       setComplete(receipt);
@@ -326,7 +327,7 @@ const NewSalePage: React.FC = () => {
   const sheetOpen = catalogOpen || !!qtyItem || confirmOpen;
 
   return (
-    <div className="min-h-[100dvh] max-h-[100dvh] bg-[hsl(214_60%_98%)] flex flex-col overflow-hidden">
+    <div className="sella-sale-screen min-h-[100dvh] max-h-[100dvh] flex flex-col overflow-hidden bg-transparent">
       <header className="sella-app-header shrink-0">
         <button
           type="button"
@@ -450,7 +451,7 @@ const NewSalePage: React.FC = () => {
           )}
         </main>
       ) : (
-        <main className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-3 py-3 space-y-4 pb-4">
+        <main className="sella-checkout flex-1 min-h-0 overflow-y-auto overscroll-contain px-3 py-3 space-y-4 pb-4">
           <section className="sella-list-card p-3 space-y-2">
             <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
               Agatebo
@@ -691,7 +692,7 @@ const NewSalePage: React.FC = () => {
       {/* Catalog popup */}
       {catalogOpen && (
         <div className="fixed inset-0 z-[70] sella-overlay flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <div className="sella-sheet-glass w-full sm:max-w-lg h-[min(92dvh,100%)] rounded-t-3xl sm:rounded-3xl animate-fade-in">
+          <div className="sella-catalog-sheet sella-sheet-glass w-full sm:max-w-lg h-[min(92dvh,100%)] rounded-t-3xl sm:rounded-3xl animate-fade-in">
             <div className="sella-sheet-top px-4 pb-3 border-b border-[#1A6FFF]/10 flex items-center justify-between gap-2">
               <div>
                 <h2 className="font-bold text-lg text-[#0B3FCC]">Ibicuruzwa</h2>

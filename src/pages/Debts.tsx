@@ -83,6 +83,7 @@ const DebtsPage = () => {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [paymentBusy, setPaymentBusy] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -611,42 +612,44 @@ const DebtsPage = () => {
     paymentMethod: PaymentMethod,
     referenceNumber: string | null = null
   ) => {
-    if (!selectedCustomer) return;
+    if (!selectedCustomer || paymentBusy) return;
     if (!canWrite) {
       toast.error("Subscription yarangiye — jya kuri Billing wishyure to record payments");
       return;
     }
 
-    // ✅ WhatsApp FIRST — synchronous before any await (avoids popup blocker)
-    if (selectedCustomer.phone) {
-      let cleanPhone = selectedCustomer.phone.replace(/\s/g, "");
-      if (cleanPhone.startsWith("0")) cleanPhone = "250" + cleanPhone.substring(1);
-      else if (!cleanPhone.startsWith("250") && !cleanPhone.startsWith("+"))
-        cleanPhone = "250" + cleanPhone;
-      cleanPhone = cleanPhone.replace("+", "");
-
-      const remainingPreview = (selectedCustomer.amount || 0) - paymentAmount;
-      const message =
-        remainingPreview <= 0
-          ? thankYouMessage
-          : `${thankYouMessage}\n\nAmafaranga asigaye: ${formatCurrency(remainingPreview)}`;
-
-      window.open(
-        `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`,
-        "_blank"
-      );
-    }
-
+    setPaymentBusy(true);
+    const customer = selectedCustomer;
     try {
       const todayKey = getDateKeyFromIso(new Date().toISOString());
 
       await recordPayment({
-        debtId: selectedCustomer.id,
+        debtId: customer.id,
         amount: paymentAmount,
         paymentMethod,
         notes: thankYouMessage,
         referenceNumber,
       });
+
+      // WhatsApp only after payment succeeds (avoid false “paid” messages)
+      if (customer.phone) {
+        let cleanPhone = customer.phone.replace(/\s/g, "");
+        if (cleanPhone.startsWith("0")) cleanPhone = "250" + cleanPhone.substring(1);
+        else if (!cleanPhone.startsWith("250") && !cleanPhone.startsWith("+"))
+          cleanPhone = "250" + cleanPhone;
+        cleanPhone = cleanPhone.replace("+", "");
+
+        const remainingPreview = (customer.amount || 0) - paymentAmount;
+        const message =
+          remainingPreview <= 0
+            ? thankYouMessage
+            : `${thankYouMessage}\n\nAmafaranga asigaye: ${formatCurrency(remainingPreview)}`;
+
+        window.open(
+          `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`,
+          "_blank"
+        );
+      }
 
       await hapticSuccess();
       toast.success("Byashyizweho neza");
@@ -661,13 +664,16 @@ const DebtsPage = () => {
           detail: {
             paymentAmount,
             affectsTodayDebt:
-              getDateKeyFromIso(selectedCustomer.created_at) === todayKey,
+              getDateKeyFromIso(customer.created_at) === todayKey,
           },
         })
       );
     } catch (err) {
       console.error("Payment error:", err);
       toast.error(err instanceof Error ? err.message : "Habaye ikosa mu kwishyura");
+      throw err;
+    } finally {
+      setPaymentBusy(false);
     }
   };
 
@@ -693,7 +699,8 @@ const DebtsPage = () => {
     }
   };
 
-  const totalUnpaid = customers.reduce((sum, c) => sum + (c.amount || 0), 0);
+  // Full ledger total — not just the currently paginated slice
+  const totalUnpaid = allCustomers.reduce((sum, c) => sum + (c.amount || 0), 0);
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
@@ -731,11 +738,12 @@ const DebtsPage = () => {
         onScroll={handleScroll}
       >
         {!canWrite && <WriteGate actionLabel="Kwishyura cyangwa gusiba ideni" />}
+        <div className="sella-debts-toolbar flex flex-col gap-4">
         <Input
           value={searchQuery}
           onChange={e => setSearchQuery(e.target.value)}
           placeholder={labels.search + "..."}
-          className="pl-3 bg-white/70 dark:bg-white/5 border-border dark:border-white/10 input-glow"
+          className="pl-3 bg-white/70 dark:bg-white/5 border-border dark:border-white/10 input-glow h-full"
         />
 
         <div className="glass-card-dark relative rounded-2xl p-4 flex items-center justify-between">
@@ -762,6 +770,7 @@ const DebtsPage = () => {
             </div>
           </div>
         </div>
+        </div>
 
         {loading && customers.length === 0 ? (
           <ListPageSkeleton rows={5} />
@@ -774,7 +783,7 @@ const DebtsPage = () => {
             onAction={() => navigate("/new-sale")}
           />
         ) : (
-          <div className="space-y-2">
+          <div className="sella-card-grid space-y-2">
             {customers.map((customer) => (
               <button
                 type="button"
@@ -811,9 +820,9 @@ const DebtsPage = () => {
 
       {/* Centered square client card — hidden while payment dialog is open */}
       {selectedCustomer && !paymentModalOpen && (
-        <div className="fixed inset-0 z-[100] sella-overlay flex items-center justify-center p-4">
+        <div className="sella-detail-overlay fixed inset-0 z-[100] sella-overlay flex items-center justify-center p-4">
           <div
-            className="sella-popup-glass rounded-[28px] w-full max-w-[380px] aspect-auto max-h-[min(92vh,640px)] animate-scale-in flex flex-col relative z-10"
+            className="sella-detail-card sella-popup-glass rounded-[28px] w-full max-w-[380px] aspect-auto max-h-[min(92vh,640px)] animate-scale-in flex flex-col relative z-10"
             role="dialog"
             aria-modal="true"
           >

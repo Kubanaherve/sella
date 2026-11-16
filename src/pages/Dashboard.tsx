@@ -283,7 +283,7 @@ const DashboardPage = () => {
         </button>
       </header>
 
-      <main className="sella-page-body space-y-4">
+      <main className="sella-page-body space-y-4 sella-dash">
         {mode === "cloud" && (
           <button
             type="button"
@@ -306,9 +306,9 @@ const DashboardPage = () => {
         {loading && !cached ? (
           <ListPageSkeleton rows={4} />
         ) : (
-          <>
+          <div className="sella-dash-grid">
             {/* Hero money card — bold centered take */}
-            <section className="glass-card relative rounded-3xl px-4 pt-4 pb-5 sella-card-enter">
+            <section className="glass-card relative rounded-3xl px-4 pt-4 pb-5 sella-card-enter sella-dash-hero">
               <div className="relative z-10 flex items-center justify-between gap-2 mb-5">
                 <div className="inline-flex items-center gap-1.5 rounded-full bg-[#1A6FFF]/12 border border-white/60 px-2.5 py-1 max-w-[55%] backdrop-blur-sm">
                   <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
@@ -363,7 +363,7 @@ const DashboardPage = () => {
                   {dateLabel}
                 </p>
                 <p className="mt-3 leading-none tracking-tight">
-                  <span className="text-[2.65rem] sm:text-[2.85rem] font-extrabold text-foreground tabular-nums">
+                  <span className="sella-dash-figure text-[2.65rem] sm:text-[2.85rem] font-extrabold text-foreground tabular-nums">
                     {moneyParts.main}
                   </span>
                   <span className="ml-1.5 text-base font-bold text-muted-foreground align-top">
@@ -376,6 +376,18 @@ const DashboardPage = () => {
                   </span>
                 </div>
               </div>
+
+              {periodSales + periodDebt > 0 && (
+                <div className="sella-meter mt-5" aria-hidden>
+                  <span
+                    style={{
+                      width: `${Math.round(
+                        (periodSales / (periodSales + periodDebt)) * 100
+                      )}%`,
+                    }}
+                  />
+                </div>
+              )}
 
               <div className="mt-6 grid grid-cols-2 gap-3 border-t border-border pt-4">
                 <div className="text-center px-1">
@@ -401,6 +413,7 @@ const DashboardPage = () => {
               </div>
             </section>
 
+            <div className="sella-dash-side space-y-4">
             <div className="grid grid-cols-2 gap-3 sella-stagger">
               <div className="sella-stat sella-card-enter">
                 <p className="text-[10px] text-muted-foreground mb-1">
@@ -452,7 +465,7 @@ const DashboardPage = () => {
                   {labels.more} <ChevronRight size={12} />
                 </button>
               </div>
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-4 gap-2 sella-shortcut-grid">
                 {shortcuts.map((item) => (
                   <button
                     key={item.path}
@@ -481,7 +494,8 @@ const DashboardPage = () => {
                 ))}
               </div>
             </div>
-          </>
+            </div>
+          </div>
         )}
       </main>
     </div>

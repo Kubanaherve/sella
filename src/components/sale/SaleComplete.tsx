@@ -165,6 +165,11 @@ export function SaleComplete({ data, onClose }: Props) {
               <p className="font-bold text-lg">{labels.saleComplete}</p>
             </div>
             <p className="relative z-10 text-white/80 text-xs mt-1">{statusLabel}</p>
+            {data.queuedOffline && (
+              <div className="relative z-10 mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/20 border border-amber-300/40 text-amber-200 text-xs font-medium">
+                <span>⚠️ Stock unconfirmed · syncs automatically when online</span>
+              </div>
+            )}
             <p className="relative z-10 text-3xl font-extrabold mt-3 tabular-nums">
               {formatCurrency(data.total)}
             </p>

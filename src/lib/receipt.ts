@@ -30,6 +30,7 @@ export type ReceiptData = {
   payments: ReceiptPayment[];
   thankYouMessage?: string;
   paymentStatus: "paid" | "credit" | "partial";
+  queuedOffline?: boolean;
 };
 
 /** Deterministic accent from shop name (not a trademark claim). */

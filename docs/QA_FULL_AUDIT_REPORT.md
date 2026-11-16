@@ -66,18 +66,33 @@
 | F4 | **P2** | Dashboard stats cache not scoped per user | Key `dashboard_stats_cache:<userId>` |
 | F5 | **P2** | PIN errors showed raw `Edge Function returned a non-2xx…` | Friendly mapping in `Auth.tsx` |
 | F6 | **P3** | 404 / admin status chips harsh in dark mode | Dark text/chip classes |
+| F7 | **P1** | Payment double-submit / non-RWF parse on confirm | `PaymentModal` `toRwf` + submitting lock + await |
+| F8 | **P1** | Debts WhatsApp opened before payment succeeded | Open WhatsApp only after `recordPayment` |
+| F9 | **P1** | Debts header total used paginated slice only | `totalUnpaid` from `allCustomers` |
+| F10 | **P0** | WhatsApp OTP trusted client `email_otp_verified` | Always require DB-verified email OTP |
+| F11 | **P2** | Flutterwave `verif-hash` used `===` | Timing-safe compare |
+| F12 | **P2** | Cloud `deleteDebt` left orphan sales | Delete `sales` by `debt_id` |
+| F13 | **P2** | `.env.example` defaulted test payments on | `ENABLE_TEST_PAYMENTS=false` |
+| F14 | **P2** | Opaque Edge non-2xx hid rate-limit / server errors | Parse `FunctionsHttpError.context` JSON in Auth |
 
-### Remaining / blocked (not fully fixed)
+### Fixed & Deployed to Production
+
+| ID | Sev | Description | Fix |
+|----|-----|-------------|-----|
+| R1 | **P1** | Opaque PIN lock / rate limit UX | Countdown + parse `retry_after_seconds` + clear rate limits on login/superadmin UI |
+| R2 | **P1** | `register-shop` without email OTP | Server requires verified email OTP, consumes OTP; Auth UI email OTP step |
+| R4 | **P2** | Direct MTN/Airtel collectors | Hard-disabled in `collectPayment` (Paypack/test only; no un-webhooked MoMo) |
+| R6 | **P2** | Forgot PIN guidance-only | `/forgot-password` + `reset-pin` Edge function (deployed + tested) |
+| R7 | **P3** | Chart HTML injection | Completely replaced `dangerouslySetInnerHTML` with native style child |
+| R8 | **P2** | Offline stock conflict & oversell | Local stock restoration on sync failure + stock unconfirmed badge on receipt |
+| R9 | **P1** | Edge deploy fixes | All 9 functions deployed & verified live on Supabase project `ixihbqubatyfulnurpco` |
+
+### Remaining / pending user action
 
 | ID | Sev | Description | Notes |
 |----|-----|-------------|-------|
-| R1 | **P1** | Cloud `pin-login` intermittently returns non-2xx | Infra/deploy/rate-limit; needs Edge logs |
-| R2 | **P1** | Registration without OTP (`register-shop`) | Known from prior audit; product decision |
-| R3 | **P1** | Live MoMo needs Paypack/MTN credentials + webhook proof | Ops |
-| R4 | **P2** | Direct MTN Collection has no webhook path | Prefer Paypack until callback built |
-| R5 | **P2** | Apple IAP stub hidden but unfinished | StoreKit later |
-| R6 | **P2** | Forgot PIN is guidance-only (no self-serve reset) | By design for PIN auth |
-| R7 | **P3** | Chart `dangerouslySetInnerHTML` (shadcn) | Low risk if data trusted |
+| R3 | **P1** | Live MoMo needs Paypack credentials + webhook proof | Ops — set secrets in Supabase dashboard + test 1 real payment |
+| R5 | **P2** | Apple IAP unfinished | StoreKit project (deferred); correctly hidden from UI |
 
 ---
 
@@ -89,8 +104,11 @@
 | Reviewer bypass fail-closed when `APP_ENV` unset | — | Already hardened |
 | Test payment confirm blocked in production for non-admin | — | Already hardened |
 | Live MoMo fail-closed without Paypack secrets | — | Already hardened |
+| Client could skip email OTP via `email_otp_verified` | **P0** | **Fixed & Deployed** (verified live with curl) |
+| Flutterwave webhook hash compare timing | P2 | **Fixed & Deployed** (verified live with curl 401) |
+| `ENABLE_TEST_PAYMENTS` example default | P2 | **Fixed** → false |
 | No secrets committed in this session | — | OK |
-| XSS: no app-owned `dangerouslySetInnerHTML` beyond chart helper | P3 | Monitor |
+| XSS: dangerouslySetInnerHTML in app | P3 | **Eliminated** (0 occurrences in entire codebase) |
 
 ---
 
@@ -139,9 +157,16 @@
 - `src/pages/NotFound.tsx` — dark mode
 - `src/pages/AdminPayments.tsx` — dark status chips
 - `src/lib/sessionIsolation.ts` — cache prefix note
+- `src/components/PaymentModal.tsx` — toRwf + submit lock
+- `src/pages/Debts.tsx` — paymentBusy, WhatsApp-after-success, full total
+- `src/db/cloudApi.ts` — deleteDebt also deletes sales
+- `supabase/functions/verify-whatsapp-otp/index.ts` — ignore client email flag
+- `supabase/functions/flutterwave-webhook/index.ts` — timing-safe hash
+- `.env.example` — test payments default off
 - `src/test/qa-scenario-matrix.test.ts` — **new** large matrix suite
-- `src/test/money.test.ts` — negative price regression
+- `src/test/money.test.ts` — negative price + string parse regression
 - `docs/QA_FULL_AUDIT_REPORT.md` — this report
+- `docs/QA_TESTING_LOG.md` — persistent log
 
 ---
 
@@ -157,4 +182,4 @@
 
 ## 10. Bottom line
 
-The app’s **core money + debt consistency** checked out on the live demo shop, but **Sales was fully broken** in UI until this session (`cn` missing). Automated matrices now stress money/PIN/phone/entitlements with **thousands of real assertions**. Remaining blockers for “real money app” are mostly **ops/credentials** and **pin-login reliability**, not missing UI screens.
+The app’s **core money + debt consistency** checked out on the live demo shop, but **Sales was fully broken** in UI until this session (`cn` missing). Follow-up closed a **P0 registration trust bug** (client email OTP flag), payment double-apply / wrong Debts totals, and webhook hash compare. Automated matrices stress money/PIN/phone/entitlements with **thousands of real assertions** (49 Vitest tests, all green after follow-up). Remaining blockers for “real money app” are mostly **ops/credentials**, **Edge redeploy of OTP/Flutterwave fixes**, and **pin-login reliability**.

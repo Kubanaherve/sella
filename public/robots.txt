@@ -1,14 +1,16 @@
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
-
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /debts
+Disallow: /sales
+Disallow: /inventory
+Disallow: /add-debt
+Disallow: /new-sale
+Disallow: /clients
+Disallow: /inbox
+Disallow: /account
+Disallow: /import-customers
+Disallow: /import-inventory
+
+Sitemap: https://sella.app/sitemap.xml

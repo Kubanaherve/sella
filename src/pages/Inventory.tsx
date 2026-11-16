@@ -289,6 +289,7 @@ const InventoryPage: React.FC = () => {
       <div className="sella-page-body space-y-4">
         {!canWrite && <WriteGate actionLabel="Guhindura ububiko" />}
 
+        <div className="sella-inv-overview">
         {/* Glass hero value card */}
         <section className="glass-card-dark relative p-4">
           <div className="relative z-10">
@@ -310,7 +311,7 @@ const InventoryPage: React.FC = () => {
         </section>
 
         {/* KPI strip */}
-        <section className="grid grid-cols-2 gap-2.5">
+        <section className="sella-inv-kpis grid grid-cols-2 gap-2.5">
           <div className="sella-stat flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-[#1A6FFF]/12 text-[#0B3FCC] dark:text-[#5AC8FA] flex items-center justify-center border border-white/60 dark:border-white/10 backdrop-blur-sm">
               <Boxes size={18} />
@@ -347,6 +348,7 @@ const InventoryPage: React.FC = () => {
             </div>
           </button>
         </section>
+        </div>
 
         {/* Search + filters */}
         {items.length > 0 && (
@@ -375,7 +377,7 @@ const InventoryPage: React.FC = () => {
               )}
             </div>
 
-            <div className="flex gap-1.5 overflow-x-auto pb-0.5">
+            <div className="sella-chip-row flex gap-1.5 overflow-x-auto pb-0.5">
               {(
                 [
                   ["all", "Byose"],
@@ -415,7 +417,7 @@ const InventoryPage: React.FC = () => {
         )}
 
         {/* Product list */}
-        <section className="space-y-2.5">
+        <section className="sella-product-grid space-y-2.5">
           {isLoading && items.length === 0 ? (
             <ListPageSkeleton rows={5} />
           ) : filteredItems.length === 0 ? (

@@ -71,7 +71,7 @@ Deno.serve(async (req) => {
     const ownerName = String(body.owner_name || body.display_name || "").trim();
     const emailNorm = normalizeEmail(String(body.email || ""));
     const nationalId = normalizeNationalId(String(body.national_id || ""));
-    const emailOtpVerified = Boolean(body.email_otp_verified);
+    // Never trust client-claimed email_otp_verified — always check DB
 
     if (!phone) return json({ error: "Invalid phone" }, 400);
     if (!emailNorm) return json({ error: "Valid email required to identify your shop owner" }, 400);
@@ -83,8 +83,8 @@ Deno.serve(async (req) => {
     const sb = adminClient();
     const isReviewer = isReviewerPhone(phone) && otpCode === REVIEWER_OTP;
 
-    // Require email confirmation code unless already verified in this flow
-    if (!emailOtpVerified && !isReviewer) {
+    // Require a recently verified email OTP in DB (reviewer phones exempt)
+    if (!isReviewer) {
       const { data: emailRows } = await sb
         .from("otp_verifications")
         .select("*")

@@ -133,6 +133,7 @@ const MorePage = () => {
       <PageHeader title={labels.moreTitle} subtitle={labels.moreSubtitle} hideBack />
 
       <div className="sella-page-body space-y-4">
+        <div className="sella-more-top">
         <div className="sella-list-card p-4 flex items-center gap-3">
           <BrandMark variant="icon" size="md" />
           <div className="min-w-0">
@@ -159,8 +160,9 @@ const MorePage = () => {
             Manual glass light/dark — does not follow your phone system theme.
           </p>
         </div>
+        </div>
 
-        <div className="sella-list-card p-0 divide-y divide-border/60">
+        <div className="sella-list-card sella-settings-list p-0 divide-y divide-border/60">
           {rows
             .filter((r) => !r.hide)
             .map((row) => {

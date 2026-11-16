@@ -152,7 +152,7 @@ const InboxPage = () => {
         </div>
       </header>
 
-      <main className="p-4 max-w-lg mx-auto space-y-4">
+      <main className="sella-page-body space-y-4">
         <div className="glass-card-dark p-4 gold-glow">
           <div className="flex items-center gap-2 mb-1">
             <Bell size={16} className="text-secondary" />
@@ -172,7 +172,7 @@ const InboxPage = () => {
             <p className="text-sm font-medium">Nta butumwa bushya buhari.</p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="sella-card-grid space-y-3">
             {alerts.map((alert) => (
               <div key={alert.id} className="glass-card p-4 space-y-3">
                 <div className="flex justify-between">

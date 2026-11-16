@@ -20,6 +20,8 @@ export function getNativePlatform(): "ios" | "android" | "web" {
 }
 
 export function preferredBillingChannels(): BillingChannel[] {
+  // Instant STK: Paypack only (has webhook). Card: Flutterwave.
+  // Manual TxId channels remain as admin-verified fallback (no silent auto-unlock).
   // apple_iap hidden until StoreKit is wired (startAppleIap is a stub)
   return [
     "paypack_mtn",
@@ -349,6 +351,28 @@ export async function submitManualPayment(input: {
     .single();
   if (error) throw error;
   return data;
+}
+
+export type BillingHistoryRow = {
+  id: string;
+  amount: number;
+  currency: string;
+  plan_tier: string;
+  payment_method: string;
+  status: string;
+  reference_id: string | null;
+  created_at: string;
+};
+
+export async function listMyPayments(): Promise<BillingHistoryRow[]> {
+  const sb = getSupabase();
+  const { data, error } = await sb
+    .from("subscription_payments")
+    .select("id, amount, currency, plan_tier, payment_method, status, reference_id, created_at")
+    .order("created_at", { ascending: false })
+    .limit(24);
+  if (error) throw error;
+  return (data || []) as BillingHistoryRow[];
 }
 
 export async function startAppleIap(_plan: BillingPlan) {

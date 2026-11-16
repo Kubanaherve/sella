@@ -65,26 +65,37 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
     return null;
   }
 
-  return (
-    <style
-      dangerouslySetInnerHTML={{
-        __html: Object.entries(THEMES)
-          .map(
-            ([theme, prefix]) => `
+  // Only allow safe CSS color tokens (no urls/expressions) before injecting.
+  const safeColor = (raw: string | undefined) => {
+    if (!raw) return null;
+    const c = String(raw).trim();
+    if (!/^(#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})|rgb\(|rgba\(|hsl\(|hsla\(|var\(--|oklch\()/i.test(c) &&
+      !/^[a-zA-Z]+$/.test(c)) {
+      return null;
+    }
+    if (/[;{}]|url\s*\(|expression|javascript:/i.test(c)) return null;
+    return c;
+  };
+
+  const cssText = Object.entries(THEMES)
+    .map(
+      ([theme, prefix]) => `
 ${prefix} [data-chart=${id}] {
 ${colorConfig
   .map(([key, itemConfig]) => {
-    const color = itemConfig.theme?.[theme as keyof typeof itemConfig.theme] || itemConfig.color;
+    const color = safeColor(
+      itemConfig.theme?.[theme as keyof typeof itemConfig.theme] || itemConfig.color
+    );
     return color ? `  --color-${key}: ${color};` : null;
   })
+  .filter(Boolean)
   .join("\n")}
 }
-`,
-          )
-          .join("\n"),
-      }}
-    />
-  );
+`
+    )
+    .join("\n");
+
+  return <style>{cssText}</style>;
 };
 
 const ChartTooltip = RechartsPrimitive.Tooltip;

@@ -3,15 +3,20 @@ import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { isSubscriptionExpired } from "@/lib/entitlements";
 import { isAppUnlocked } from "@/lib/appUnlock";
+import { isMarketingPath } from "@/lib/site";
 
 const OPEN_PATHS = new Set([
   "/",
+  "/app",
+  "/login",
   "/subscribe",
   "/billing",
   "/account",
   "/notifications",
   "/terms",
   "/privacy",
+  "/docs",
+  "/delete-account",
   "/forgot-password",
   "/reset-password",
   "/install",
@@ -20,8 +25,13 @@ const OPEN_PATHS = new Set([
 /** Routes that never require an authenticated+unlocked session. */
 const PUBLIC_PATHS = new Set([
   "/",
+  "/app",
+  "/login",
+  "/subscribe",
   "/terms",
   "/privacy",
+  "/docs",
+  "/delete-account",
   "/forgot-password",
   "/reset-password",
   "/install",
@@ -31,30 +41,33 @@ export function SubscriptionGuard({ children }: { children: ReactNode }) {
   const { isAuthenticated, isLoading, subscription, mode, canWrite } = useAuth();
   const location = useLocation();
 
-  if (isLoading) {
+  const path = location.pathname;
+  const marketing = isMarketingPath(path);
+  const isPublic = PUBLIC_PATHS.has(path) || marketing;
+  const isOpen = OPEN_PATHS.has(path) || marketing;
+
+  if (isLoading && !isPublic) {
     return (
       <div className="min-h-screen sella-hero-bg flex items-center justify-center">
         <div className="w-10 h-10 border-4 border-[#1A6FFF]/25 border-t-[#1A6FFF] rounded-full animate-spin" />
       </div>
     );
   }
-
-  const path = location.pathname;
   const unlocked = isAppUnlocked();
 
   // App-wide PIN gate: persisted session alone is not enough
-  if (!PUBLIC_PATHS.has(path) && (!isAuthenticated || !unlocked)) {
+  if (!isPublic && (!isAuthenticated || !unlocked)) {
     return <Navigate to="/" replace state={{ from: path }} />;
   }
 
-  if (!isAuthenticated && !OPEN_PATHS.has(path)) {
+  if (!isAuthenticated && !isOpen) {
     return <Navigate to="/" replace />;
   }
 
   const expired =
     isAuthenticated && mode === "cloud" && isSubscriptionExpired(subscription);
 
-  if (expired && !canWrite && !OPEN_PATHS.has(path) && path !== "/debts") {
+  if (expired && !canWrite && !isOpen && path !== "/debts") {
     const mutationPaths = [
       "/add-debt",
       "/new-sale",

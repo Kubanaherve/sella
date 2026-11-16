@@ -61,6 +61,9 @@ Deno.serve(async (req) => {
       return json({ error: "Phone or PIN is incorrect" }, 401);
     }
 
+    // Reset rate-limit counter on successful login so legitimate users don't hit lockout
+    await sb.from("auth_rate_limits").delete().eq("bucket_key", bucket);
+
     const { data: subscription } = await sb
       .from("user_subscriptions")
       .select("*")

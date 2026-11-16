@@ -11,6 +11,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { formatCurrency } from "@/lib/kinyarwanda";
+import { toRwf } from "@/lib/money";
 import type { PaymentMethod } from "@/db/types";
 
 interface PaymentModalProps {
@@ -21,7 +22,7 @@ interface PaymentModalProps {
     thankYouMessage: string,
     paymentMethod: PaymentMethod,
     referenceNumber: string | null
-  ) => void;
+  ) => void | Promise<void>;
   customerName: string;
   totalAmount: number;
 }
@@ -47,42 +48,54 @@ const PaymentModal = ({
     `Thank you very much!! Mugire ibihe byiza.`
   );
   const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
       setPaymentAmount(totalAmount.toString());
       setReferenceNumber("");
       setError("");
+      setSubmitting(false);
     }
   }, [isOpen, totalAmount]);
 
-  const handleConfirm = () => {
-    const amount = Number(paymentAmount);
-    if (isNaN(amount) || amount <= 0) {
+  const handleConfirm = async () => {
+    if (submitting) return;
+    const amount = toRwf(paymentAmount);
+    if (!Number.isFinite(amount) || amount <= 0) {
       setError("Andika umubare w'amafaranga yemewe");
       return;
     }
-    if (amount > totalAmount) {
-      setError(`Amafaranga ntashobora kurenza ${formatCurrency(totalAmount)}`);
+    const due = toRwf(totalAmount);
+    if (amount > due) {
+      setError(`Amafaranga ntashobora kurenza ${formatCurrency(due)}`);
       return;
     }
     setError("");
-    onConfirm(
-      amount,
-      thankYouMessage,
-      paymentMethod,
-      referenceNumber.trim() || null
-    );
-    setPaymentAmount(totalAmount.toString());
+    setSubmitting(true);
+    try {
+      await onConfirm(
+        amount,
+        thankYouMessage,
+        paymentMethod,
+        referenceNumber.trim() || null
+      );
+      setPaymentAmount(String(due));
+    } catch {
+      // Parent surfaces toast; keep modal open for retry
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleClose = () => {
+    if (submitting) return;
     setPaymentAmount(totalAmount.toString());
     setError("");
     onClose();
   };
 
-  const remainingAfterPayment = totalAmount - Number(paymentAmount || 0);
+  const remainingAfterPayment = toRwf(totalAmount) - toRwf(paymentAmount || 0);
   const showRef = paymentMethod === "momo" || paymentMethod === "airtel" || paymentMethod === "bank";
 
   return (
@@ -153,7 +166,7 @@ const PaymentModal = ({
             </div>
           )}
 
-          {remainingAfterPayment > 0 && Number(paymentAmount) > 0 && (
+          {remainingAfterPayment > 0 && toRwf(paymentAmount) > 0 && (
             <div className="p-3 bg-amber-50/80 dark:bg-amber-500/15 border border-amber-200 dark:border-amber-500/30 rounded-xl backdrop-blur-sm">
               <p className="text-sm text-amber-800 dark:text-amber-200">
                 Amafaranga azasigara:{" "}
@@ -162,9 +175,9 @@ const PaymentModal = ({
             </div>
           )}
 
-          {remainingAfterPayment === 0 && Number(paymentAmount) > 0 && (
-            <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-              <p className="text-sm text-green-800">
+          {remainingAfterPayment === 0 && toRwf(paymentAmount) > 0 && (
+            <div className="p-3 bg-green-50 dark:bg-emerald-500/15 border border-green-200 dark:border-emerald-500/30 rounded-xl">
+              <p className="text-sm text-green-800 dark:text-emerald-200">
                 ✓ Ideni ryose rizishyurwa burundu!
               </p>
             </div>
@@ -183,10 +196,12 @@ const PaymentModal = ({
         </div>
 
         <DialogFooter className="gap-2">
-          <Button variant="outline" onClick={handleClose}>
+          <Button variant="outline" onClick={handleClose} disabled={submitting}>
             Bireke
           </Button>
-          <Button onClick={handleConfirm}>Emeza</Button>
+          <Button onClick={handleConfirm} disabled={submitting}>
+            {submitting ? "…" : "Emeza"}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

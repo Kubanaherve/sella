@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { Capacitor } from "@capacitor/core";
 import {
   ArrowLeft,
   Building2,
@@ -13,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { BrandMark } from "@/components/BrandMark";
 import { useAuth } from "@/contexts/AuthContext";
+import { trackEvent } from "@/lib/analytics";
 import {
   MERCHANT,
   accessLabel,
@@ -105,15 +107,20 @@ const SubscribePage = () => {
 
   const amount = plan === "annual" ? getAnnualPriceRwf() : getMonthlyPriceRwf();
 
+  useEffect(() => {
+    document.title = "Sella checkout";
+  }, []);
+
   const finishSuccess = useCallback(
     async (msg?: string) => {
       clearPaymentInProgress();
       await refreshSubscription();
+      trackEvent("purchase_confirmed", { currency: "RWF", value: amount, plan });
       toast.success(msg || "Payment confirmed — subscription active");
       // Land on dashboard so write access is immediately usable
       navigate("/dashboard");
     },
-    [navigate, refreshSubscription]
+    [navigate, refreshSubscription, amount, plan]
   );
 
   // After Flutterwave 3DS redirect back to /subscribe?tx_ref=…
@@ -432,6 +439,30 @@ const SubscribePage = () => {
   const cardSummary = card
     ? `${card.brand === "mastercard" ? "Mastercard" : card.brand === "amex" ? "Amex" : "Visa"} ·••• ${card.number.replace(/\D/g, "").slice(-4)}`
     : null;
+
+  if (Capacitor.isNativePlatform() && Capacitor.getPlatform() === "ios") {
+    return (
+      <div className="min-h-screen sella-hero-bg flex items-center justify-center p-6">
+        <div className="w-full max-w-md glass-card p-6 space-y-4 text-center">
+          <BrandMark variant="icon" size="md" />
+          <h1 className="text-xl font-bold">Sella Enterprise Subscription</h1>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Sella for iOS is a multi-platform retail terminal companion for registered business accounts.
+          </p>
+          <div className="p-4 rounded-2xl bg-white/50 dark:bg-white/[0.03] border border-border/60 text-left space-y-2 text-xs">
+            <p className="font-semibold text-foreground">Account Status</p>
+            <p className="text-muted-foreground">{accessLabel(subscription)}</p>
+          </div>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            To manage, renew, or upgrade your shop subscription, visit your business account at <strong>https://sella.app</strong> from any desktop or mobile browser.
+          </p>
+          <Button variant="outline" className="w-full" onClick={() => navigate("/dashboard")}>
+            Back to Dashboard
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen sella-hero-bg pb-[max(1.5rem,env(safe-area-inset-bottom))]">

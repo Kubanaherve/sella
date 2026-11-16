@@ -60,9 +60,24 @@ export default defineConfig(({ mode }) => ({
         ],
       },
       workbox: {
-        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
-        // Avoid workbox+terser race that aborts SW generation in CI/sandbox
-        mode: "development",
+        globPatterns: ["**/*.{js,css,html,ico,svg,woff2}", "brand/sella-icon.png", "pwa-*.png"],
+        globIgnores: [
+          "**/brand/*.pdf",
+          "**/brand/*specimen*",
+          "**/brand/*processor*",
+          "**/brand/*raw*",
+          "icons/apple-splash-*",
+          "**/brand/sella-splash*",
+          "**/brand/*wordmark*",
+          "**/brand/*stamp*",
+          "**/brand/*script*",
+          "**/brand/sella-bag*",
+          "**/brand/sella-kare*",
+          "**/brand/sella-brand/**",
+          "**/brand/payments/**",
+        ],
+        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
+        mode: "production",
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
@@ -79,6 +94,40 @@ export default defineConfig(({ mode }) => ({
       },
     }),
   ].filter(Boolean),
+  build: {
+    chunkSizeWarningLimit: 600,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (
+            id.includes("node_modules/jspdf") ||
+            id.includes("node_modules/pdfjs-dist") ||
+            id.includes("node_modules/html2canvas")
+          ) {
+            return "vendor-pdf";
+          }
+          if (
+            id.includes("node_modules/xlsx") ||
+            id.includes("node_modules/papaparse")
+          ) {
+            return "vendor-sheets";
+          }
+          if (id.includes("node_modules/@supabase")) {
+            return "vendor-supabase";
+          }
+          if (id.includes("node_modules/@tanstack")) {
+            return "vendor-query";
+          }
+          if (id.includes("node_modules/lucide-react")) {
+            return "vendor-icons";
+          }
+          if (id.includes("node_modules/@radix-ui")) {
+            return "vendor-radix";
+          }
+        },
+      },
+    },
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

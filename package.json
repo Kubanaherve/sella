@@ -18,6 +18,7 @@
     "android:sync": "npm run cap:sync && npx cap open android",
     "ios:sync": "npm run cap:sync && npx cap open ios",
     "android:apk": "npm run cap:sync && cd android && ./gradlew assembleDebug",
+    "desktop": "electron desktop/main.cjs",
     "verify": "npm run typecheck && npm run lint && npm test && npm run build",
     "test:rls": "node scripts/rls-two-shop-matrix.mjs"
   },

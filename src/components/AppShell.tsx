@@ -15,6 +15,8 @@ import { PageTransition } from "@/components/PageTransition";
 import { labels } from "@/lib/kinyarwanda";
 import { useEffect, useState } from "react";
 import { startOutboxSyncListener } from "@/services/outboxSync";
+import { useDesktopLayout } from "@/hooks/useDesktopLayout";
+import { DesktopShell } from "@/components/desktop/DesktopShell";
 
 const TABS = [
   { to: "/dashboard", label: labels.home, icon: Home },
@@ -25,6 +27,12 @@ const TABS = [
 ] as const;
 
 export function AppShell() {
+  const desktop = useDesktopLayout();
+  if (desktop) return <DesktopShell />;
+  return <MobileAppShell />;
+}
+
+function MobileAppShell() {
   const location = useLocation();
   const navigate = useNavigate();
   const { canWrite } = useAuth();

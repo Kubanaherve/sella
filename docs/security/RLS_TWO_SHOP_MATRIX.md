@@ -1,6 +1,6 @@
 # SELLA live RLS two-shop matrix
 
-**Ran:** 2026-11-13T09:04:27.012Z  
+**Ran:** 2026-11-16T10:38:25.643Z  
 **Project:** `ixihbqubatyfulnurpco`  
 **Shops:** Demo Jewel Kigali (A) vs Demo Fashion Remera (B)  
 **Rule:** No feature is complete until expected behavior is tested and verified.
@@ -32,7 +32,7 @@
 | S1 | Shop A upload to own receipts path | ok | **PASS** |  |
 | S2 | Shop B cannot download Shop A receipt | denied | **PASS** | {} |
 | X9 | Shop A cannot self-promote to superadmin | still false | **PASS** | is_superadmin=undefined |
-| X10 | Shop A subscription_payments only own rows | no foreign user_id | **PASS** | own=1 foreign=0 |
+| X10 | Shop A subscription_payments only own rows | no foreign user_id | **PASS** | own=2 foreign=0 |
 
 ## How to re-run
 

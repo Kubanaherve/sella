@@ -5,7 +5,7 @@
  */
 import Dexie, { type Table } from "dexie";
 
-export type OutboxStatus = "pending" | "syncing" | "failed" | "done";
+export type OutboxStatus = "pending" | "syncing" | "failed" | "done" | "cancelled";
 
 export interface OutboxItem {
   id: string;
@@ -73,19 +73,28 @@ export async function markOutbox(
   await db.outbox.update(id, { ...patch, updated_at: new Date().toISOString() });
 }
 
+/** Throw from invoke to permanently cancel an outbox row (no retry). */
+export class OutboxCancelError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "OutboxCancelError";
+  }
+}
+
 /**
  * Drain queue when online. Caller supplies the actual RPC invoker so this
  * module stays free of circular imports with cloudApi.
  */
 export async function drainOutbox(
   invoke: (item: OutboxItem) => Promise<void>
-): Promise<{ synced: number; failed: number }> {
+): Promise<{ synced: number; failed: number; cancelled: number }> {
   if (typeof navigator !== "undefined" && !navigator.onLine) {
-    return { synced: 0, failed: 0 };
+    return { synced: 0, failed: 0, cancelled: 0 };
   }
   const pending = await listPendingOutbox();
   let synced = 0;
   let failed = 0;
+  let cancelled = 0;
   for (const item of pending) {
     await markOutbox(item.id, { status: "syncing", attempts: item.attempts + 1 });
     try {
@@ -93,12 +102,18 @@ export async function drainOutbox(
       await markOutbox(item.id, { status: "done", last_error: null });
       synced += 1;
     } catch (e) {
-      await markOutbox(item.id, {
-        status: "failed",
-        last_error: e instanceof Error ? e.message : "sync failed",
-      });
-      failed += 1;
+      const msg = e instanceof Error ? e.message : "sync failed";
+      if (e instanceof OutboxCancelError) {
+        await markOutbox(item.id, { status: "cancelled", last_error: msg });
+        cancelled += 1;
+      } else {
+        await markOutbox(item.id, {
+          status: "failed",
+          last_error: msg,
+        });
+        failed += 1;
+      }
     }
   }
-  return { synced, failed };
+  return { synced, failed, cancelled };
 }

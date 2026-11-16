@@ -118,7 +118,7 @@ const ClientsPage = () => {
         backTo="/more"
       />
 
-      <main className="sella-page-body space-y-6">
+      <main className="sella-page-body sella-clients-layout">
         {!canWrite && <WriteGate actionLabel="Kongeraho cyangwa guhindura abakiriya" />}
         {/* Add Client Form */}
         <div className="sella-list-card p-4 sm:p-5 animate-fade-in">

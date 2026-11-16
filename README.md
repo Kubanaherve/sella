@@ -40,6 +40,13 @@ npm run backend:activate
 
 Migrations include unique shop names + shop codes. See [docs/STORE_LAUNCH.md](docs/STORE_LAUNCH.md).
 
+## Demo & Testing Credentials (Dev)
+
+- Demo shop phone: `+250788123456` (or `0788123456`)
+- Demo PIN: **`1111`** *(Note: default demo PIN is 1111, not 1234)*
+- Reviewer sandbox bypass: `+250780000000` / OTP `123456` (controlled by `ENABLE_REVIEWER_BYPASS`, disabled in production by default)
+- Auth rate limit: 8 attempts / 15 minutes window (`auth_rate_limits`); returns 429 with countdown. Superadmins can clear phone lockouts from `/admin/dashboard`.
+
 ## Billing
 
 - Trial: **7 days**

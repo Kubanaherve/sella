@@ -62,7 +62,7 @@ export default function AssistantPage() {
   };
 
   return (
-    <div className="sella-page flex flex-col min-h-[100dvh]">
+    <div className="sella-page sella-chat-page flex flex-col min-h-[100dvh]">
       <PageHeader
         title={labels.assistantTitle}
         subtitle={labels.assistantSubtitle}
@@ -120,10 +120,7 @@ export default function AssistantPage() {
       </div>
 
       <form
-        className="fixed inset-x-0 z-40 mx-auto max-w-lg border-t border-border/70 dark:border-white/10 bg-white/80 dark:bg-slate-900/85 backdrop-blur-2xl px-3 py-3"
-        style={{
-          bottom: "calc(3.75rem + env(safe-area-inset-bottom))",
-        }}
+        className="sella-chat-composer fixed inset-x-0 z-40 mx-auto max-w-lg border-t border-border/70 dark:border-white/10 bg-white/80 dark:bg-slate-900/85 backdrop-blur-2xl px-3 py-3"
         onSubmit={(e) => {
           e.preventDefault();
           void ask(input);

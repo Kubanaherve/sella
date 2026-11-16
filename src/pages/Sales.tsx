@@ -278,7 +278,7 @@ const ReportsPage = () => {
           </p>
         </div>
 
-        <div className="flex gap-2 overflow-x-auto pb-1">
+        <div className="sella-chip-row flex gap-2 overflow-x-auto pb-1">
           {FILTER_OPTIONS.map((option) => (
             <Button
               key={option.value}
@@ -292,6 +292,7 @@ const ReportsPage = () => {
           ))}
         </div>
 
+        <div className="sella-sales-kpis">
         <div className="rounded-3xl border border-primary/15 bg-gradient-to-br from-[#0b4fd9] to-[#1a6fff] p-4 shadow-md text-white">
           <div className="flex items-center gap-2 mb-1">
             <TrendingUp size={16} className="text-white/80" />
@@ -329,6 +330,7 @@ const ReportsPage = () => {
             </p>
           </div>
         </div>
+        </div>
 
         {loading ? (
           <ListPageSkeleton rows={4} />
@@ -341,7 +343,7 @@ const ReportsPage = () => {
             onAction={() => navigate("/new-sale")}
           />
         ) : (
-          <div className="space-y-3">
+          <div className="sella-sales-board space-y-3">
             {recentSales.length > 0 && (
               <div className="space-y-2">
                 <h3 className="text-xs font-semibold text-slate-600">Igurisha rya vuba</h3>
@@ -378,6 +380,7 @@ const ReportsPage = () => {
                 ))}
               </div>
             )}
+            <div className="space-y-3">
             {reports.map((report) => (
               <div
                 key={report.date}
@@ -434,6 +437,7 @@ const ReportsPage = () => {
                 </div>
               </div>
             ))}
+            </div>
           </div>
         )}
       </main>

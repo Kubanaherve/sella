@@ -4,8 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { getSupabase, isCloudMode } from "@/integrations/supabase/client";
-import { accessLabel } from "@/lib/entitlements";
 import { deleteAccountRemote } from "@/services/billing";
+import { CustomerPlanCard } from "@/components/account/CustomerPlanCard";
+import { BillingHistory } from "@/components/account/BillingHistory";
+import { DeviceManager } from "@/components/account/DeviceManager";
 import { ChangePinCard } from "@/components/ChangePinCard";
 import { PageHeader } from "@/components/PageHeader";
 import {
@@ -21,7 +23,7 @@ import { toast } from "sonner";
 
 const AccountPage = () => {
   const navigate = useNavigate();
-  const { profile, subscription, logout, mode, refreshProfile, isSuperAdmin } = useAuth();
+  const { profile, logout, mode, refreshProfile, isSuperAdmin } = useAuth();
   const [fullName, setFullName] = useState(
     (profile && "owner_name" in profile && profile.owner_name) ||
       (profile && "display_name" in profile && profile.display_name) ||
@@ -116,15 +118,11 @@ const AccountPage = () => {
           {phone && <p className="text-muted-foreground">{phone}</p>}
         </div>
 
-        <div className="glass-card rounded-2xl border border-border/60 p-4 space-y-2 text-sm">
-          <p className="font-semibold">Subscription</p>
-          <p>{accessLabel(subscription)}</p>
-          <Button className="w-full" onClick={() => navigate("/subscribe")}>
-            Billing / renew
-          </Button>
-        </div>
+        <CustomerPlanCard />
+        <BillingHistory />
 
         <ChangePinCard />
+        <DeviceManager />
 
         <div className="glass-card rounded-2xl border border-border/60 p-4 space-y-2">
           <p className="font-semibold text-sm">Advanced data tools</p>

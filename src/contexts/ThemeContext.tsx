@@ -24,13 +24,37 @@ type ThemeContextValue = {
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 function readStoredAppearance(): AppAppearance {
+  // 1. Check URL query parameter (e.g. ?theme=dark or ?theme=light)
+  if (typeof window !== "undefined") {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const urlTheme = params.get("theme");
+      if (urlTheme === "dark" || urlTheme === "light") {
+        return urlTheme;
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+
+  // 2. Check explicitly stored user preference
   try {
     const v = localStorage.getItem(STORAGE_KEY);
     if (v === "dark" || v === "light") return v;
   } catch {
     /* ignore */
   }
-  // Manual only — never follow phone system theme.
+
+  // 3. Default to device/system theme when not explicitly set by the user
+  if (typeof window !== "undefined" && window.matchMedia) {
+    try {
+      if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+        return "dark";
+      }
+    } catch {
+      /* ignore */
+    }
+  }
   return "light";
 }
 
@@ -92,6 +116,24 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     applyAppearanceToDom(appearance);
     void syncNativeChrome(appearance);
   }, [appearance]);
+
+  // If user hasn't explicitly chosen light or dark, adapt dynamically to system theme changes
+  useEffect(() => {
+    try {
+      if (!localStorage.getItem(STORAGE_KEY) && typeof window !== "undefined" && window.matchMedia) {
+        const mql = window.matchMedia("(prefers-color-scheme: dark)");
+        const handler = (e: MediaQueryListEvent) => {
+          const next: AppAppearance = e.matches ? "dark" : "light";
+          setAppearanceState(next);
+          applyAppearanceToDom(next);
+        };
+        mql.addEventListener("change", handler);
+        return () => mql.removeEventListener("change", handler);
+      }
+    } catch {
+      /* ignore */
+    }
+  }, []);
 
   const value = useMemo(
     () => ({

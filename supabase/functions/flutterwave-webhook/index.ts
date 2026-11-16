@@ -5,11 +5,22 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { activateSubscription } from "../_shared/flwEncrypt.ts";
 
+/** Constant-time string compare (mitigate timing leaks on verif-hash). */
+function timingSafeEqual(a: string, b: string): boolean {
+  const enc = new TextEncoder();
+  const aa = enc.encode(a);
+  const bb = enc.encode(b);
+  if (aa.length !== bb.length) return false;
+  let diff = 0;
+  for (let i = 0; i < aa.length; i++) diff |= aa[i] ^ bb[i];
+  return diff === 0;
+}
+
 Deno.serve(async (req) => {
   try {
     const secretHash = Deno.env.get("FLW_WEBHOOK_SECRET");
-    const signature = req.headers.get("verif-hash");
-    if (!secretHash || signature !== secretHash) {
+    const signature = req.headers.get("verif-hash") || "";
+    if (!secretHash || !timingSafeEqual(signature, secretHash)) {
       return new Response("invalid signature", { status: 401 });
     }
 

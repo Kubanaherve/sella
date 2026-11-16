@@ -62,11 +62,14 @@ export async function collectPayment(input: CollectInput): Promise<CollectResult
   switch (provider) {
     case "test":
       return collectTest(input);
-    case "airtel_open_api":
-      return collectAirtel(input);
-    case "mtn_momo":
-      return collectMtn(input);
     case "paypack":
+      return collectPaypack(input);
+    case "airtel_open_api":
+    case "mtn_momo":
+      // Direct Open API collectors have no webhook → subscription would stay pending.
+      throw new Error(
+        `Provider ${provider} is disabled until a signed webhook path exists. Use Paypack or PAYMENT_MODE=test.`
+      );
     default:
       return collectPaypack(input);
   }

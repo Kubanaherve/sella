@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Bell, CreditCard, RefreshCw, Users } from "lucide-react";
+import { ArrowLeft, Bell, CreditCard, RefreshCw, ShieldCheck, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { getSupabase } from "@/integrations/supabase/client";
 import { COMPANY } from "@/lib/company";
@@ -42,6 +43,31 @@ const AdminDashboardPage = () => {
   const { isSuperAdmin, isLoading } = useAuth();
   const [stats, setStats] = useState<Stats>(empty);
   const [busy, setBusy] = useState(false);
+  const [unlockPhone, setUnlockPhone] = useState("");
+  const [unlocking, setUnlocking] = useState(false);
+
+  const handleClearRateLimit = async () => {
+    const raw = unlockPhone.trim();
+    if (!raw) {
+      toast.error("Enter phone number");
+      return;
+    }
+    setUnlocking(true);
+    try {
+      const sb = getSupabase();
+      const { data, error } = await sb.functions.invoke("admin-clear-rate-limit", {
+        body: { phone: raw },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success(data?.message || "Rate limits cleared");
+      setUnlockPhone("");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to clear rate limits");
+    } finally {
+      setUnlocking(false);
+    }
+  };
 
   const load = useCallback(async () => {
     setBusy(true);
@@ -205,6 +231,33 @@ const AdminDashboardPage = () => {
           <div className="grid grid-cols-2 gap-2">
             <Tile label="Total logged" value={stats.notifs} />
             <Tile label="Unread (all users)" value={stats.notifsUnread} />
+          </div>
+        </section>
+
+        <section className="space-y-2">
+          <p className="text-sm font-semibold flex items-center gap-2">
+            <ShieldCheck size={16} /> Auth Rate Limits & Lockouts
+          </p>
+          <div className="glass-card p-4 space-y-3">
+            <p className="text-xs text-muted-foreground">
+              Clear 15-minute brute-force lockout for a shop owner phone after failed PIN probes.
+            </p>
+            <div className="flex gap-2">
+              <Input
+                placeholder="Phone (e.g. 0788123456 or +250...)"
+                value={unlockPhone}
+                onChange={(e) => setUnlockPhone(e.target.value)}
+                className="input-glow h-10 text-sm"
+              />
+              <Button
+                variant="outline"
+                className="whitespace-nowrap h-10"
+                disabled={unlocking}
+                onClick={() => void handleClearRateLimit()}
+              >
+                {unlocking ? "Clearing…" : "Unlock Phone"}
+              </Button>
+            </div>
           </div>
         </section>
 

@@ -577,6 +577,8 @@ export async function deleteDebt(debtId: string) {
   }
   await sb().from("payments").delete().eq("debt_id", debtId).eq("user_id", user_id);
   await sb().from("debt_items").delete().eq("debt_id", debtId).eq("user_id", user_id);
+  // Match localApi: remove sales rows tied to this debt (avoid orphan ledger)
+  await sb().from("sales").delete().eq("debt_id", debtId).eq("user_id", user_id);
   const { error } = await sb()
     .from("debts")
     .delete()

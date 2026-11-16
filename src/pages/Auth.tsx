@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { labels } from "@/lib/kinyarwanda";
 import { toast } from "sonner";
-import { Phone, Lock, Plus, X, Mail, Copy, CheckCircle2, Store } from "lucide-react";
+import { Phone, Lock, Plus, X, Mail, Copy, CheckCircle2, Store, List, Package, TrendingUp } from "lucide-react";
 import { PinDialPad } from "@/components/PinDialPad";
 import { BrandMark } from "@/components/BrandMark";
 import { getSessionProfile, loginLocal, signupLocal, isShopNameAvailableLocal } from "@/db/api";
@@ -26,7 +26,7 @@ import { getAppLanguage, setAppLanguage } from "@/lib/appLanguage";
 
 const PIN_LENGTH = 4;
 
-type Step = "home" | "register" | "confirm" | "phone_login" | "pin" | "picker";
+type Step = "home" | "register" | "email_otp" | "confirm" | "phone_login" | "pin" | "picker";
 
 interface ConfirmData {
   businessName: string;
@@ -58,6 +58,9 @@ const AuthPage = () => {
   const [selectedAccount, setSelectedAccount] = useState<RememberedAccount | null>(null);
   const [pinResetToken, setPinResetToken] = useState(0);
   const [pinError, setPinError] = useState<string | null>(null);
+  const [pinRetryAfter, setPinRetryAfter] = useState(0);
+  const [emailOtp, setEmailOtp] = useState("");
+  const [emailOtpSent, setEmailOtpSent] = useState(false);
 
   const t = (rw: string, en: string) => (lang === "rw" ? rw : en);
   const e164 = normalizePhoneE164(phoneLocal);
@@ -75,6 +78,12 @@ const AuthPage = () => {
     }
     setStep("home");
   }, []);
+
+  useEffect(() => {
+    if (pinRetryAfter <= 0) return;
+    const t = window.setTimeout(() => setPinRetryAfter((s) => Math.max(0, s - 1)), 1000);
+    return () => window.clearTimeout(t);
+  }, [pinRetryAfter]);
 
   useEffect(() => {
     const accounts = loadRememberedAccounts();
@@ -242,17 +251,64 @@ const AuthPage = () => {
         return;
       }
 
+      // Cloud: send email OTP first — register-shop refuses unverified email
       const sb = getSupabase();
+      const { data, error } = await sb.functions.invoke("send-email-otp", {
+        body: { email: normalizeEmail(email) },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      setEmailOtp("");
+      setEmailOtpSent(true);
+      setStep("email_otp");
+      toast.success(
+        t("Twakoherereje code kuri email yawe", "We sent a 6-digit code to your email")
+      );
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Registration failed");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const completeCloudRegister = async () => {
+    if (!/^\d{6}$/.test(emailOtp.trim())) {
+      toast.error(t("Andika code y'imibare 6", "Enter the 6-digit email code"));
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const sb = getSupabase();
+      const emailNorm = normalizeEmail(email);
+      const { data: verifyData, error: verifyErr } = await sb.functions.invoke(
+        "verify-email-otp",
+        { body: { email: emailNorm, otp_code: emailOtp.trim() } }
+      );
+      if (verifyErr) throw verifyErr;
+      if (verifyData?.error) throw new Error(verifyData.error);
+
       const { data, error } = await sb.functions.invoke("register-shop", {
         body: {
           business_name: businessName.trim(),
           owner_name: ownerName.trim(),
-          email: normalizeEmail(email),
+          email: emailNorm,
           phone: e164,
           pin,
         },
       });
-      if (error) throw error;
+      if (error) {
+        let detail = error.message;
+        try {
+          const ctx = (error as { context?: Response }).context;
+          if (ctx && typeof ctx.json === "function") {
+            const body = (await ctx.json()) as { error?: string };
+            if (body?.error) detail = body.error;
+          }
+        } catch {
+          /* ignore */
+        }
+        throw new Error(detail);
+      }
       if (data?.error) throw new Error(data.error);
       if (!data?.access_token || !data?.refresh_token) throw new Error("No session");
 
@@ -261,22 +317,23 @@ const AuthPage = () => {
       await refreshProfile();
       const shopCode = String(data.shop_code || data.profile?.shop_code || "");
       persistAccount({
-        phone: e164,
+        phone: e164!,
         displayName: ownerName.trim(),
         pinLength: PIN_LENGTH,
         shopCode,
         shopName: businessName.trim(),
-        email: normalizeEmail(email),
+        email: emailNorm,
       });
       setConfirmData({
         businessName: data.business_name || businessName.trim(),
         ownerName: data.owner_name || ownerName.trim(),
-        email: data.email || normalizeEmail(email),
-        phone: data.phone || e164,
+        email: data.email || emailNorm,
+        phone: data.phone || e164!,
         shopCode,
         emailSent: Boolean(data.welcome_email_sent),
       });
       setStep("confirm");
+      toast.success(t("Shop yaremwe!", "Shop created!"));
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Registration failed");
     } finally {
@@ -320,9 +377,31 @@ const AuthPage = () => {
       const { data, error } = await sb.functions.invoke("pin-login", {
         body: { phone: normalizePhoneE164(phone) || phone, pin: enteredPin },
       });
-      if (error) throw error;
+      if (error) {
+        // Prefer server JSON error over opaque "non-2xx" FunctionsHttpError
+        let detail = error.message;
+        let retryAfter = 0;
+        try {
+          const ctx = (error as { context?: Response }).context;
+          if (ctx && typeof ctx.json === "function") {
+            const body = (await ctx.json()) as {
+              error?: string;
+              retry_after_seconds?: number;
+            };
+            if (body?.error) detail = body.error;
+            if (body?.retry_after_seconds) retryAfter = Number(body.retry_after_seconds) || 0;
+          }
+        } catch {
+          /* ignore parse failures */
+        }
+        if (retryAfter > 0) setPinRetryAfter(retryAfter);
+        const err = new Error(detail) as Error & { retryAfter?: number };
+        err.retryAfter = retryAfter;
+        throw err;
+      }
       if (data?.error) throw new Error(data.error);
       if (!data?.access_token || !data?.refresh_token) throw new Error("No session");
+      setPinRetryAfter(0);
       setAppUnlocked(true);
       await setSessionFromTokens(data.access_token, data.refresh_token);
       await refreshProfile();
@@ -339,8 +418,25 @@ const AuthPage = () => {
       navigate("/dashboard");
     } catch (e) {
       const raw = e instanceof Error ? e.message : "";
+      const retryFromErr =
+        e && typeof e === "object" && "retryAfter" in e
+          ? Number((e as { retryAfter?: number }).retryAfter) || 0
+          : 0;
       let msg = labels.invalidPin;
-      if (/invalid|wrong|incorrect|pin/i.test(raw)) {
+      if (/too many|retry later|lock/i.test(raw)) {
+        const secs = retryFromErr || pinRetryAfter || 900;
+        if (secs > 0) setPinRetryAfter(secs);
+        const mins = Math.ceil(secs / 60);
+        msg = t(
+          `Wagerageje PIN inshuro nyinshi. Tegereza ~${mins} min.`,
+          `Too many PIN attempts. Wait ~${mins} min.`
+        );
+      } else if (/temporarily unavailable|try again shortly/i.test(raw)) {
+        msg = t(
+          "Seriveri ntiboneka cyaguye. Gerageza nanone vuba.",
+          "Login temporarily unavailable. Try again shortly."
+        );
+      } else if (/invalid|wrong|incorrect|pin/i.test(raw)) {
         msg = labels.invalidPin;
       } else if (/network|fetch|Failed to fetch|timeout/i.test(raw)) {
         msg = t(
@@ -352,7 +448,7 @@ const AuthPage = () => {
           "Kwinjira byanze. Reba PIN cyangwa gerageza nanone.",
           "Sign-in failed. Check your PIN or try again."
         );
-      } else if (raw && raw.length < 120 && !/[{}]/.test(raw)) {
+      } else if (raw && raw.length < 160 && !/[{}]/.test(raw)) {
         msg = raw;
       }
       setPinError(msg);
@@ -465,14 +561,24 @@ const AuthPage = () => {
         <div className="mt-8 w-full max-w-sm flex justify-center">
           <PinDialPad
             onComplete={loginWithPin}
-            isLoading={isLoading}
+            isLoading={isLoading || pinRetryAfter > 0}
             displayName={selectedAccount.displayName}
             pinLength={PIN_LENGTH}
             resetToken={pinResetToken}
-            errorMessage={pinError}
+            errorMessage={
+              pinRetryAfter > 0
+                ? t(
+                    `Tegereza ${Math.ceil(pinRetryAfter / 60)} min (${pinRetryAfter}s)`,
+                    `Wait ${Math.ceil(pinRetryAfter / 60)} min (${pinRetryAfter}s)`
+                  )
+                : pinError
+            }
           />
         </div>
         <div className="mt-8 flex flex-col items-center gap-2">
+          <Link to="/forgot-password" className="text-slate-400 text-xs underline">
+            {t("Wibagiwe PIN?", "Forgot PIN?")}
+          </Link>
           {rememberedAccounts.length > 1 && (
             <button
               type="button"
@@ -604,6 +710,56 @@ const AuthPage = () => {
             {t("Injira na numero yindi", "Sign in with another phone")}
           </button>
         </div>
+      </div>
+    );
+  }
+
+  if (step === "email_otp") {
+    return (
+      <div className="min-h-screen sella-hero-bg flex flex-col items-center justify-center p-6">
+        <BrandMark variant="icon" size="lg" float />
+        <h1 className="text-[#0B3FCC] text-lg font-bold mt-3">
+          {t("Emeza email yawe", "Confirm your email")}
+        </h1>
+        <p className="text-sm text-muted-foreground mt-2 text-center max-w-xs">
+          {emailOtpSent
+            ? t(
+                `Twakoherereje code kuri ${normalizeEmail(email)}`,
+                `We sent a code to ${normalizeEmail(email)}`
+              )
+            : t("Andika code y'imibare 6", "Enter the 6-digit code")}
+        </p>
+        <div className="w-full max-w-sm glass-card mt-5 space-y-3">
+          <Input
+            value={emailOtp}
+            onChange={(e) => setEmailOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+            placeholder="••••••"
+            className="input-glow h-12 text-center text-xl tracking-widest font-mono"
+            inputMode="numeric"
+          />
+          <Button
+            className="w-full btn-gold h-12"
+            disabled={isLoading || emailOtp.length < 6}
+            onClick={() => void completeCloudRegister()}
+          >
+            {isLoading ? "..." : t("Emeza & kora konti", "Confirm & create shop")}
+          </Button>
+          <Button
+            variant="outline"
+            className="w-full"
+            disabled={isLoading}
+            onClick={() => void registerShop()}
+          >
+            {t("Ongera wohereze code", "Resend code")}
+          </Button>
+        </div>
+        <button
+          type="button"
+          className="mt-6 text-slate-500 text-sm"
+          onClick={() => setStep("register")}
+        >
+          ← {t("Subira", "Back")}
+        </button>
       </div>
     );
   }
@@ -774,7 +930,38 @@ const AuthPage = () => {
   }
 
   return (
-    <div className="min-h-screen sella-hero-bg flex flex-col items-center justify-center p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,calc(var(--sella-safe-top-floor)+0.75rem),env(safe-area-inset-top))]">
+    <div className="sella-auth-home min-h-screen sella-hero-bg flex flex-col items-center justify-center p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,calc(var(--sella-safe-top-floor)+0.75rem),env(safe-area-inset-top))]">
+      <aside className="sella-auth-brand">
+        <div>
+          <p className="text-sm font-semibold tracking-[0.18em] uppercase text-white/70">Sella</p>
+          <h2 className="mt-4">{BRAND.taglineRw}</h2>
+          <p className="mt-4 max-w-sm text-sm leading-relaxed text-white/75">
+            Igurisha, ideni, ububiko n'amafaranga — ku mudasobwa, uko umucuruzi akora.
+          </p>
+        </div>
+        <ul className="mt-10 space-y-3 text-sm font-semibold">
+          <li className="flex items-center gap-3">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/15">
+              <TrendingUp size={16} />
+            </span>
+            Raporo y'amafaranga yinjiye
+          </li>
+          <li className="flex items-center gap-3">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/15">
+              <List size={16} />
+            </span>
+            Ideni n'abakiriya mu isura imwe
+          </li>
+          <li className="flex items-center gap-3">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/15">
+              <Package size={16} />
+            </span>
+            Ububiko n'ibicuruzwa byose
+          </li>
+        </ul>
+        <p className="text-xs text-white/60">{labels.madeForRwanda}</p>
+      </aside>
+      <div className="sella-auth-home-main relative flex w-full flex-1 flex-col items-center justify-center p-6">
       <div className="absolute right-4 flex gap-2 top-[max(1rem,calc(max(var(--sella-safe-top-floor),env(safe-area-inset-top,0px))+0.35rem))]">
         <button
           type="button"
@@ -832,6 +1019,7 @@ const AuthPage = () => {
           "Next visits: 4-digit PIN only — your shop is remembered."
         )}
       </p>
+      </div>
     </div>
   );
 };

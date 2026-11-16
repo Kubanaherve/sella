@@ -1,5 +1,5 @@
 import { corsHeaders, json } from "../_shared/cors.ts";
-import { normalizePhoneE164, phoneDigitsOnly } from "../_shared/phone.ts";
+import { isReviewerPhone, normalizePhoneE164, phoneDigitsOnly } from "../_shared/phone.ts";
 import { adminClient } from "../_shared/supabaseAdmin.ts";
 
 function normalizeEmail(email: string): string | null {
@@ -85,6 +85,34 @@ Deno.serve(async (req) => {
     if (!/^\d{4}$/.test(pin)) return json({ error: "PIN must be exactly 4 digits" }, 400);
 
     const sb = adminClient();
+
+    // Never trust client flags — require a recently verified email OTP in DB (reviewer phones exempt)
+    const isReviewer = isReviewerPhone(phone);
+    if (!isReviewer) {
+      const { data: emailRows } = await sb
+        .from("otp_verifications")
+        .select("id")
+        .eq("email_normalized", email)
+        .eq("channel", "email")
+        .eq("is_verified", true)
+        .gte("created_at", new Date(Date.now() - 60 * 60 * 1000).toISOString())
+        .order("created_at", { ascending: false })
+        .limit(1);
+      if (!emailRows?.[0]) {
+        return json(
+          {
+            error: "Confirm your email first with the 6-digit code we sent",
+            need_email_otp: true,
+          },
+          400
+        );
+      }
+      // Consume the OTP so it cannot be replayed
+      await sb
+        .from("otp_verifications")
+        .update({ is_verified: false, attempts: 99 })
+        .eq("id", emailRows[0].id);
+    }
 
     // Shop name must be unique
     const { data: nameTaken } = await sb
