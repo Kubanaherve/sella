@@ -322,9 +322,9 @@ function buildApplicationLetterHtml() {
       </div>
       <div class="letterhead-right">
         <strong>Head Office:</strong> Kigali, Rwanda<br />
-        <strong>Email:</strong> hello@sella.app<br />
+        <strong>Email:</strong> h.kubana@alustudent.com<br />
         <strong>Tel:</strong> +250 796 580 545<br />
-        <strong>Web:</strong> https://sella.app
+        <strong>MoMo Dev ID:</strong> h.kubana@alustudent.com
       </div>
     </div>
 
@@ -369,7 +369,7 @@ function buildApplicationLetterHtml() {
 
     <div class="body-text">
       <strong>Business Context &amp; Purpose of Integration:</strong><br />
-      KUBANA FRIEND TECHNOLOGIES is the creator of <strong>Sella</strong> (<code>https://sella.app</code>), a fast-growing Point of Sale (POS), inventory management, and SMS credit recovery software tailored for retail shops and merchants across Kigali. Merchants use MTN Mobile Money to settle their recurring monthly subscriptions (Pro Tier: 15,000 RWF / month; Enterprise Tier: 40,000 RWF / month). Automated collection via MoMo Open API will allow seamless 1-click USSD payment prompts directly inside the Sella application.
+      KUBANA FRIEND TECHNOLOGIES is the creator of <strong>Sella</strong>, a high-performance Point of Sale (POS), stock inventory management, and customer credit recovery software application engineered specifically for retail shops and merchants across Kigali. Merchants use MTN Mobile Money to settle their recurring monthly subscriptions (Pro Tier: 15,000 RWF / month; Enterprise Tier: 40,000 RWF / month). Automated collection via MoMo Open API will allow seamless 1-click USSD payment prompts directly inside the Sella application.
     </div>
 
     <table class="info-table">
@@ -382,8 +382,12 @@ function buildApplicationLetterHtml() {
         <td><strong>Hervé Friend Kubana</strong> — Founder, Sole Shareholder &amp; Managing Director (Tel: +250 796 580 545)</td>
       </tr>
       <tr>
-        <th>Product &amp; Integration URL</th>
-        <td><strong>SELLA</strong> — Platform: <code>https://sella.app</code></td>
+        <th>Product &amp; Application</th>
+        <td><strong>SELLA</strong> — Retail POS &amp; Store Management Software Application</td>
+      </tr>
+      <tr>
+        <th>MTN MoMo Developer Portal Account</th>
+        <td><code>momodeveloper.mtn.co.rw</code> — Username: <strong>h.kubana@alustudent.com</strong> (Registered with Ericsson / MTN)</td>
       </tr>
       <tr>
         <th>API Product Requested</th>
@@ -426,7 +430,7 @@ function buildApplicationLetterHtml() {
     </div>
 
     <div class="footer-note">
-      KUBANA FRIEND TECHNOLOGIES • RDB Registered Entity • Kigali, Rwanda • hello@sella.app • https://sella.app • Document Ref: KFT/MTN-MOMO/2026/01
+      KUBANA FRIEND TECHNOLOGIES • RDB Registered Entity • Kigali, Rwanda • h.kubana@alustudent.com • MoMo Dev: h.kubana@alustudent.com • Ref: KFT/MTN-MOMO/2026/01
     </div>
   </div>
 </div>
@@ -567,7 +571,7 @@ function buildCorporateResolutionHtml() {
       </div>
       <div class="letterhead-right">
         <strong>Head Office:</strong> Kigali, Rwanda<br />
-        <strong>Official Email:</strong> hello@sella.app<br />
+        <strong>Official Email:</strong> h.kubana@alustudent.com<br />
         <strong>Telephone:</strong> +250 796 580 545
       </div>
     </div>
@@ -598,7 +602,7 @@ function buildCorporateResolutionHtml() {
 
       <div class="resolution-item">
         <strong class="res-title">3. Authorization of MoMo Open API Collection &amp; C2B Integration</strong>
-        IT IS RESOLVED that the Company approve and mandate the technical integration of <strong>MTN MoMo Open API (Collection / Request-to-Pay / C2B)</strong> into the Company's proprietary retail software application, <strong>Sella</strong> (<code>https://sella.app</code>), to collect monthly customer subscription fees and transaction settlements directly into the corporate MoMo wallet.
+        IT IS RESOLVED that the Company approve and mandate the technical integration of <strong>MTN MoMo Open API (Collection / Request-to-Pay / C2B)</strong> into the Company's proprietary retail software application, <strong>Sella</strong> (Retail POS &amp; Store Management System developed by KUBANA FRIEND TECHNOLOGIES), to collect monthly customer subscription fees and transaction settlements directly into the corporate MoMo wallet.
       </div>
 
       <div class="resolution-item">
@@ -808,9 +812,9 @@ function buildTechnicalSpecHtml() {
         <p class="company-sub">Engineering &amp; Cloud Payment Integration Division</p>
       </div>
       <div style="text-align: right; font-size: 9.5px; color: #334155;">
-        <strong>Product:</strong> SELLA (<code>https://sella.app</code>)<br />
+        <strong>Product:</strong> SELLA (Retail POS &amp; Store OS)<br />
         <strong>Tech Lead:</strong> Hervé Friend Kubana<br />
-        <strong>Support:</strong> hello@sella.app
+        <strong>MoMo Dev Account:</strong> h.kubana@alustudent.com
       </div>
     </div>
 
@@ -848,7 +852,8 @@ function buildTechnicalSpecHtml() {
       <h3>3. Webhook Endpoints &amp; Integration URIs</h3>
       <div class="spec-item"><strong>Live Webhook Notification Endpoint (Supabase Edge Function):</strong></div>
       <div class="code-box">https://ixihbqubatyfulnurpco.supabase.co/functions/v1/paypack-webhook</div>
-      <div class="spec-item"><strong>Production Target Host:</strong> <code>https://sella.app</code> | <code>api.sella.app</code></div>
+      <div class="spec-item"><strong>Production Client:</strong> Sella Mobile, Desktop &amp; Cloud (Edge API Engine)</div>
+      <div class="spec-item"><strong>Registered Developer Account:</strong> <code>momodeveloper.mtn.co.rw</code> (User: <strong>h.kubana@alustudent.com</strong>)</div>
       <div class="spec-item"><strong>Callback Processing:</strong> Asynchronous listener verifying transaction status (<code>SUCCESSFUL</code>, <code>FAILED</code>) and triggering automatic database license provisioning.</div>
     </div>
 
@@ -1064,13 +1069,13 @@ function buildProductProfileHtml() {
         <img src="${logoDataUri}" style="width: 42px; height: 42px; border-radius: 8px;" alt="Sella" />
         <div>
           <h1 class="company-name">KUBANA FRIEND TECHNOLOGIES</h1>
-          <p class="company-sub">Software Provider of SELLA (<code>https://sella.app</code>)</p>
+          <p class="company-sub">Software Provider of SELLA (Proprietary Retail OS)</p>
         </div>
       </div>
       <div style="text-align: right; font-size: 9px; color: #334155;">
         <strong>HQ:</strong> Kigali, Rwanda<br />
         <strong>Direct Contact:</strong> +250 796 580 545<br />
-        <strong>Business Email:</strong> hello@sella.app
+        <strong>Business Email:</strong> h.kubana@alustudent.com
       </div>
     </div>
 
@@ -1168,7 +1173,7 @@ function buildProductProfileHtml() {
     </div>
 
     <div class="footer-note">
-      PRODUCT PROFILE • KUBANA FRIEND TECHNOLOGIES • SELLA PLATFORM • https://sella.app • KIGALI, RWANDA
+      PRODUCT PROFILE • KUBANA FRIEND TECHNOLOGIES • SELLA PLATFORM • momodeveloper.mtn.co.rw • KIGALI, RWANDA
     </div>
   </div>
 </div>

@@ -5,7 +5,7 @@ export const COMPANY = {
   productName: "SELLA",
   merchantBrand: "SELLA",
   founderName: "Hervé Friend Kubana",
-  businessEmail: import.meta.env.VITE_BUSINESS_EMAIL || "hello@sella.app",
+  businessEmail: import.meta.env.VITE_BUSINESS_EMAIL || "h.kubana@alustudent.com",
   country: "Rwanda",
   countryCode: "RW",
   supportNote:

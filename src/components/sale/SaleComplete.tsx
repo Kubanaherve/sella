@@ -329,7 +329,7 @@ export function SaleComplete({ data, onClose }: Props) {
 
         <div style={{ textAlign: "center", fontSize: "8.5px", marginTop: "8px", color: "#444444" }}>
           <div>Murakoze guhaha muri {data.shopName}!</div>
-          <div>Powered by Sella • https://sella.app</div>
+          <div>Powered by Sella • KUBANA FRIEND TECHNOLOGIES</div>
         </div>
       </div>
     </>
