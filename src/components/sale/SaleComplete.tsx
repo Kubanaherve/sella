@@ -189,6 +189,11 @@ export function SaleComplete({ data, onClose }: Props) {
               <span>
                 {labels.balance}: {formatCurrency(data.remaining)}
               </span>
+              {data.changeDue ? (
+                <span>
+                  {labels.changeDue}: {formatCurrency(data.changeDue)}
+                </span>
+              ) : null}
             </div>
           </div>
 

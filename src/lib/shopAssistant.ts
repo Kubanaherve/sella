@@ -5,6 +5,7 @@ import {
   listClients,
 } from "@/db/api";
 import { formatCurrency } from "@/lib/kinyarwanda";
+import { isLowStock } from "@/lib/uiTheme";
 
 export type AssistantMessage = {
   id: string;
@@ -385,8 +386,8 @@ export async function answerShopQuestion(question: string): Promise<string> {
 
       case "low_stock": {
         const items = await listInventory();
-        const low = items.filter((i) => i.quantity <= 3);
-        if (!low.length) return "Nta kicuruzwa gifite stock nke (≤ 3) ubu. Byiza!";
+        const low = items.filter((i) => isLowStock(i.quantity, i.min_quantity));
+        if (!low.length) return "Nta kicuruzwa gifite stock nke ubu. Byiza!";
         return (
           `Ibicuruzwa bike cyangwa byashize:\n` +
           low

@@ -4,6 +4,7 @@ import {
   validateMappedRows,
   inventoryCsvTemplate,
   commitInventoryImport,
+  mapRowToInput,
 } from "@/lib/inventoryImport";
 import { normalizeUnit } from "@/lib/inventoryUnits";
 import type { InventoryItem } from "@/db/types";
@@ -165,6 +166,20 @@ describe("inventory import", () => {
       cost_price: 300,
       quantity: 100,
     });
+  });
+
+  it("reads dotted thousands as RWF, not as eleven francs", () => {
+    const mapping = suggestColumnMapping(["Product Name", "Selling Price", "Quantity"]);
+    const mapped = mapRowToInput(
+      {
+        "Product Name": "Nails",
+        "Selling Price": "11.000",
+        Quantity: "4",
+      },
+      mapping
+    );
+    expect(mapped.selling_price).toBe(11000);
+    expect(mapped.quantity).toBe(4);
   });
 
   it("ships a usable CSV template", () => {

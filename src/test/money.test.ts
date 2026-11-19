@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
+  extendTotal,
   lineTotal,
   normalizePaymentSlices,
+  parseMoneyText,
   paymentStatusFromBalances,
+  saleQuantity,
   sumRwf,
   toRwf,
 } from "@/lib/money";
@@ -55,6 +58,27 @@ describe("money helpers", () => {
     expect(r.paid).toBe(50000);
     expect(r.changeDue).toBe(5000);
     expect(r.remaining).toBe(0);
+  });
+
+  it("parses RWF thousands written with dots or commas", () => {
+    expect(parseMoneyText("11.000")).toBe(11000);
+    expect(parseMoneyText("11,000")).toBe(11000);
+    expect(parseMoneyText("1.500.000")).toBe(1500000);
+    expect(parseMoneyText("1.500,50")).toBe(1501);
+    expect(parseMoneyText("RWF 2,500")).toBe(2500);
+    expect(parseMoneyText("")).toBeNull();
+  });
+
+  it("rejects a zero sale quantity and floors fractional units", () => {
+    expect(() => saleQuantity(0)).toThrow(/1/);
+    expect(() => saleQuantity(-2)).toThrow(/1/);
+    expect(saleQuantity(1.9)).toBe(1);
+    expect(saleQuantity("3")).toBe(3);
+  });
+
+  it("values fractional stock without dropping the fraction", () => {
+    expect(extendTotal(1000, 1.5)).toBe(1500);
+    expect(lineTotal(1000, 1.5)).toBe(1000);
   });
 
   it("credit when nothing paid", () => {

@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { labels, formatCurrency, formatDate } from "@/lib/kinyarwanda";
 import { getDateKeyFromIso } from "@/lib/reporting";
+import { lineTotal, sumRwf } from "@/lib/money";
+import { phoneToWhatsAppDigits } from "@/lib/phone";
 import { deleteDebt, listActiveDebts, recordPayment } from "@/db/api";
 import type { PaymentMethod } from "@/db/types";
 import { useAuth } from "@/contexts/AuthContext";
@@ -146,6 +148,18 @@ const DebtsPage = () => {
     const total = c.total_amount ?? c.amount ?? 0;
     const remaining = c.amount ?? 0;
     const paid = Math.max(0, total - remaining);
+    const lines = c.line_items.length
+      ? c.line_items
+      : [
+          {
+            name: c.items || "Ideni",
+            quantity: 1,
+            unitPrice: c.amount || 0,
+            takenAt: c.created_at,
+          },
+        ];
+    const lineSum = sumRwf(lines.map((line) => lineTotal(line.unitPrice, line.quantity)));
+    const discount = Math.max(0, lineSum - total);
     return {
       invoiceNumber: `INV-${c.id.slice(0, 8).toUpperCase()}`,
       createdAt: c.created_at,
@@ -157,19 +171,11 @@ const DebtsPage = () => {
       customerName: c.name || "Umukiriya",
       customerPhone: c.phone,
       customerLocation: "Kigali, Rwanda",
-      lines: c.line_items.length
-        ? c.line_items
-        : [
-            {
-              name: c.items || "Ideni",
-              quantity: 1,
-              unitPrice: c.amount || 0,
-              takenAt: c.created_at,
-            },
-          ],
+      lines,
       total,
       remaining,
       paid,
+      discount,
       payPhone: String(payPhone),
       kind: "invoice",
       status: remaining <= 0 ? "paid" : paid > 0 ? "partial" : "credit",
@@ -632,13 +638,8 @@ const DebtsPage = () => {
       });
 
       // WhatsApp only after payment succeeds (avoid false “paid” messages)
-      if (customer.phone) {
-        let cleanPhone = customer.phone.replace(/\s/g, "");
-        if (cleanPhone.startsWith("0")) cleanPhone = "250" + cleanPhone.substring(1);
-        else if (!cleanPhone.startsWith("250") && !cleanPhone.startsWith("+"))
-          cleanPhone = "250" + cleanPhone;
-        cleanPhone = cleanPhone.replace("+", "");
-
+      const cleanPhone = customer.phone ? phoneToWhatsAppDigits(customer.phone) : "";
+      if (cleanPhone) {
         const remainingPreview = (customer.amount || 0) - paymentAmount;
         const message =
           remainingPreview <= 0

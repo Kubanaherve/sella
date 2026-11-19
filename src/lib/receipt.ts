@@ -30,6 +30,7 @@ export type ReceiptData = {
   payments: ReceiptPayment[];
   thankYouMessage?: string;
   paymentStatus: "paid" | "credit" | "partial";
+  changeDue?: number;
   queuedOffline?: boolean;
 };
 
@@ -82,6 +83,9 @@ export function buildWhatsAppReceiptMessage(data: ReceiptData): string {
     pays || "None yet (credit)",
     "",
     `Outstanding balance: ${formatCurrency(data.remaining)}`,
+    data.changeDue && data.changeDue > 0
+      ? `Change: ${formatCurrency(data.changeDue)}`
+      : "",
     `Receipt: ${data.receiptNumber}`,
     "",
     data.thankYouMessage || "Thank you for choosing us!",

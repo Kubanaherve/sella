@@ -10,8 +10,9 @@ function isPermanentStockFailure(message: string): boolean {
   return /insufficient|stock|quantity|not enough|out of stock|inventory/i.test(message);
 }
 
-async function restoreLocalStock(items: unknown[]): Promise<void> {
-  if (!Array.isArray(items) || items.length === 0) return;
+async function restoreLocalStock(items: unknown[]): Promise<boolean> {
+  if (!Array.isArray(items) || items.length === 0) return false;
+  let restored = false;
   try {
     for (const raw of items) {
       const it = raw as { inventory_item_id?: string; quantity?: number; item_name?: string };
@@ -24,12 +25,16 @@ async function restoreLocalStock(items: unknown[]): Promise<void> {
           quantity: (inv.quantity || 0) + qty,
           updated_at: new Date().toISOString(),
         });
+        restored = true;
       }
     }
-    window.dispatchEvent(new CustomEvent("sella:inventory-updated"));
+    if (restored) {
+      window.dispatchEvent(new CustomEvent("sella:inventory-updated"));
+    }
   } catch (err) {
     console.warn("Could not restore local stock after conflict:", err);
   }
+  return restored;
 }
 
 async function invokeOutboxItem(item: OutboxItem): Promise<void> {
@@ -72,12 +77,19 @@ export async function syncOutboxNow(): Promise<{
         const msg = e instanceof Error ? e.message : String(e);
         // Stock conflicts will never succeed on retry — restore local stock and cancel instead of looping
         if (item.operation === "create_sale_order" && isPermanentStockFailure(msg)) {
-          const payload = item.payload as { items?: unknown[] } | undefined;
-          if (payload?.items) {
-            await restoreLocalStock(payload.items);
-          }
+          const payload = item.payload as
+            | { items?: unknown[]; local_stock_adjusted?: boolean }
+            | undefined;
+          // Only add stock back when this device actually reserved it.
+          // Cloud checkout does not decrement Dexie, so a blind restore inflates quantity.
+          const restored =
+            payload?.local_stock_adjusted && payload.items
+              ? await restoreLocalStock(payload.items)
+              : false;
           toast.error(
-            "Offline sale cancelled: stock was sold elsewhere. Local stock restored."
+            restored
+              ? "Offline sale cancelled: stock was sold elsewhere. Local stock restored."
+              : "Offline sale cancelled: stock was sold on another device."
           );
           window.dispatchEvent(
             new CustomEvent("sella:outbox-stock-conflict", { detail: { item, message: msg } })

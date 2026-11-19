@@ -81,6 +81,11 @@ export async function buildBlueGlassInvoicePdf(
     qty: l.quantity,
     unit: toRwf(l.unitPrice),
   }));
+  const lineSum = lines.reduce((sum, line) => sum + line.qty * line.unit, 0);
+  const discount =
+    data.discount != null
+      ? Math.min(lineSum, Math.max(0, toRwf(data.discount)))
+      : Math.max(0, lineSum + tax - total);
   const note = [
     data.note ||
       `Thank you for choosing ${data.shopName || BRAND.name}.`,
@@ -103,7 +108,7 @@ export async function buildBlueGlassInvoicePdf(
         data.shopAddress ||
         "Kigali, Rwanda",
       currency: "RWF",
-      discount: 0,
+      discount,
       taxRate: 0,
       taxAmount: tax,
       paid,

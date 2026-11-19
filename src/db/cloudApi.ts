@@ -12,17 +12,25 @@ import type {
   SalePaymentStatus,
 } from "@/db/types";
 import {
+  assertPaymentMethod,
+  extendTotal,
   lineTotal,
   normalizePaymentSlices,
+  saleQuantity,
   sumRwf,
   toRwf,
   type PaymentSlice,
 } from "@/lib/money";
-import { calendarDateKeyInKigali, isWithinLastDaysKigali } from "@/lib/dates";
+import { calendarDateKeyInKigali, isWithinLastDaysKigali, resolveSoldAt } from "@/lib/dates";
 import { isNetworkFailure } from "@/lib/network";
 import { enqueueOutbox } from "@/db/outbox";
+import { buildLedgerDailyReports, netSalesVolume } from "@/lib/reporting";
 
 export type { CreateSaleOrderInput, CreateSaleOrderResult };
+
+function escapeIlike(value: string): string {
+  return value.replace(/[\\%_]/g, (ch) => `\\${ch}`);
+}
 
 function makeReceiptNumber(): string {
   const t = Date.now().toString(36).toUpperCase();
@@ -123,7 +131,7 @@ export async function findOrCreateClient(name: string, phone?: string | null): P
     .from("clients")
     .select("*")
     .eq("user_id", user_id)
-    .ilike("name", trimmed);
+    .ilike("name", escapeIlike(trimmed));
   if (listErr) throw listErr;
   const existing = (existingRows || []).find(
     (c) => c.name.toLowerCase() === trimmed.toLowerCase()
@@ -247,6 +255,7 @@ function mapDebt(debt: Record<string, unknown>): Debt {
     status: debt.status as Debt["status"],
     paid_at: (debt.paid_at as string) || null,
     notes: (debt.notes as string) || null,
+    discount_amount: toRwf(debt.discount_amount || 0),
     created_at: String(debt.created_at),
     updated_at: String(debt.updated_at),
   };
@@ -277,15 +286,21 @@ export async function createSaleOrder(
 ): Promise<CreateSaleOrderResult> {
   if (!input.items.length) throw new Error("Hitamo ibicuruzwa");
 
+  const normalizedItems = input.items.map((item) => ({
+    ...item,
+    quantity: saleQuantity(item.quantity),
+    unit_price: Math.max(0, toRwf(item.unit_price)),
+  }));
+
   const merchandise = sumRwf(
-    input.items.map((i) => lineTotal(i.unit_price, i.quantity))
+    normalizedItems.map((i) => lineTotal(i.unit_price, i.quantity))
   );
   const discount = Math.min(toRwf(input.discountAmount || 0), merchandise);
   const orderTotal = Math.max(0, merchandise - discount);
   if (orderTotal <= 0 && merchandise <= 0) throw new Error("Amafaranga ntayemewe");
 
   let slices: PaymentSlice[] = (input.payments || []).map((p) => ({
-    method: p.method,
+    method: assertPaymentMethod(p.method),
     amount: toRwf(p.amount),
     referenceNumber: p.referenceNumber,
   }));
@@ -293,7 +308,7 @@ export async function createSaleOrder(
   if ((!slices.length || sumRwf(slices.map((s) => s.amount)) === 0) && input.paidNow) {
     slices = [
       {
-        method: input.paymentMethod || "cash",
+        method: assertPaymentMethod(input.paymentMethod || "cash"),
         amount: orderTotal,
         referenceNumber: input.referenceNumber,
       },
@@ -313,15 +328,16 @@ export async function createSaleOrder(
     due_date: normalized.remaining > 0 ? input.dueDate || null : null,
     discount_amount: discount,
     change_given: toRwf(input.changeGiven ?? normalized.changeDue),
+    ...(input.soldAt ? { sold_at: resolveSoldAt(input.soldAt) } : {}),
     payments: normalized.slices.map((s) => ({
       method: s.method,
       amount: s.amount,
       reference_number: s.referenceNumber || null,
     })),
-    items: input.items.map((i) => ({
+    items: normalizedItems.map((i) => ({
       inventory_item_id: i.inventory_item_id,
       quantity: i.quantity,
-      unit_price: toRwf(i.unit_price),
+      unit_price: i.unit_price,
     })),
   };
 
@@ -461,7 +477,9 @@ export async function recordPayment(input: {
   notes?: string;
   referenceNumber?: string | null;
 }): Promise<Payment> {
-  if (input.amount <= 0) throw new Error("Amafaranga ntayemewe");
+  const amount = toRwf(input.amount);
+  if (amount <= 0) throw new Error("Amafaranga ntayemewe");
+  const method = assertPaymentMethod(input.paymentMethod);
   if (input.debtId.startsWith("offline:")) {
     throw new Error(
       "This sale is still syncing — wait for connection before recording a payment"
@@ -472,8 +490,8 @@ export async function recordPayment(input: {
   const p_payload = {
     idempotency_key,
     debt_id: input.debtId,
-    amount: toRwf(input.amount),
-    payment_method: input.paymentMethod,
+    amount,
+    payment_method: method,
     notes: input.notes || null,
     reference_number: input.referenceNumber?.trim() || null,
   };
@@ -499,8 +517,8 @@ export async function recordPayment(input: {
         id: idempotency_key,
         debt_id: input.debtId,
         client_id: "offline",
-        amount: toRwf(input.amount),
-        payment_method: input.paymentMethod,
+        amount,
+        payment_method: method,
         reference_number: input.referenceNumber?.trim() || null,
         notes: input.notes || "queued offline",
         created_at: now,
@@ -623,17 +641,48 @@ export async function listInventory(): Promise<InventoryItem[]> {
   return (data || []).map((row) => mapInventoryRow(row as Record<string, unknown>));
 }
 
+function inventoryMoney(value: number, label: string): number {
+  const n = toRwf(value);
+  if (!Number.isFinite(n) || n < 0) throw new Error(`${label} ntikemewe`);
+  return n;
+}
+
+async function assertCloudUniqueCodes(
+  input: { sku?: string | null; barcode?: string | null },
+  exceptId?: string
+) {
+  const sku = input.sku?.trim() || "";
+  const barcode = input.barcode?.trim() || "";
+  if (sku) {
+    const match = await findInventoryMatch({ sku });
+    if (match && match.id !== exceptId) {
+      throw new Error(`SKU ${sku} is already used by ${match.item_name}`);
+    }
+  }
+  if (barcode) {
+    const match = await findInventoryMatch({ barcode });
+    if (match && match.id !== exceptId) {
+      throw new Error(`Barcode ${barcode} is already used by ${match.item_name}`);
+    }
+  }
+}
+
 export async function addInventoryItem(
   input: import("./types").InventoryWriteInput
 ): Promise<InventoryItem> {
+  const itemName = input.item_name.trim();
+  if (!itemName) throw new Error("Izina ry'ikintu rirakenewe");
+  const quantity = Number(input.quantity);
+  if (!Number.isFinite(quantity) || quantity < 0) throw new Error("Umubare ntuyemewe");
+  await assertCloudUniqueCodes(input);
   const { data, error } = await sb()
     .from("inventory_items")
     .insert({
       user_id: await uid(),
-      item_name: input.item_name.trim(),
-      quantity: input.quantity,
-      selling_price: input.selling_price,
-      cost_price: input.cost_price,
+      item_name: itemName,
+      quantity,
+      selling_price: inventoryMoney(input.selling_price, "Igiciro cyo kugurisha"),
+      cost_price: inventoryMoney(input.cost_price, "Igiciro cyo kugura"),
       notes: input.notes ?? null,
       category: input.category ?? null,
       image_url: input.image_url ?? null,
@@ -656,9 +705,32 @@ export async function updateInventoryItem(
   id: string,
   patch: import("./types").InventoryUpdatePatch
 ) {
+  const next: import("./types").InventoryUpdatePatch = { ...patch };
+  if (next.item_name !== undefined) {
+    const name = next.item_name.trim();
+    if (!name) throw new Error("Izina ry'ikintu rirakenewe");
+    next.item_name = name;
+  }
+  if (next.quantity !== undefined) {
+    const quantity = Number(next.quantity);
+    if (!Number.isFinite(quantity) || quantity < 0) throw new Error("Umubare ntuyemewe");
+    next.quantity = quantity;
+  }
+  if (next.selling_price !== undefined) {
+    next.selling_price = inventoryMoney(next.selling_price, "Igiciro cyo kugurisha");
+  }
+  if (next.cost_price !== undefined) {
+    next.cost_price = inventoryMoney(next.cost_price, "Igiciro cyo kugura");
+  }
+  if (next.sku !== undefined || next.barcode !== undefined) {
+    await assertCloudUniqueCodes(
+      { sku: next.sku, barcode: next.barcode },
+      id
+    );
+  }
   const { error } = await sb()
     .from("inventory_items")
-    .update({ ...patch, updated_at: new Date().toISOString() })
+    .update({ ...next, updated_at: new Date().toISOString() })
     .eq("id", id)
     .eq("user_id", await uid());
   if (error) throw error;
@@ -670,42 +742,53 @@ export async function findInventoryMatch(opts: {
   item_name?: string | null;
 }): Promise<InventoryItem | null> {
   const userId = await uid();
-  if (opts.sku?.trim()) {
-    const { data } = await sb()
+  const lookup = async (
+    column: "sku" | "barcode" | "item_name",
+    raw: string
+  ): Promise<InventoryItem | null> => {
+    const wanted = raw.trim().toLowerCase();
+    const { data, error } = await sb()
       .from("inventory_items")
       .select("*")
       .eq("user_id", userId)
-      .ilike("sku", opts.sku.trim())
-      .maybeSingle();
-    if (data) return mapInventoryRow(data as Record<string, unknown>);
+      .ilike(column, escapeIlike(raw.trim()));
+    if (error) throw error;
+    const hit = (data || []).find(
+      (row) => String(row[column] || "").trim().toLowerCase() === wanted
+    );
+    return hit ? mapInventoryRow(hit as Record<string, unknown>) : null;
+  };
+  if (opts.sku?.trim()) {
+    const hit = await lookup("sku", opts.sku);
+    if (hit) return hit;
   }
   if (opts.barcode?.trim()) {
-    const { data } = await sb()
-      .from("inventory_items")
-      .select("*")
-      .eq("user_id", userId)
-      .ilike("barcode", opts.barcode.trim())
-      .maybeSingle();
-    if (data) return mapInventoryRow(data as Record<string, unknown>);
+    const hit = await lookup("barcode", opts.barcode);
+    if (hit) return hit;
   }
   if (opts.item_name?.trim()) {
-    const { data } = await sb()
-      .from("inventory_items")
-      .select("*")
-      .eq("user_id", userId)
-      .ilike("item_name", opts.item_name.trim())
-      .maybeSingle();
-    if (data) return mapInventoryRow(data as Record<string, unknown>);
+    const hit = await lookup("item_name", opts.item_name);
+    if (hit) return hit;
   }
   return null;
 }
 
 export async function deleteInventoryItem(id: string) {
+  const userId = await uid();
+  const { count, error: countErr } = await sb()
+    .from("sales")
+    .select("id", { count: "exact", head: true })
+    .eq("inventory_item_id", id)
+    .eq("user_id", userId);
+  if (countErr) throw countErr;
+  if ((count || 0) > 0) {
+    throw new Error("Ntushobora gusiba igicuruzwa cyagurishijwe. Guhindura stock ahubwo.");
+  }
   const { error } = await sb()
     .from("inventory_items")
     .delete()
     .eq("id", id)
-    .eq("user_id", await uid());
+    .eq("user_id", userId);
   if (error) throw error;
 }
 
@@ -717,19 +800,28 @@ export async function recordCashSale(input: {
   inventory_item_id?: string | null;
   payment_method?: PaymentMethod;
   client_id?: string | null;
+  soldAt?: string | null;
 }): Promise<Sale> {
+  const quantity = saleQuantity(input.quantity);
+  const salePrice = toRwf(input.sale_price);
+  const costPrice = Math.max(0, toRwf(input.cost_price));
+  if (salePrice <= 0) throw new Error("Amafaranga ntayemewe");
+  const method = assertPaymentMethod(input.payment_method || "cash");
+  const soldAt = input.soldAt ? resolveSoldAt(input.soldAt) : new Date().toISOString();
+
   if (input.inventory_item_id) {
     const result = await createSaleOrder({
       clientName: "Walk-in",
       paidNow: true,
-      amount: input.sale_price * input.quantity,
-      paymentMethod: input.payment_method || "cash",
+      amount: lineTotal(salePrice, quantity),
+      paymentMethod: method,
+      ...(input.soldAt ? { soldAt } : {}),
       items: [
         {
           inventory_item_id: input.inventory_item_id,
           item_name: input.item_name,
-          quantity: input.quantity,
-          unit_price: input.sale_price,
+          quantity,
+          unit_price: salePrice,
         },
       ],
     });
@@ -737,23 +829,37 @@ export async function recordCashSale(input: {
   }
 
   const user_id = await uid();
+  const client = input.client_id
+    ? { id: input.client_id }
+    : await findOrCreateClient("Walk-in");
   const { data, error } = await sb()
     .from("sales")
     .insert({
       user_id,
-      client_id: input.client_id ?? null,
+      client_id: client.id,
       item_name: input.item_name.trim(),
-      quantity: input.quantity,
-      cost_price: input.cost_price,
-      sale_price: input.sale_price,
+      quantity,
+      cost_price: costPrice,
+      sale_price: salePrice,
       inventory_item_id: null,
-      payment_method: input.payment_method || "cash",
+      payment_method: method,
       payment_status: "paid",
       debt_id: null,
+      ...(input.soldAt ? { created_at: soldAt } : {}),
     })
     .select("*")
     .single();
   if (error) throw error;
+  const { error: payErr } = await sb().from("payments").insert({
+    user_id,
+    debt_id: null,
+    client_id: client.id,
+    amount: lineTotal(salePrice, quantity),
+    payment_method: method,
+    notes: "Cash sale",
+    ...(input.soldAt ? { created_at: soldAt } : {}),
+  });
+  if (payErr) throw payErr;
   return mapSale(data);
 }
 
@@ -774,22 +880,18 @@ export async function getDashboardStats() {
   const totalUnpaid = (debts || [])
     .filter((d) => d.status === "active")
     .reduce((s, d) => s + toRwf(d.remaining_balance), 0);
-  /** Accrual: value of goods sold (all sale lines). */
-  const salesVolume = (sales || []).reduce(
-    (s, row) => s + lineTotal(row.sale_price, row.quantity),
-    0
-  );
+  const saleRows = sales || [];
+  const debtRows = debts || [];
+  const onDay = (iso: string) => calendarDateKeyInKigali(String(iso)) === todayKey;
+  /** Accrual: amount charged after basket discounts. */
+  const salesVolume = netSalesVolume(saleRows, debtRows);
   /** Cash actually collected (payments only — never double-count with sale lines). */
   const moneyCollected = (payments || []).reduce((s, p) => s + toRwf(p.amount), 0);
-  const todaySalesVolume = (sales || [])
-    .filter((s) => calendarDateKeyInKigali(String(s.created_at)) === todayKey)
-    .reduce((sum, row) => sum + lineTotal(row.sale_price, row.quantity), 0);
+  const todaySalesVolume = netSalesVolume(saleRows, debtRows, onDay);
   const todayCollected = (payments || [])
     .filter((p) => calendarDateKeyInKigali(String(p.created_at)) === todayKey)
     .reduce((sum, p) => sum + toRwf(p.amount), 0);
-  const weekSalesVolume = (sales || [])
-    .filter((s) => inWeek(String(s.created_at)))
-    .reduce((sum, row) => sum + lineTotal(row.sale_price, row.quantity), 0);
+  const weekSalesVolume = netSalesVolume(saleRows, debtRows, (iso) => inWeek(String(iso)));
   const weekCollected = (payments || [])
     .filter((p) => inWeek(String(p.created_at)))
     .reduce((sum, p) => sum + toRwf(p.amount), 0);
@@ -804,7 +906,7 @@ export async function getDashboardStats() {
     .filter((d) => inWeek(String(d.created_at)) && d.status === "active")
     .reduce((s, d) => s + toRwf(d.remaining_balance), 0);
   const inventoryValue = (inventory || []).reduce(
-    (s, i) => s + lineTotal(i.selling_price, i.quantity),
+    (s, i) => s + extendTotal(i.selling_price, i.quantity),
     0
   );
   const goal = await getAppSetting("sales_goal");
@@ -847,40 +949,11 @@ export async function getDailyReports(): Promise<DailyReport[]> {
     sb().from("debts").select("*").eq("user_id", user_id),
   ]);
 
-  const map: Record<string, DailyReport> = {};
-  const ensure = (date: string) => {
-    if (!map[date]) {
-      map[date] = {
-        date,
-        cashSales: 0,
-        debtsCollected: 0,
-        newDebtIssued: 0,
-        unpaidOutstanding: 0,
-        receivedTotal: 0,
-        accrualNewBusiness: 0,
-      };
-    }
-    return map[date];
-  };
-
-  for (const sale of sales || []) {
-    const d = ensure(String(sale.created_at).slice(0, 10));
-    const amount = lineTotal(sale.sale_price, sale.quantity);
-    d.cashSales += amount; // goods sold (accrual), not cash
-    d.accrualNewBusiness += amount;
-  }
-  for (const payment of payments || []) {
-    const d = ensure(String(payment.created_at).slice(0, 10));
-    const amt = toRwf(payment.amount);
-    d.debtsCollected += amt;
-    d.receivedTotal += amt; // money actually collected
-  }
-  for (const debt of debts || []) {
-    const d = ensure(String(debt.created_at).slice(0, 10));
-    d.newDebtIssued += toRwf(debt.total_amount);
-    if (debt.status === "active") d.unpaidOutstanding += toRwf(debt.remaining_balance);
-  }
-  return Object.values(map).sort((a, b) => b.date.localeCompare(a.date));
+  return buildLedgerDailyReports({
+    sales: sales || [],
+    payments: payments || [],
+    debts: debts || [],
+  });
 }
 
 export async function resetSalesMoney() {

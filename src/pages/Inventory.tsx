@@ -28,7 +28,8 @@ import { useCashierMode } from "@/hooks/useCashierMode";
 import { PageHeader } from "@/components/PageHeader";
 import { EmptyState } from "@/components/EmptyState";
 import { ListPageSkeleton } from "@/components/ListPageSkeleton";
-import { pastelForName, stockTone } from "@/lib/uiTheme";
+import { isLowStock, pastelForName, stockTone } from "@/lib/uiTheme";
+import { extendTotal } from "@/lib/money";
 import { INVENTORY_UNITS } from "@/lib/inventoryUnits";
 import { cn } from "@/lib/utils";
 import { hapticLight } from "@/lib/haptics";
@@ -89,17 +90,15 @@ const InventoryPage: React.FC = () => {
 
   const stats = useMemo(() => {
     const totalCost = items.reduce(
-      (s, i) => s + i.cost_price * i.quantity,
+      (s, i) => s + extendTotal(i.cost_price, i.quantity),
       0
     );
     const totalSell = items.reduce(
-      (s, i) => s + i.selling_price * i.quantity,
+      (s, i) => s + extendTotal(i.selling_price, i.quantity),
       0
     );
     const units = items.reduce((s, i) => s + i.quantity, 0);
-    const low = items.filter(
-      (i) => i.quantity <= (i.min_quantity ?? 3)
-    ).length;
+    const low = items.filter((i) => isLowStock(i.quantity, i.min_quantity)).length;
     const profit = totalSell - totalCost;
     const margin = totalSell > 0 ? (profit / totalSell) * 100 : 0;
     return { totalCost, totalSell, units, low, profit, margin, skus: items.length };
@@ -133,7 +132,7 @@ const InventoryPage: React.FC = () => {
       if (categoryFilter !== "all" && (item.category || "") !== categoryFilter) {
         return false;
       }
-      const low = item.quantity <= (item.min_quantity ?? 3);
+      const low = isLowStock(item.quantity, item.min_quantity);
       if (filter === "low" && !low) return false;
       if (filter === "ok" && low) return false;
       return true;
@@ -483,9 +482,9 @@ const InventoryPage: React.FC = () => {
           ) : (
             filteredItems.map((item) => {
               const pastel = pastelForName(item.item_name);
-              const stock = stockTone(item.quantity);
+              const stock = stockTone(item.quantity, item.min_quantity);
               const profit = item.selling_price - item.cost_price;
-              const low = item.quantity <= (item.min_quantity ?? 3);
+              const low = isLowStock(item.quantity, item.min_quantity);
               return (
                 <article key={item.id} className="sella-list-card">
                   <div className="p-3.5 flex gap-3">

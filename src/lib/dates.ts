@@ -15,6 +15,17 @@ export function calendarDateKeyInKigali(when: Date | string = new Date()): strin
   }).format(d);
 }
 
+/** Checkout timestamp. Rejects future dates so reports cannot be pre-dated ahead. */
+export function resolveSoldAt(soldAt?: string | null, now = new Date()): string {
+  if (!soldAt) return now.toISOString();
+  const d = new Date(soldAt);
+  if (Number.isNaN(d.getTime())) throw new Error("Itariki ntayemewe");
+  if (d.getTime() > now.getTime() + 60_000) {
+    throw new Error("Ntushobora kwandika igurisha ry'ejo hazaza");
+  }
+  return d.toISOString();
+}
+
 /** Local midnight-ish week window using Kigali calendar days (inclusive last 7 days). */
 export function isWithinLastDaysKigali(iso: string, days = 7, now = new Date()): boolean {
   const key = calendarDateKeyInKigali(iso);

@@ -58,8 +58,47 @@ export async function enqueueOutbox(input: {
   return item;
 }
 
+const STALE_SYNC_MS = 2 * 60 * 1000;
+
+function isRetryable(item: OutboxItem, now = Date.now()): boolean {
+  if (item.status === "pending" || item.status === "failed") return true;
+  if (item.status !== "syncing") return false;
+  const updated = new Date(item.updated_at).getTime();
+  return Number.isFinite(updated) && now - updated > STALE_SYNC_MS;
+}
+
 export async function listPendingOutbox(): Promise<OutboxItem[]> {
-  return db.outbox.where("status").anyOf(["pending", "failed"]).sortBy("created_at");
+  const rows = await db.outbox.toArray();
+  return rows.filter((item) => isRetryable(item)).sort((a, b) => a.created_at.localeCompare(b.created_at));
+}
+
+/** Test helper — drops queued rows without touching business data. */
+export async function clearOutbox(): Promise<void> {
+  await db.outbox.clear();
+}
+
+/**
+ * Claim the oldest retryable row inside one IndexedDB transaction so two
+ * tabs cannot sync the same sale.
+ */
+export async function claimNextOutbox(
+  skipIds: ReadonlySet<string> = new Set()
+): Promise<OutboxItem | null> {
+  return db.transaction("rw", db.outbox, async () => {
+    const rows = await db.outbox.toArray();
+    const item = rows
+      .filter((row) => isRetryable(row) && !skipIds.has(row.id))
+      .sort((a, b) => a.created_at.localeCompare(b.created_at))[0];
+    if (!item) return null;
+    const claimed: OutboxItem = {
+      ...item,
+      status: "syncing",
+      attempts: item.attempts + 1,
+      updated_at: new Date().toISOString(),
+    };
+    await db.outbox.put(claimed);
+    return claimed;
+  });
 }
 
 export async function countPendingOutbox(): Promise<number> {
@@ -91,12 +130,14 @@ export async function drainOutbox(
   if (typeof navigator !== "undefined" && !navigator.onLine) {
     return { synced: 0, failed: 0, cancelled: 0 };
   }
-  const pending = await listPendingOutbox();
   let synced = 0;
   let failed = 0;
   let cancelled = 0;
-  for (const item of pending) {
-    await markOutbox(item.id, { status: "syncing", attempts: item.attempts + 1 });
+  const attempted = new Set<string>();
+  for (;;) {
+    const item = await claimNextOutbox(attempted);
+    if (!item) break;
+    attempted.add(item.id);
     try {
       await invoke(item);
       await markOutbox(item.id, { status: "done", last_error: null });

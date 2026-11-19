@@ -4,6 +4,9 @@ import { Input } from "@/components/ui/input";
 import { labels, formatCurrency } from "@/lib/kinyarwanda";
 import { recordCashSale } from "@/db/api";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCashierMode } from "@/hooks/useCashierMode";
+import { calendarDateKeyInKigali } from "@/lib/dates";
+import { saleQuantity, toRwf } from "@/lib/money";
 import { WriteGate } from "@/components/WriteGate";
 import { toast } from "sonner";
 import { X, Save, Package } from "lucide-react";
@@ -30,6 +33,7 @@ export const RecordSaleModal = ({
   preSelectedItem,
 }: RecordSaleModalProps) => {
   const { canWrite } = useAuth();
+  const { isCashierMode } = useCashierMode();
   const { items, fetchItems, getItemByName } = useInventorySuggestions();
   const [isSaving, setIsSaving] = useState(false);
   const [selectedInventoryItem, setSelectedInventoryItem] = useState<InventoryItem | null>(null);
@@ -95,22 +99,42 @@ export const RecordSaleModal = ({
       toast.error("Andika izina ry'ikintu");
       return;
     }
-    if (!form.sale_price || parseFloat(form.sale_price) <= 0) {
+    if (!form.sale_price || toRwf(form.sale_price) <= 0) {
       toast.error("Andika igiciro cy'igurisha");
+      return;
+    }
+    let quantity = 0;
+    try {
+      quantity = saleQuantity(form.quantity);
+    } catch {
+      toast.error("Andika umubare 1 nibura");
+      return;
+    }
+    if (selectedInventoryItem && quantity > selectedInventoryItem.quantity) {
+      toast.error(labels.notEnoughStock);
+      return;
+    }
+    if (form.date_sold && form.date_sold > calendarDateKeyInKigali()) {
+      toast.error("Ntushobora kwandika igurisha ry'ejo hazaza");
       return;
     }
 
     setIsSaving(true);
     try {
-      const quantity = parseInt(form.quantity) || 1;
+      const todayKey = calendarDateKeyInKigali();
+      const soldAt =
+        form.date_sold && form.date_sold < todayKey
+          ? new Date(`${form.date_sold}T12:00:00+02:00`).toISOString()
+          : undefined;
 
       await recordCashSale({
         item_name: form.item_name.trim(),
         quantity,
-        cost_price: parseFloat(form.cost_price) || 0,
-        sale_price: parseFloat(form.sale_price),
+        cost_price: isCashierMode ? 0 : toRwf(form.cost_price || 0),
+        sale_price: toRwf(form.sale_price),
         inventory_item_id: selectedInventoryItem?.id ?? null,
         payment_method: "cash",
+        soldAt,
       });
 
       await fetchItems();
@@ -137,7 +161,10 @@ export const RecordSaleModal = ({
     setSelectedInventoryItem(null);
   };
 
-  const profit = (parseFloat(form.sale_price) || 0) - (parseFloat(form.cost_price) || 0);
+  const qtyPreview = Math.max(0, Math.floor(Number(form.quantity) || 0));
+  const profit =
+    (toRwf(form.sale_price || 0) - (isCashierMode ? 0 : toRwf(form.cost_price || 0))) *
+    (qtyPreview || 0);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -165,12 +192,15 @@ export const RecordSaleModal = ({
             />
             {selectedInventoryItem && (
               <p className="text-[10px] text-muted-foreground mt-1">
-                📦 {selectedInventoryItem.quantity} bisigaye • Selling: {formatCurrency(selectedInventoryItem.selling_price)} • Cost: {formatCurrency(selectedInventoryItem.cost_price)}
+                📦 {selectedInventoryItem.quantity} bisigaye • Selling: {formatCurrency(selectedInventoryItem.selling_price)}
+                {isCashierMode
+                  ? ""
+                  : ` • Cost: ${formatCurrency(selectedInventoryItem.cost_price)}`}
               </p>
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className={isCashierMode ? "" : "grid grid-cols-2 gap-3"}>
             <div>
               <label className="block text-xs font-medium mb-1.5">
                 {labels.quantity}
@@ -182,23 +212,26 @@ export const RecordSaleModal = ({
                 placeholder="1"
                 className="bg-muted/50 input-glow"
                 inputMode="numeric"
+                min={1}
                 max={selectedInventoryItem?.quantity}
               />
             </div>
-            <div>
-              <label className="block text-xs font-medium mb-1.5">
-                Cost Price
-              </label>
-              <Input
-                type="number"
-                value={form.cost_price}
-                onChange={(e) => setForm({ ...form, cost_price: e.target.value })}
-                placeholder="0"
-                className="bg-muted/50 input-glow"
-                inputMode="numeric"
-                disabled={!!selectedInventoryItem}
-              />
-            </div>
+            {!isCashierMode && (
+              <div>
+                <label className="block text-xs font-medium mb-1.5">
+                  Cost Price
+                </label>
+                <Input
+                  type="number"
+                  value={form.cost_price}
+                  onChange={(e) => setForm({ ...form, cost_price: e.target.value })}
+                  placeholder="0"
+                  className="bg-muted/50 input-glow"
+                  inputMode="numeric"
+                  disabled={!!selectedInventoryItem}
+                />
+              </div>
+            )}
           </div>
 
           <div>
@@ -217,7 +250,7 @@ export const RecordSaleModal = ({
           </div>
 
           {/* Profit Preview */}
-          {form.sale_price && (
+          {form.sale_price && !isCashierMode && (
             <div className={`glass-card p-3 ${profit >= 0 ? 'bg-green-500/10' : 'bg-red-500/10'}`}>
               <p className="text-xs text-muted-foreground">Inyungu / Igihombo</p>
               <p className={`font-bold ${profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>

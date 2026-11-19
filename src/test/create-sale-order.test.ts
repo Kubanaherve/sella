@@ -3,7 +3,12 @@ import { db } from "@/db/localDb";
 import {
   addInventoryItem,
   createSaleOrder,
+  deleteInventoryItem,
+  getDailyReports,
+  getDashboardStats,
   listActiveDebts,
+  listInventory,
+  recordCashSale,
   recordPayment,
   signupLocal,
 } from "@/db/localApi";
@@ -93,5 +98,208 @@ describe("createSaleOrder (local)", () => {
 
     const debts = await listActiveDebts();
     expect(debts.length).toBe(0);
+  });
+
+  it("rejects a second repayment that reuses the same MoMo reference", async () => {
+    const item = await addInventoryItem({
+      item_name: "Rice",
+      quantity: 4,
+      cost_price: 8000,
+      selling_price: 15000,
+    });
+    const sale = await createSaleOrder({
+      clientName: "Alice",
+      amount: 30000,
+      payments: [{ method: "cash", amount: 10000 }],
+      items: [
+        {
+          inventory_item_id: item.id,
+          item_name: item.item_name,
+          quantity: 2,
+          unit_price: 15000,
+        },
+      ],
+    });
+
+    await recordPayment({
+      debtId: sale.debt.id,
+      amount: 5000,
+      paymentMethod: "momo",
+      referenceNumber: "TX-99",
+    });
+    await expect(
+      recordPayment({
+        debtId: sale.debt.id,
+        amount: 5000,
+        paymentMethod: "momo",
+        referenceNumber: "tx-99",
+      })
+    ).rejects.toThrow(/reference/i);
+
+    const debts = await listActiveDebts();
+    expect(debts[0].remaining_balance).toBe(15000);
+  });
+
+  it("does not sell a zero quantity and does not touch stock", async () => {
+    const item = await addInventoryItem({
+      item_name: "Soap",
+      quantity: 6,
+      cost_price: 400,
+      selling_price: 800,
+    });
+    await expect(
+      createSaleOrder({
+        clientName: "Walk-in",
+        amount: 0,
+        payments: [],
+        items: [
+          {
+            inventory_item_id: item.id,
+            item_name: item.item_name,
+            quantity: 0,
+            unit_price: 800,
+          },
+        ],
+      })
+    ).rejects.toThrow(/1/);
+    const left = await listInventory();
+    expect(left[0].quantity).toBe(6);
+  });
+
+  it("rejects two lines of the same product when they exceed stock together", async () => {
+    const item = await addInventoryItem({
+      item_name: "Oil",
+      quantity: 5,
+      cost_price: 2000,
+      selling_price: 3000,
+    });
+    await expect(
+      createSaleOrder({
+        clientName: "Walk-in",
+        amount: 18000,
+        payments: [{ method: "cash", amount: 18000 }],
+        items: [
+          {
+            inventory_item_id: item.id,
+            item_name: item.item_name,
+            quantity: 3,
+            unit_price: 3000,
+          },
+          {
+            inventory_item_id: item.id,
+            item_name: item.item_name,
+            quantity: 3,
+            unit_price: 3000,
+          },
+        ],
+      })
+    ).rejects.toThrow(/Stock/);
+    const left = await listInventory();
+    expect(left[0].quantity).toBe(5);
+    expect(await db.sales.count()).toBe(0);
+  });
+
+  it("reports the discounted amount the customer was charged", async () => {
+    const item = await addInventoryItem({
+      item_name: "Dress",
+      quantity: 3,
+      cost_price: 10000,
+      selling_price: 50000,
+    });
+    await createSaleOrder({
+      clientName: "Marie",
+      amount: 100000,
+      discountAmount: 10000,
+      payments: [{ method: "cash", amount: 90000 }],
+      items: [
+        {
+          inventory_item_id: item.id,
+          item_name: item.item_name,
+          quantity: 2,
+          unit_price: 50000,
+        },
+      ],
+    });
+    const stats = await getDashboardStats();
+    expect(stats.salesVolume).toBe(90000);
+    expect(stats.moneyCollected).toBe(90000);
+    const reports = await getDailyReports();
+    expect(reports[0].cashSales).toBe(90000);
+    expect(reports[0].accrualNewBusiness).toBe(90000);
+  });
+
+  it("records collected cash for a sale that is not tied to stock", async () => {
+    const sale = await recordCashSale({
+      item_name: "Delivery fee",
+      quantity: 2,
+      cost_price: 0,
+      sale_price: 1500,
+      payment_method: "cash",
+    });
+    expect(sale.quantity).toBe(2);
+    expect(sale.payment_status).toBe("paid");
+    const stats = await getDashboardStats();
+    expect(stats.moneyCollected).toBe(3000);
+    expect(stats.salesVolume).toBe(3000);
+  });
+
+  it("blocks a duplicate barcode and deletion of a product that was sold", async () => {
+    const item = await addInventoryItem({
+      item_name: "Belt",
+      quantity: 2,
+      cost_price: 3000,
+      selling_price: 7000,
+      barcode: "600111",
+    });
+    await expect(
+      addInventoryItem({
+        item_name: "Belt copy",
+        quantity: 1,
+        cost_price: 3000,
+        selling_price: 7000,
+        barcode: "600111",
+      })
+    ).rejects.toThrow(/Barcode/);
+
+    await createSaleOrder({
+      clientName: "Walk-in",
+      amount: 7000,
+      payments: [{ method: "cash", amount: 7000 }],
+      items: [
+        {
+          inventory_item_id: item.id,
+          item_name: item.item_name,
+          quantity: 1,
+          unit_price: 7000,
+        },
+      ],
+    });
+    await expect(deleteInventoryItem(item.id)).rejects.toThrow(/gusiba/);
+    expect((await listInventory())[0].quantity).toBe(1);
+  });
+
+  it("floors a fractional quantity so stock and the charge stay in step", async () => {
+    const item = await addInventoryItem({
+      item_name: "Sugar",
+      quantity: 10,
+      cost_price: 500,
+      selling_price: 1000,
+    });
+    const sale = await createSaleOrder({
+      clientName: "Walk-in",
+      amount: 1000,
+      payments: [{ method: "cash", amount: 1000 }],
+      items: [
+        {
+          inventory_item_id: item.id,
+          item_name: item.item_name,
+          quantity: 1.9,
+          unit_price: 1000,
+        },
+      ],
+    });
+    expect(sale.sales[0].quantity).toBe(1);
+    expect(sale.paid).toBe(1000);
+    expect((await listInventory())[0].quantity).toBe(9);
   });
 });

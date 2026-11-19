@@ -1,6 +1,9 @@
 /** Normalize Rwanda phone numbers to E.164 (+250…). */
 export function normalizePhoneE164(raw: string): string {
-  const digits = raw.replace(/\D/g, "");
+  let digits = raw.replace(/\D/g, "");
+  if (!digits) return "";
+  // 00250… is the international prefix, not a local 07… number.
+  if (digits.startsWith("00")) digits = digits.slice(2);
   if (!digits) return "";
 
   if (digits.startsWith("250") && digits.length >= 12) {
@@ -28,7 +31,8 @@ export function phoneToWhatsAppDigits(raw: string): string {
  * Paypack API expects 10 digits starting with 0.
  */
 export function toPaypackLocalPhone(raw: string): string {
-  const digits = raw.replace(/\D/g, "");
+  let digits = raw.replace(/\D/g, "");
+  if (digits.startsWith("00")) digits = digits.slice(2);
   if (digits.startsWith("250") && digits.length >= 12) {
     return `0${digits.slice(3, 12)}`;
   }

@@ -39,6 +39,8 @@ export interface Debt {
   status: DebtStatus;
   paid_at: string | null;
   notes: string | null;
+  /** Basket discount already removed from total_amount. Omitted on older rows. */
+  discount_amount?: number;
   created_at: string;
   updated_at: string;
 }
@@ -175,6 +177,8 @@ export type CreateSaleOrderInput = {
   /** Split / partial payments at checkout (sum may be < amount) */
   payments?: SalePaymentSlice[];
   changeGiven?: number;
+  /** When the sale happened. Defaults to now. Future timestamps are rejected. */
+  soldAt?: string | null;
   items: Array<{
     inventory_item_id: string;
     item_name: string;

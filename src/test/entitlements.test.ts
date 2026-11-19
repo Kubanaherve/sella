@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { computeNextPeriodEnd, hasWriteAccess, type SubscriptionSnapshot } from "@/lib/entitlements";
+import {
+  computeNextPeriodEnd,
+  hasWriteAccess,
+  isInGracePeriod,
+  type SubscriptionSnapshot,
+} from "@/lib/entitlements";
 
 const base: SubscriptionSnapshot = {
   workspaceId: "w1",
@@ -64,6 +69,17 @@ describe("entitlements", () => {
       currentPeriodEnd: "2026-04-20T00:00:00.000Z", // 12 days ago
     };
     expect(hasWriteAccess(pastGrace, now)).toBe(false);
+  });
+
+  it("keeps past_due shops writing during the same 3-day grace window", () => {
+    const now = new Date("2026-05-02T12:00:00.000Z");
+    const sub: SubscriptionSnapshot = {
+      ...base,
+      status: "past_due",
+      currentPeriodEnd: "2026-05-01T00:00:00.000Z",
+    };
+    expect(isInGracePeriod(sub, now)).toBe(true);
+    expect(hasWriteAccess(sub, now)).toBe(true);
   });
 
   it("starts paid month from payment date when expired", () => {

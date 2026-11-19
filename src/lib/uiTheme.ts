@@ -55,19 +55,31 @@ export function pastelForName(name: string): { bg: string; fg: string } {
   return palette[h % palette.length];
 }
 
-export function stockTone(qty: number): { label: string; color: string; bg: string } {
+/** Default reorder point when a product has no min_quantity set. */
+export const DEFAULT_MIN_STOCK = 3;
+
+export function isLowStock(quantity: number, minQuantity?: number | null): boolean {
+  const min = minQuantity == null ? DEFAULT_MIN_STOCK : minQuantity;
+  return quantity <= min;
+}
+
+export function stockTone(
+  qty: number,
+  minQuantity?: number | null
+): { label: string; color: string; bg: string } {
   const isDark =
     typeof document !== "undefined" &&
     document.documentElement.classList.contains("dark");
+  const low = qty > 0 && isLowStock(qty, minQuantity);
 
   if (isDark) {
     if (qty <= 0) return { label: "Byashize", color: "#F87171", bg: "rgba(239, 68, 68, 0.2)" };
-    if (qty < 5) return { label: "Bike", color: "#FBBF24", bg: "rgba(245, 158, 11, 0.2)" };
+    if (low) return { label: "Bike", color: "#FBBF24", bg: "rgba(245, 158, 11, 0.2)" };
     return { label: "Hariho", color: "#4ADE80", bg: "rgba(34, 197, 94, 0.2)" };
   }
 
   if (qty <= 0) return { label: "Byashize", color: "#B91C1C", bg: "#FEE2E2" };
-  if (qty < 5) return { label: "Bike", color: UI.lowStock, bg: UI.creditBg };
+  if (low) return { label: "Bike", color: UI.lowStock, bg: UI.creditBg };
   return { label: "Hariho", color: UI.goodStock, bg: UI.cashBg };
 }
 

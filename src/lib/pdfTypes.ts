@@ -28,6 +28,8 @@ export type InvoiceData = {
   total: number;
   paid?: number;
   remaining?: number;
+  /** Basket discount. When omitted, the PDF infers it from line totals vs `total`. */
+  discount?: number;
   tax?: number;
   /** MoMo / pay-to number — distinct from customer phone */
   payPhone: string;

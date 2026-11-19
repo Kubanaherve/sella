@@ -17,14 +17,18 @@ import { hashPin, verifyPin } from "@/lib/pin";
 import { normalizeEmail } from "@/lib/shopIdentity";
 import { generateLocalShopCode } from "@/lib/shopCode";
 import {
+  assertPaymentMethod,
+  extendTotal,
   lineTotal,
   normalizePaymentSlices,
   paymentStatusFromBalances,
+  saleQuantity,
   sumRwf,
   toRwf,
   type PaymentSlice,
 } from "@/lib/money";
-import { calendarDateKeyInKigali, isWithinLastDaysKigali } from "@/lib/dates";
+import { calendarDateKeyInKigali, isWithinLastDaysKigali, resolveSoldAt } from "@/lib/dates";
+import { buildLedgerDailyReports, netSalesVolume } from "@/lib/reporting";
 
 const SESSION_KEY = "sella_session_profile_id";
 
@@ -214,19 +218,28 @@ export async function recordCashSale(input: {
   inventory_item_id?: string | null;
   payment_method?: PaymentMethod;
   client_id?: string | null;
+  soldAt?: string | null;
 }): Promise<Sale> {
+  const quantity = saleQuantity(input.quantity);
+  const salePrice = toRwf(input.sale_price);
+  const costPrice = Math.max(0, toRwf(input.cost_price));
+  if (salePrice <= 0) throw new Error("Amafaranga ntayemewe");
+  const method = assertPaymentMethod(input.payment_method || "cash");
+  const soldAt = input.soldAt ? resolveSoldAt(input.soldAt) : nowIso();
+
   if (input.inventory_item_id) {
     const result = await createSaleOrder({
       clientName: "Walk-in",
       paidNow: true,
-      amount: input.sale_price * input.quantity,
-      paymentMethod: input.payment_method || "cash",
+      amount: lineTotal(salePrice, quantity),
+      paymentMethod: method,
+      ...(input.soldAt ? { soldAt } : {}),
       items: [
         {
           inventory_item_id: input.inventory_item_id,
           item_name: input.item_name,
-          quantity: input.quantity,
-          unit_price: input.sale_price,
+          quantity,
+          unit_price: salePrice,
         },
       ],
     });
@@ -234,22 +247,41 @@ export async function recordCashSale(input: {
   }
 
   const profileId = await requireProfileId();
-  const now = nowIso();
+  const client = input.client_id
+    ? await db.clients.get(input.client_id)
+    : await findOrCreateClient("Walk-in");
+  const clientId = client?.id;
+  if (!clientId) throw new Error("Umukiriya ntabwo abonetse");
+  const amount = lineTotal(salePrice, quantity);
   const sale: Sale = {
     id: newId(),
     profile_id: profileId,
-    client_id: input.client_id ?? null,
+    client_id: clientId,
     item_name: input.item_name.trim(),
-    quantity: input.quantity,
-    cost_price: input.cost_price,
-    sale_price: input.sale_price,
+    quantity,
+    cost_price: costPrice,
+    sale_price: salePrice,
     inventory_item_id: null,
-    payment_method: input.payment_method || "cash",
+    payment_method: method,
     payment_status: "paid",
     debt_id: null,
-    created_at: now,
+    created_at: soldAt,
   };
-  await db.sales.add(sale);
+  const payment: Payment = {
+    id: newId(),
+    profile_id: profileId,
+    debt_id: null,
+    client_id: clientId,
+    amount,
+    payment_method: method,
+    reference_number: null,
+    notes: "Cash sale",
+    created_at: soldAt,
+  };
+  await db.transaction("rw", db.sales, db.payments, async () => {
+    await db.sales.add(sale);
+    await db.payments.add(payment);
+  });
   return sale;
 }
 
@@ -368,15 +400,21 @@ export async function createSaleOrder(
   const profileId = await requireProfileId();
   if (!input.items.length) throw new Error("Hitamo ibicuruzwa");
 
+  const normalizedItems = input.items.map((item) => ({
+    ...item,
+    quantity: saleQuantity(item.quantity),
+    unit_price: Math.max(0, toRwf(item.unit_price)),
+  }));
+
   const merchandise = sumRwf(
-    input.items.map((i) => lineTotal(i.unit_price, i.quantity))
+    normalizedItems.map((i) => lineTotal(i.unit_price, i.quantity))
   );
   const discount = Math.min(toRwf(input.discountAmount || 0), merchandise);
   const orderTotal = Math.max(0, merchandise - discount);
   if (orderTotal <= 0 && merchandise <= 0) throw new Error("Amafaranga ntayemewe");
 
   let slices: PaymentSlice[] = (input.payments || []).map((p) => ({
-    method: p.method,
+    method: assertPaymentMethod(p.method),
     amount: toRwf(p.amount),
     referenceNumber: p.referenceNumber,
   }));
@@ -397,7 +435,7 @@ export async function createSaleOrder(
 
   const clientName = String(input.clientName || "").trim() || "Walk-in";
   const client = await findOrCreateClient(clientName, input.phone);
-  const now = nowIso();
+  const now = input.soldAt ? resolveSoldAt(input.soldAt) : nowIso();
   const paymentStatus: SalePaymentStatus = paymentStatusFromBalances(
     orderTotal,
     normalized.remaining
@@ -406,13 +444,17 @@ export async function createSaleOrder(
     .toString(36)
     .slice(2, 6)
     .toUpperCase()}`;
-  const primaryMethod = normalized.slices[0]?.method || input.paymentMethod || null;
+  const primaryMethod =
+    normalized.slices[0]?.method ||
+    (input.paymentMethod ? assertPaymentMethod(input.paymentMethod) : null);
 
-  for (const item of input.items) {
-    const inv = await db.inventory_items.get(item.inventory_item_id);
-    if (!inv || !ownedByProfile(inv, profileId) || inv.quantity < item.quantity) {
-      throw new Error(`Stock ya ${item.item_name} ntihagije`);
-    }
+  const needed = new Map<string, { qty: number; name: string }>();
+  for (const item of normalizedItems) {
+    const prev = needed.get(item.inventory_item_id);
+    needed.set(item.inventory_item_id, {
+      qty: (prev?.qty || 0) + item.quantity,
+      name: item.item_name,
+    });
   }
 
   const debt: Debt = {
@@ -425,6 +467,7 @@ export async function createSaleOrder(
     status: normalized.remaining <= 0 ? "paid" : "active",
     paid_at: normalized.remaining <= 0 ? now : null,
     notes: null,
+    discount_amount: discount,
     created_at: now,
     updated_at: now,
   };
@@ -440,20 +483,20 @@ export async function createSaleOrder(
     db.payments,
     db.sales,
     async () => {
-      for (const item of input.items) {
-        const inv = await db.inventory_items.get(item.inventory_item_id);
-        if (!inv || !ownedByProfile(inv, profileId) || inv.quantity < item.quantity) {
-          throw new Error(`Stock ya ${item.item_name} ntihagije`);
+      for (const [id, req] of needed) {
+        const inv = await db.inventory_items.get(id);
+        if (!inv || !ownedByProfile(inv, profileId) || inv.quantity < req.qty) {
+          throw new Error(`Stock ya ${req.name} ntihagije`);
         }
         await db.inventory_items.update(inv.id, {
-          quantity: inv.quantity - item.quantity,
+          quantity: inv.quantity - req.qty,
           updated_at: now,
         });
       }
 
       await db.debts.add(debt);
 
-      const debtItems: DebtItem[] = input.items.map((item) => ({
+      const debtItems: DebtItem[] = normalizedItems.map((item) => ({
         id: newId(),
         profile_id: profileId,
         debt_id: debt.id,
@@ -465,7 +508,7 @@ export async function createSaleOrder(
       }));
       await db.debt_items.bulkAdd(debtItems);
 
-      for (const item of input.items) {
+      for (const item of normalizedItems) {
         const inv = await db.inventory_items.get(item.inventory_item_id);
         const sale: Sale = {
           id: newId(),
@@ -558,23 +601,36 @@ export async function recordPayment(input: {
   const profileId = await requireProfileId();
   const debt = await db.debts.get(input.debtId);
   if (!debt || !ownedByProfile(debt, profileId)) throw new Error("Ideni ntiribonetse");
-  if (input.amount <= 0) throw new Error("Amafaranga ntayemewe");
-  if (input.amount > debt.remaining_balance) {
+  const amount = toRwf(input.amount);
+  if (amount <= 0) throw new Error("Amafaranga ntayemewe");
+  const method = assertPaymentMethod(input.paymentMethod);
+  const reference = input.referenceNumber?.trim() || null;
+  if (amount > toRwf(debt.remaining_balance)) {
     throw new Error("Amafaranga arenza ideni");
+  }
+  if (reference) {
+    const dup = await db.payments
+      .where("debt_id")
+      .equals(input.debtId)
+      .filter(
+        (p) =>
+          ownedByProfile(p, profileId) &&
+          (p.reference_number || "").trim().toLowerCase() === reference.toLowerCase()
+      )
+      .first();
+    if (dup) throw new Error("Iyi reference yamaze gukoreshwa kuri iri deni");
   }
 
   const now = nowIso();
-  const remaining = debt.remaining_balance - input.amount;
-  const saleStatus: SalePaymentStatus = remaining <= 0 ? "paid" : "partial";
 
   const payment: Payment = {
     id: newId(),
     profile_id: profileId,
     debt_id: debt.id,
     client_id: debt.client_id,
-    amount: input.amount,
-    payment_method: input.paymentMethod,
-    reference_number: input.referenceNumber?.trim() || null,
+    amount,
+    payment_method: method,
+    reference_number: reference,
     notes: input.notes || null,
     created_at: now,
   };
@@ -584,10 +640,21 @@ export async function recordPayment(input: {
     if (!fresh || !ownedByProfile(fresh, profileId)) {
       throw new Error("Ideni ntiribonetse");
     }
-    if (input.amount > fresh.remaining_balance) {
+    if (amount > toRwf(fresh.remaining_balance)) {
       throw new Error("Amafaranga arenza ideni");
     }
-    const rem = fresh.remaining_balance - input.amount;
+    if (reference) {
+      const dup = await db.payments
+        .where("debt_id")
+        .equals(input.debtId)
+        .filter(
+          (p) =>
+            (p.reference_number || "").trim().toLowerCase() === reference.toLowerCase()
+        )
+        .first();
+      if (dup) throw new Error("Iyi reference yamaze gukoreshwa kuri iri deni");
+    }
+    const rem = toRwf(fresh.remaining_balance) - amount;
     await db.payments.add(payment);
     await db.debts.update(fresh.id, {
       remaining_balance: rem,
@@ -598,8 +665,8 @@ export async function recordPayment(input: {
     const linked = await db.sales.filter((s) => s.debt_id === fresh.id).toArray();
     for (const sale of linked) {
       await db.sales.update(sale.id, {
-        payment_status: rem <= 0 ? "paid" : saleStatus,
-        payment_method: input.paymentMethod,
+        payment_status: rem <= 0 ? "paid" : "partial",
+        payment_method: method,
       });
     }
   });
@@ -674,18 +741,51 @@ export async function listInventory(): Promise<InventoryItem[]> {
     .toArray();
 }
 
+async function assertUniqueInventoryCodes(
+  profileId: string,
+  input: { sku?: string | null; barcode?: string | null },
+  exceptId?: string
+) {
+  const sku = input.sku?.trim().toLowerCase() || "";
+  const barcode = input.barcode?.trim().toLowerCase() || "";
+  if (!sku && !barcode) return;
+  const all = await db.inventory_items
+    .filter((i) => ownedByProfile(i, profileId))
+    .toArray();
+  for (const item of all) {
+    if (exceptId && item.id === exceptId) continue;
+    if (sku && (item.sku || "").trim().toLowerCase() === sku) {
+      throw new Error(`SKU ${input.sku} is already used by ${item.item_name}`);
+    }
+    if (barcode && (item.barcode || "").trim().toLowerCase() === barcode) {
+      throw new Error(`Barcode ${input.barcode} is already used by ${item.item_name}`);
+    }
+  }
+}
+
+function inventoryMoney(value: number, label: string): number {
+  const n = toRwf(value);
+  if (!Number.isFinite(n) || n < 0) throw new Error(`${label} ntikemewe`);
+  return n;
+}
+
 export async function addInventoryItem(
   input: import("./types").InventoryWriteInput
 ): Promise<InventoryItem> {
   const profileId = await requireProfileId();
+  const itemName = input.item_name.trim();
+  if (!itemName) throw new Error("Izina ry'ikintu rirakenewe");
+  const quantity = Number(input.quantity);
+  if (!Number.isFinite(quantity) || quantity < 0) throw new Error("Umubare ntuyemewe");
+  await assertUniqueInventoryCodes(profileId, input);
   const now = nowIso();
   const item: InventoryItem = {
     id: newId(),
     profile_id: profileId,
-    item_name: input.item_name.trim(),
-    quantity: input.quantity,
-    selling_price: input.selling_price,
-    cost_price: input.cost_price,
+    item_name: itemName,
+    quantity,
+    selling_price: inventoryMoney(input.selling_price, "Igiciro cyo kugurisha"),
+    cost_price: inventoryMoney(input.cost_price, "Igiciro cyo kugura"),
     date_bought: input.date_bought || calendarDateKeyInKigali(now),
     notes: input.notes ?? null,
     category: input.category ?? null,
@@ -713,7 +813,34 @@ export async function updateInventoryItem(
   if (!inv || !ownedByProfile(inv, profileId)) {
     throw new Error("Igicuruzwa ntabwo kibonetse");
   }
-  await db.inventory_items.update(id, { ...patch, updated_at: nowIso() });
+  const next: import("./types").InventoryUpdatePatch = { ...patch };
+  if (next.item_name !== undefined) {
+    const name = next.item_name.trim();
+    if (!name) throw new Error("Izina ry'ikintu rirakenewe");
+    next.item_name = name;
+  }
+  if (next.quantity !== undefined) {
+    const quantity = Number(next.quantity);
+    if (!Number.isFinite(quantity) || quantity < 0) throw new Error("Umubare ntuyemewe");
+    next.quantity = quantity;
+  }
+  if (next.selling_price !== undefined) {
+    next.selling_price = inventoryMoney(next.selling_price, "Igiciro cyo kugurisha");
+  }
+  if (next.cost_price !== undefined) {
+    next.cost_price = inventoryMoney(next.cost_price, "Igiciro cyo kugura");
+  }
+  if (next.sku !== undefined || next.barcode !== undefined) {
+    await assertUniqueInventoryCodes(
+      profileId,
+      {
+        sku: next.sku === undefined ? inv.sku : next.sku,
+        barcode: next.barcode === undefined ? inv.barcode : next.barcode,
+      },
+      id
+    );
+  }
+  await db.inventory_items.update(id, { ...next, updated_at: nowIso() });
 }
 
 /** Find existing item by SKU, barcode, or exact name (case-insensitive). */
@@ -752,6 +879,12 @@ export async function deleteInventoryItem(id: string) {
   if (!inv || !ownedByProfile(inv, profileId)) {
     throw new Error("Igicuruzwa ntabwo kibonetse");
   }
+  const sold = await db.sales
+    .filter((s) => ownedByProfile(s, profileId) && s.inventory_item_id === id)
+    .count();
+  if (sold > 0) {
+    throw new Error("Ntushobora gusiba igicuruzwa cyagurishijwe. Guhindura stock ahubwo.");
+  }
   await db.inventory_items.delete(id);
 }
 
@@ -772,20 +905,17 @@ export async function getDashboardStats() {
     .filter((d) => d.status === "active")
     .reduce((s, d) => s + d.remaining_balance, 0);
 
-  const salesVolume = sales.reduce((s, row) => s + lineTotal(row.sale_price, row.quantity), 0);
+  const onDay = (iso: string) => calendarDateKeyInKigali(iso) === todayKey;
+  const salesVolume = netSalesVolume(sales, debts);
   const moneyCollected = payments.reduce((s, p) => s + toRwf(p.amount), 0);
   const todayCollected = payments
-    .filter((p) => calendarDateKeyInKigali(p.created_at) === todayKey)
+    .filter((p) => onDay(p.created_at))
     .reduce((sum, p) => sum + toRwf(p.amount), 0);
-  const todaySalesVolume = sales
-    .filter((s) => calendarDateKeyInKigali(s.created_at) === todayKey)
-    .reduce((sum, row) => sum + lineTotal(row.sale_price, row.quantity), 0);
+  const todaySalesVolume = netSalesVolume(sales, debts, onDay);
   const weekCollected = payments
     .filter((p) => inWeek(p.created_at))
     .reduce((sum, p) => sum + toRwf(p.amount), 0);
-  const weekSalesVolume = sales
-    .filter((s) => inWeek(s.created_at))
-    .reduce((sum, row) => sum + lineTotal(row.sale_price, row.quantity), 0);
+  const weekSalesVolume = netSalesVolume(sales, debts, inWeek);
 
   const todayDebt = debts
     .filter(
@@ -798,7 +928,7 @@ export async function getDashboardStats() {
     .reduce((s, d) => s + toRwf(d.remaining_balance), 0);
 
   const inventoryValue = inventory.reduce(
-    (s, i) => s + lineTotal(i.selling_price, i.quantity),
+    (s, i) => s + extendTotal(i.selling_price, i.quantity),
     0
   );
 
@@ -845,46 +975,7 @@ export async function getDailyReports(): Promise<DailyReport[]> {
     db.payments.filter((p) => ownedByProfile(p, profileId)).toArray(),
     db.debts.filter((d) => ownedByProfile(d, profileId)).toArray(),
   ]);
-
-  const map: Record<string, DailyReport> = {};
-  const ensure = (date: string) => {
-    if (!map[date]) {
-      map[date] = {
-        date,
-        cashSales: 0,
-        debtsCollected: 0,
-        newDebtIssued: 0,
-        unpaidOutstanding: 0,
-        receivedTotal: 0,
-        accrualNewBusiness: 0,
-      };
-    }
-    return map[date];
-  };
-
-  for (const sale of sales) {
-    const d = ensure(calendarDateKeyInKigali(sale.created_at));
-    const amount = lineTotal(sale.sale_price, sale.quantity);
-    d.cashSales += amount;
-    d.accrualNewBusiness += amount;
-  }
-
-  for (const payment of payments) {
-    const d = ensure(calendarDateKeyInKigali(payment.created_at));
-    const amt = toRwf(payment.amount);
-    d.debtsCollected += amt;
-    d.receivedTotal += amt;
-  }
-
-  for (const debt of debts) {
-    const d = ensure(calendarDateKeyInKigali(debt.created_at));
-    d.newDebtIssued += toRwf(debt.total_amount);
-    if (debt.status === "active") {
-      d.unpaidOutstanding += toRwf(debt.remaining_balance);
-    }
-  }
-
-  return Object.values(map).sort((a, b) => b.date.localeCompare(a.date));
+  return buildLedgerDailyReports({ sales, payments, debts });
 }
 
 export async function resetSalesMoney() {

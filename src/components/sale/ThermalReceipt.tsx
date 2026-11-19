@@ -5,8 +5,8 @@ import {
   shopAccentFromName,
   shopInitials,
 } from "@/lib/receipt";
-import { formatCurrency } from "@/lib/kinyarwanda";
-import { toRwf } from "@/lib/money";
+import { formatCurrency, labels } from "@/lib/kinyarwanda";
+import { lineTotal } from "@/lib/money";
 
 type Props = {
   data: ReceiptData;
@@ -88,10 +88,16 @@ export function ThermalReceipt({ data, play, onDone, className }: Props) {
                 <span className="truncate">
                   {l.quantity}× {l.name}
                 </span>
-                <span>{formatCurrency(toRwf(l.unitPrice) * l.quantity)}</span>
+                <span>{formatCurrency(lineTotal(l.unitPrice, l.quantity))}</span>
               </div>
             ))}
             <div className="border-t border-dashed border-slate-300 my-1.5" />
+            {data.discountAmount ? (
+              <div className="flex justify-between">
+                <span>{labels.discount}</span>
+                <span>-{formatCurrency(data.discountAmount)}</span>
+              </div>
+            ) : null}
             <div className="flex justify-between font-bold">
               <span>TOTAL</span>
               <span>{formatCurrency(data.total)}</span>
@@ -100,6 +106,12 @@ export function ThermalReceipt({ data, play, onDone, className }: Props) {
               <span>Paid</span>
               <span>{formatCurrency(data.paid)}</span>
             </div>
+            {data.changeDue ? (
+              <div className="flex justify-between">
+                <span>{labels.changeDue}</span>
+                <span>{formatCurrency(data.changeDue)}</span>
+              </div>
+            ) : null}
             <div className="flex justify-between">
               <span>Balance</span>
               <span>{formatCurrency(data.remaining)}</span>

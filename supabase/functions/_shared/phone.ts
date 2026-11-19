@@ -22,7 +22,8 @@ export function phoneDigitsOnly(e164: string): string {
  * Paypack API expects 10 digits starting with 0.
  */
 export function toPaypackLocalPhone(input: string): string {
-  const digits = (input || "").replace(/\D/g, "");
+  let digits = (input || "").replace(/\D/g, "");
+  if (digits.startsWith("00")) digits = digits.slice(2);
   if (digits.startsWith("250") && digits.length === 12) {
     return `0${digits.slice(3)}`;
   }

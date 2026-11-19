@@ -23,6 +23,67 @@ export function lineTotal(unitPrice: Rwf, quantity: number): Rwf {
   return u * q;
 }
 
+/**
+ * Stock valuation for fractional quantities (kg, litre).
+ * Sale lines stay on `lineTotal`, which only bills whole units.
+ */
+export function extendTotal(unitPrice: unknown, quantity: unknown): Rwf {
+  const q = typeof quantity === "number" ? quantity : Number(quantity);
+  if (!Number.isFinite(q) || q <= 0) return 0;
+  const u = Math.max(0, toRwf(unitPrice));
+  return toRwf(u * q);
+}
+
+/** Whole units actually sold. Rejects zero and negative; floors 1.9 → 1. */
+export function saleQuantity(quantity: unknown): number {
+  const n = typeof quantity === "number" ? quantity : Number(quantity);
+  if (!Number.isFinite(n) || n < 1) {
+    throw new Error("Umubare ugomba kuba 1 nibura");
+  }
+  return Math.floor(n);
+}
+
+const PAYMENT_METHODS = ["cash", "momo", "airtel", "bank"] as const;
+
+export function assertPaymentMethod(method: string): PaymentSlice["method"] {
+  if (!(PAYMENT_METHODS as readonly string[]).includes(method)) {
+    throw new Error("Uburyo bwo kwishyura ntibwemewe");
+  }
+  return method as PaymentSlice["method"];
+}
+
+/**
+ * Parse shop-entered money. RWF has no cents, so "11.000" and "11,000"
+ * are eleven thousand, not eleven.
+ */
+export function parseMoneyText(raw: string): number | null {
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+  let s = trimmed.replace(/[^\d.,-]/g, "");
+  if (!s || s === "-" || s === "." || s === ",") return null;
+
+  const lastDot = s.lastIndexOf(".");
+  const lastComma = s.lastIndexOf(",");
+  if (lastDot >= 0 && lastComma >= 0) {
+    if (lastComma > lastDot) {
+      s = s.replace(/\./g, "").replace(",", ".");
+    } else {
+      s = s.replace(/,/g, "");
+    }
+  } else if (/^-?\d{1,3}(\.\d{3})+$/.test(s)) {
+    s = s.replace(/\./g, "");
+  } else if (/^-?\d{1,3}(,\d{3})+$/.test(s)) {
+    s = s.replace(/,/g, "");
+  } else if (lastComma >= 0) {
+    const frac = s.slice(lastComma + 1);
+    s = /^\d{3}$/.test(frac) ? s.replace(/,/g, "") : s.replace(",", ".");
+  }
+
+  const n = Number(s);
+  if (!Number.isFinite(n)) return null;
+  return toRwf(n);
+}
+
 export function clampPaid(amount: Rwf, due: Rwf): Rwf {
   const a = toRwf(amount);
   const d = toRwf(due);

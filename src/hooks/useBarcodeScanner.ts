@@ -1,5 +1,22 @@
 import { useEffect, useRef } from "react";
 
+function stripScannedText(target: EventTarget | null, code: string) {
+  if (!(target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement)) return;
+  const current = target.value;
+  let remove = 0;
+  if (current.endsWith(code)) remove = code.length;
+  else if (code && current.endsWith(code[0])) remove = 1;
+  if (!remove) return;
+  const next = current.slice(0, current.length - remove);
+  const proto =
+    target instanceof HTMLTextAreaElement
+      ? HTMLTextAreaElement.prototype
+      : HTMLInputElement.prototype;
+  const desc = Object.getOwnPropertyDescriptor(proto, "value");
+  desc?.set?.call(target, next);
+  target.dispatchEvent(new Event("input", { bubbles: true }));
+}
+
 interface UseBarcodeScannerOptions {
   onScan: (scannedCode: string) => void;
   enabled?: boolean;
@@ -41,6 +58,7 @@ export function useBarcodeScanner({
         if (code.length >= minChars) {
           event.preventDefault();
           event.stopPropagation();
+          stripScannedText(event.target, code);
           onScan(code);
         }
         return;
@@ -48,11 +66,18 @@ export function useBarcodeScanner({
 
       // Capture single printable characters (digits, letters, dashes, etc.)
       if (event.key.length === 1) {
-        if (interval > maxIntervalMs && bufferRef.current.length > 0) {
+        const rapid = interval <= maxIntervalMs && bufferRef.current.length > 0;
+        if (!rapid && bufferRef.current.length > 0) {
           // Break in rapid input; reset buffer to current keystroke
           bufferRef.current = event.key;
         } else {
           bufferRef.current += event.key;
+        }
+        // Swallow the burst once it is clearly a scanner, so the code
+        // does not also land in the focused customer or search field.
+        if (rapid && bufferRef.current.length >= 2) {
+          event.preventDefault();
+          event.stopPropagation();
         }
       }
     };

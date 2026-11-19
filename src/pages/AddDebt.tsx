@@ -355,6 +355,7 @@ const NewSalePage: React.FC = () => {
         total: orderTotal,
         paid: result.paid,
         remaining: result.remaining,
+        changeDue,
         payments: result.payments.map((p) => ({
           method: p.payment_method,
           amount: p.amount,
@@ -377,7 +378,20 @@ const NewSalePage: React.FC = () => {
       setCustomerName("");
       setCustomerPhone("");
       setStep("cart");
-      void loadInventory();
+      if (result.queuedOffline) {
+        // Keep the cart's stock reduction visible while the server sale is still queued.
+        setInventory((prev) =>
+          prev.map((item) => {
+            const sold = cart
+              .filter((line) => line.id === item.id)
+              .reduce((sum, line) => sum + line.quantity, 0);
+            if (!sold) return item;
+            return { ...item, quantity: Math.max(0, item.quantity - sold) };
+          })
+        );
+      } else {
+        void loadInventory();
+      }
       toast.success(labels.saleRecorded);
     } catch (err) {
       console.error(err);
@@ -830,7 +844,7 @@ const NewSalePage: React.FC = () => {
                     cart.find((c) => c.id === item.id)?.quantity || 0;
                   const out = item.quantity <= 0;
                   const pastel = pastelForName(item.item_name);
-                  const stock = stockTone(item.quantity);
+                  const stock = stockTone(item.quantity, item.min_quantity);
                   return (
                     <button
                       key={item.id}
