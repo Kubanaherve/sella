@@ -12,7 +12,7 @@
  * client-side routes survive a refresh. No auto-update server is wired;
  * installers are published only when a signed binary exists.
  */
-const { app, BrowserWindow, Menu, dialog, shell, protocol, net } = require("electron");
+const { app, BrowserWindow, Menu, dialog, shell, protocol, net, ipcMain } = require("electron");
 const fs = require("fs");
 const path = require("path");
 const { pathToFileURL } = require("url");
@@ -69,6 +69,8 @@ function createWindow() {
     minWidth: 960,
     minHeight: 640,
     title: "Sella",
+    titleBarStyle: process.platform === "darwin" ? "hiddenInset" : "default",
+    trafficLightPosition: process.platform === "darwin" ? { x: 16, y: 16 } : undefined,
     backgroundColor: "#040816",
     icon: fs.existsSync(ICON) ? ICON : undefined,
     webPreferences: {
@@ -80,6 +82,9 @@ function createWindow() {
   });
 
   win.webContents.setWindowOpenHandler(({ url }) => {
+    if (url.startsWith("blob:") || url.startsWith("data:")) {
+      return { action: "allow" };
+    }
     if (/^https?:\/\//i.test(url) || url.startsWith("mailto:")) {
       shell.openExternal(url);
     }
@@ -137,6 +142,13 @@ app.whenReady().then(() => {
       },
     ])
   );
+  ipcMain.handle("sella:print", (event) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    if (win) {
+      win.webContents.print({ silent: false, printBackground: true });
+    }
+  });
+
   createWindow();
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();

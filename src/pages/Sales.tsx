@@ -7,6 +7,7 @@ import { getDailyReports, listRecentSales, resetSalesMoney, setAppSetting } from
 import type { SalePaymentStatus } from "@/db/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { WriteGate } from "@/components/WriteGate";
+import { useCashierMode } from "@/hooks/useCashierMode";
 import { Calendar, Download, TrendingUp, Trash2 } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { EmptyState } from "@/components/EmptyState";
@@ -66,6 +67,7 @@ const MONTH_LABELS = [
 const ReportsPage = () => {
   const navigate = useNavigate();
   const { canWrite } = useAuth();
+  const { isCashierMode } = useCashierMode();
   const [reports, setReports] = useState<DailyReport[]>([]);
   const [loading, setLoading] = useState(false);
   const [summary, setSummary] = useState({
@@ -249,14 +251,17 @@ const ReportsPage = () => {
         hideBack
         right={
           <div className="flex items-center gap-2">
-            <Button
-              onClick={() => setShowClearHistoryModal(true)}
-              size="sm"
-              variant="outline"
-              className="h-8 px-2.5 text-xs gap-1 border-red-300 text-red-700 hover:bg-red-50"
-            >
-              <Trash2 size={13} />
-            </Button>
+            {!isCashierMode && (
+              <Button
+                onClick={() => setShowClearHistoryModal(true)}
+                size="sm"
+                variant="outline"
+                className="h-8 px-2.5 text-xs gap-1 border-red-300 text-red-700 hover:bg-red-50"
+                title="Siba amateka"
+              >
+                <Trash2 size={13} />
+              </Button>
+            )}
             <Button
               onClick={downloadCSV}
               size="sm"

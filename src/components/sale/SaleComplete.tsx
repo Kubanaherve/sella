@@ -113,7 +113,16 @@ export function SaleComplete({ data, onClose }: Props) {
       toast.message("Printinga irahagaritswe");
       return;
     }
-    void openPdfPreview();
+    // Check if running inside Sella Desktop Shell with native IPC print
+    const desktopApi = (
+      window as unknown as { sellaDesktop?: { print?: () => void } }
+    ).sellaDesktop;
+    if (desktopApi?.print) {
+      desktopApi.print();
+      return;
+    }
+    // Native browser / device print (triggers 58mm/80mm thermal slip print stylesheet)
+    window.print();
   };
 
   const sendPdf = async () => {
@@ -254,6 +263,75 @@ export function SaleComplete({ data, onClose }: Props) {
         onSend={() => void sendPdf()}
         onPrint={() => void printPdf()}
       />
+
+      {/* Hardware Thermal Roll Print Slip (hidden on screen, visible during print) */}
+      <div id="sella-thermal-slip" className="hidden print:block" aria-hidden="true">
+        <div style={{ textAlign: "center", marginBottom: "6px" }}>
+          <div style={{ fontSize: "14px", fontWeight: "900", letterSpacing: "0.5px" }}>
+            {data.shopName.toUpperCase()}
+          </div>
+          <div style={{ fontSize: "9px", color: "#333333" }}>
+            RESI YA SELLA • POS RECEIPT
+          </div>
+          <div style={{ fontSize: "9px" }}>
+            Resi No: {data.receiptNumber}
+          </div>
+          <div style={{ fontSize: "9px" }}>
+            {new Date(data.createdAt).toLocaleString("en-GB", {
+              dateStyle: "short",
+              timeStyle: "short",
+            })}
+          </div>
+        </div>
+
+        <div className="slip-divider" />
+
+        <div style={{ fontSize: "10px", marginBottom: "4px" }}>
+          <strong>Umukiriya:</strong> {data.customerName || "Customer"}
+          {data.customerPhone ? ` (${data.customerPhone})` : ""}
+        </div>
+
+        <div className="slip-divider" />
+
+        <div style={{ fontSize: "10px" }}>
+          {data.lines.map((l, i) => (
+            <div key={i} className="slip-row" style={{ margin: "2px 0" }}>
+              <span style={{ flex: 1, wordBreak: "break-word" }}>
+                {l.name} × {l.quantity}
+              </span>
+              <span style={{ fontWeight: "700", whiteSpace: "nowrap" }}>
+                {formatCurrency(l.unitPrice * l.quantity)}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        <div className="slip-divider" />
+
+        <div className="slip-row" style={{ fontSize: "12px", fontWeight: "900", marginTop: "4px" }}>
+          <span>TOTAL:</span>
+          <span>{formatCurrency(data.total)}</span>
+        </div>
+
+        <div className="slip-row" style={{ fontSize: "10px", marginTop: "2px" }}>
+          <span>YAKIRIWE (Paid):</span>
+          <span>{formatCurrency(data.paid)}</span>
+        </div>
+
+        {data.remaining > 0 && (
+          <div className="slip-row" style={{ fontSize: "10px", fontWeight: "700" }}>
+            <span>ASIGAYE (Debt):</span>
+            <span>{formatCurrency(data.remaining)}</span>
+          </div>
+        )}
+
+        <div className="slip-divider" />
+
+        <div style={{ textAlign: "center", fontSize: "8.5px", marginTop: "8px", color: "#444444" }}>
+          <div>Murakoze guhaha muri {data.shopName}!</div>
+          <div>Powered by Sella • https://sella.app</div>
+        </div>
+      </div>
     </>
   );
 }

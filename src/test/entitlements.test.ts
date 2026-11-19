@@ -49,6 +49,23 @@ describe("entitlements", () => {
     expect(end.toISOString().startsWith("2026-02-20")).toBe(true);
   });
 
+  it("grants 3-day soft grace period when an active subscription recently expires", () => {
+    const now = new Date("2026-05-02T12:00:00.000Z");
+    const activeSub: SubscriptionSnapshot = {
+      ...base,
+      status: "active",
+      currentPeriodEnd: "2026-05-01T00:00:00.000Z", // 1.5 days ago
+    };
+    expect(hasWriteAccess(activeSub, now)).toBe(true);
+
+    const pastGrace: SubscriptionSnapshot = {
+      ...base,
+      status: "active",
+      currentPeriodEnd: "2026-04-20T00:00:00.000Z", // 12 days ago
+    };
+    expect(hasWriteAccess(pastGrace, now)).toBe(false);
+  });
+
   it("starts paid month from payment date when expired", () => {
     const now = new Date("2026-02-01T00:00:00.000Z");
     const end = computeNextPeriodEnd({

@@ -28,6 +28,7 @@ import { getReceiptPrefs } from "@/lib/receiptPrefs";
 import { cn } from "@/lib/utils";
 import { hapticLight } from "@/lib/haptics";
 import { pastelForName, paymentMethodStyle, stockTone, UI } from "@/lib/uiTheme";
+import { useBarcodeScanner } from "@/hooks/useBarcodeScanner";
 
 type CartLine = {
   id: string;
@@ -104,9 +105,73 @@ const NewSalePage: React.FC = () => {
         (i as InventoryItem & { category?: string }).category || "Uncategorized";
       if (category !== "all" && cat !== category) return false;
       if (!q) return true;
-      return i.item_name.toLowerCase().includes(q);
+      const hay = [
+        i.item_name,
+        (i as InventoryItem & { sku?: string | null }).sku || "",
+        (i as InventoryItem & { barcode?: string | null }).barcode || "",
+        cat,
+      ]
+        .join(" ")
+        .toLowerCase();
+      return hay.includes(q);
     });
   }, [inventory, query, category]);
+
+  const handleBarcodeScanned = useCallback(
+    (code: string) => {
+      const trimmed = code.trim().toLowerCase();
+      const match = inventory.find((i) => {
+        const b = (i as InventoryItem & { barcode?: string | null }).barcode?.trim().toLowerCase();
+        const s = (i as InventoryItem & { sku?: string | null }).sku?.trim().toLowerCase();
+        return b === trimmed || s === trimmed || i.id === trimmed;
+      });
+
+      if (!match) {
+        toast.error(`Nta kicuruzwa gifite barcode/SKU: ${code}`);
+        return;
+      }
+
+      if (match.quantity <= 0) {
+        toast.error(`${match.item_name} ${labels.outOfStock}`);
+        return;
+      }
+
+      void hapticLight();
+      setCart((prev) => {
+        const existing = prev.find((c) => c.id === match.id);
+        if (existing) {
+          if (existing.quantity >= match.quantity) {
+            toast.error(labels.notEnoughStock);
+            return prev;
+          }
+          toast.success(`+1 ${match.item_name} (${existing.quantity + 1})`);
+          return prev.map((c) =>
+            c.id === match.id ? { ...c, quantity: c.quantity + 1 } : c
+          );
+        }
+        toast.success(`Yongewe: ${match.item_name} (1)`);
+        return [
+          ...prev,
+          {
+            id: match.id,
+            name: match.item_name,
+            quantity: 1,
+            unitPrice: toRwf(match.selling_price),
+            stock: match.quantity,
+            category:
+              (match as InventoryItem & { category?: string }).category ||
+              "Uncategorized",
+          },
+        ];
+      });
+    },
+    [inventory]
+  );
+
+  useBarcodeScanner({
+    onScan: handleBarcodeScanned,
+    enabled: step === "cart",
+  });
 
   const merchandise = useMemo(
     () => sumRwf(cart.map((c) => lineTotal(c.unitPrice, c.quantity))),

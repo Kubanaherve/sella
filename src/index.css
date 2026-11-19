@@ -2220,3 +2220,59 @@ html.sella-desktop :focus-visible {
     animation-delay: 0ms !important;
   }
 }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * HARDWARE POS THERMAL RECEIPT PRINTING (58mm / 80mm Roll Support)
+ * ───────────────────────────────────────────────────────────────────────────── */
+@media print {
+  @page {
+    size: 76mm auto;
+    margin: 0;
+  }
+
+  html, body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    height: auto !important;
+    min-height: auto !important;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  #sella-thermal-slip,
+  #sella-thermal-slip * {
+    visibility: visible;
+  }
+
+  #sella-thermal-slip {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 72mm;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 3mm 4mm 10mm 4mm;
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-family: 'Courier New', Courier, monospace, system-ui !important;
+    font-size: 11px;
+    line-height: 1.35;
+    text-rendering: geometricPrecision;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  #sella-thermal-slip .slip-divider {
+    border-top: 1px dashed #000000 !important;
+    margin: 4px 0;
+  }
+
+  #sella-thermal-slip .slip-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 4px;
+  }
+}

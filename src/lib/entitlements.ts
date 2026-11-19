@@ -48,9 +48,32 @@ export function trialDaysRemaining(sub: SubscriptionSnapshot | null, now = new D
   return Math.max(0, Math.ceil(ms / 86400000));
 }
 
+export const SUBSCRIPTION_GRACE_DAYS = 3;
+
+/** Checks if a recently expired active or past_due subscription is within the 3-day grace period. */
+export function isInGracePeriod(sub: SubscriptionSnapshot | null, now = new Date()): boolean {
+  if (!sub || (sub.status !== "active" && sub.status !== "past_due")) return false;
+  if (!sub.currentPeriodEnd) return false;
+  const expiry = new Date(sub.currentPeriodEnd).getTime();
+  const current = now.getTime();
+  if (current <= expiry) return false;
+  const graceEnd = expiry + SUBSCRIPTION_GRACE_DAYS * 86400000;
+  return current <= graceEnd;
+}
+
+export function graceDaysRemaining(sub: SubscriptionSnapshot | null, now = new Date()): number {
+  if (!isInGracePeriod(sub, now)) return 0;
+  const expiry = new Date(sub!.currentPeriodEnd!).getTime();
+  const graceEnd = expiry + SUBSCRIPTION_GRACE_DAYS * 86400000;
+  const ms = graceEnd - now.getTime();
+  return Math.max(1, Math.ceil(ms / 86400000));
+}
+
 /**
- * Write access — must match SQL `user_has_write_access`:
- * trialing + trial_ends_at > now, or active + current_period_end > now.
+ * Write access:
+ * - Active trial (trial_ends_at > now)
+ * - Active subscription (current_period_end > now)
+ * - 3-day grace period for active/past_due subscriptions (prevents counter disruption)
  */
 export function hasWriteAccess(sub: SubscriptionSnapshot | null, now = new Date()): boolean {
   if (!sub) return false;
@@ -58,7 +81,13 @@ export function hasWriteAccess(sub: SubscriptionSnapshot | null, now = new Date(
     return !!sub.trialEndsAt && new Date(sub.trialEndsAt).getTime() > now.getTime();
   }
   if (sub.status === "active") {
-    return !!sub.currentPeriodEnd && new Date(sub.currentPeriodEnd).getTime() > now.getTime();
+    if (!!sub.currentPeriodEnd && new Date(sub.currentPeriodEnd).getTime() > now.getTime()) {
+      return true;
+    }
+    return isInGracePeriod(sub, now);
+  }
+  if (sub.status === "past_due") {
+    return isInGracePeriod(sub, now);
   }
   return false;
 }
@@ -67,11 +96,15 @@ export function isSubscriptionExpired(sub: SubscriptionSnapshot | null, now = ne
   return !hasWriteAccess(sub, now);
 }
 
-export function accessLabel(sub: SubscriptionSnapshot | null): string {
+export function accessLabel(sub: SubscriptionSnapshot | null, now = new Date()): string {
   if (!sub) return "Nta subscription";
-  if (hasWriteAccess(sub)) {
+  if (isInGracePeriod(sub, now)) {
+    const days = graceDaysRemaining(sub, now);
+    return `Subscription yarangiye — hasigaye iminsi ${days} y'imbabazi (Grace Period). Ongera wishyure!`;
+  }
+  if (hasWriteAccess(sub, now)) {
     if (sub.status === "trialing") {
-      const days = trialDaysRemaining(sub);
+      const days = trialDaysRemaining(sub, now);
       return `Igihe cy'ubuntu — hasigaye iminsi ${days} (kugeza ${formatDate(sub.trialEndsAt)})`;
     }
     return `Irakora kugeza ${formatDate(sub.currentPeriodEnd)} (${sub.planTier || sub.provider})`;

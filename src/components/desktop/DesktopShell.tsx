@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { ChevronsRight, LogOut, PanelLeft, Plus, Search } from "lucide-react";
+import { ChevronsRight, LogOut, PanelLeft, Plus, Search, ShieldCheck } from "lucide-react";
+import { toast } from "sonner";
+import { useCashierMode } from "@/hooks/useCashierMode";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { OfflineBanner } from "@/components/OfflineBanner";
@@ -46,6 +48,7 @@ export function DesktopShell() {
   });
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
+  const { isCashierMode, enterCashierMode, exitCashierMode } = useCashierMode();
 
   const shopName =
     (profile && "business_name" in profile && profile.business_name) ||
@@ -233,6 +236,28 @@ export function DesktopShell() {
             <kbd className="sella-kbd">{mod}K</kbd>
           </button>
           <div className="ml-auto flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                if (isCashierMode) {
+                  exitCashierMode();
+                  toast.success("Muvuye muri Cashier Mode (Ububiko n'inyungu biragaragara)");
+                } else {
+                  enterCashierMode();
+                  toast.info("Mwinjiye muri Cashier Mode (Inyungu n'ibiciro byo kurangura bihishwe)");
+                }
+              }}
+              className={cn(
+                "h-9 px-2.5 rounded-xl text-xs flex items-center gap-1.5 transition-all",
+                isCashierMode
+                  ? "bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-300/50"
+                  : "sella-btn-glass"
+              )}
+              title={isCashierMode ? "Gukuraho Cashier Mode" : "Gushyiraho Cashier Mode"}
+            >
+              <ShieldCheck size={14} />
+              <span>{isCashierMode ? "Cashier Mode" : "Owner"}</span>
+            </button>
             <button
               type="button"
               className="sella-icon-btn text-sm font-semibold"

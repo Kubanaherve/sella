@@ -22,7 +22,9 @@ import {
   AlertTriangle,
   Boxes,
   Pencil,
+  ShieldCheck,
 } from "lucide-react";
+import { useCashierMode } from "@/hooks/useCashierMode";
 import { PageHeader } from "@/components/PageHeader";
 import { EmptyState } from "@/components/EmptyState";
 import { ListPageSkeleton } from "@/components/ListPageSkeleton";
@@ -37,6 +39,7 @@ type FilterTab = "all" | "low" | "ok";
 const InventoryPage: React.FC = () => {
   const { canWrite } = useAuth();
   const navigate = useNavigate();
+  const { isCashierMode, enterCashierMode, exitCashierMode } = useCashierMode();
 
   const [items, setItems] = useState<InventoryItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -47,6 +50,7 @@ const InventoryPage: React.FC = () => {
   const [editingSellingPrice, setEditingSellingPrice] = useState("");
   const [editingCostPrice, setEditingCostPrice] = useState("");
   const [editingQuantity, setEditingQuantity] = useState("");
+  const [editingBarcode, setEditingBarcode] = useState("");
 
   const [showAddForm, setShowAddForm] = useState(false);
   const [newName, setNewName] = useState("");
@@ -56,6 +60,7 @@ const InventoryPage: React.FC = () => {
   const [newCategory, setNewCategory] = useState("");
   const [newUnit, setNewUnit] = useState("pcs");
   const [newSku, setNewSku] = useState("");
+  const [newBarcode, setNewBarcode] = useState("");
   const [isAdding, setIsAdding] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -143,6 +148,7 @@ const InventoryPage: React.FC = () => {
     const sellingPrice = parseFloat(editingSellingPrice);
     const costPrice = parseFloat(editingCostPrice);
     const quantity = parseInt(editingQuantity, 10);
+    const barcode = editingBarcode.trim() || null;
     if (
       isNaN(sellingPrice) ||
       sellingPrice < 0 ||
@@ -163,6 +169,7 @@ const InventoryPage: React.FC = () => {
               selling_price: sellingPrice,
               cost_price: costPrice,
               quantity,
+              barcode,
             }
           : item
       )
@@ -172,6 +179,7 @@ const InventoryPage: React.FC = () => {
         selling_price: sellingPrice,
         cost_price: costPrice,
         quantity,
+        barcode,
       });
       toast.success("Byahinduwe neza");
       setEditingId(null);
@@ -207,6 +215,7 @@ const InventoryPage: React.FC = () => {
     setNewCategory("");
     setNewUnit("pcs");
     setNewSku("");
+    setNewBarcode("");
   };
 
   const handleAddItem = async () => {
@@ -239,6 +248,7 @@ const InventoryPage: React.FC = () => {
         category: newCategory.trim() || null,
         unit: newUnit || "pcs",
         sku: newSku.trim() || null,
+        barcode: newBarcode.trim() || null,
       });
       setItems((prev) => [data, ...prev]);
       toast.success("Ikintu cyongewe muri stock");
@@ -263,7 +273,31 @@ const InventoryPage: React.FC = () => {
         hideBack
         right={
           <div className="flex items-center gap-1.5">
-            {canWrite && (
+            <button
+              type="button"
+              onClick={() => {
+                if (isCashierMode) {
+                  exitCashierMode();
+                  toast.success("Muvuye muri Cashier Mode (Ububiko bwose buragaragara)");
+                } else {
+                  enterCashierMode();
+                  toast.info("Mwinjiye muri Cashier Mode (Inyungu n'ibiciro byo kurangura bihishwe)");
+                }
+              }}
+              className={cn(
+                "h-9 px-2.5 rounded-xl text-xs flex items-center gap-1.5 transition-all",
+                isCashierMode
+                  ? "bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-300/50"
+                  : "sella-btn-glass"
+              )}
+              title={isCashierMode ? "Gukuraho Cashier Mode" : "Gushyiraho Cashier Mode (Hisha Inyungu)"}
+            >
+              <ShieldCheck size={14} />
+              <span className="hidden sm:inline">
+                {isCashierMode ? "Cashier" : "Owner"}
+              </span>
+            </button>
+            {canWrite && !isCashierMode && (
               <button
                 type="button"
                 onClick={() => navigate("/import-inventory")}
@@ -299,14 +333,16 @@ const InventoryPage: React.FC = () => {
             <p className="mt-1.5 text-[1.65rem] font-extrabold tabular-nums tracking-tight text-white">
               {formatCurrency(stats.totalSell)}
             </p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              <span className="inline-flex items-center rounded-full bg-white/15 px-2.5 py-1 text-[10px] font-bold text-white/95 backdrop-blur-md border border-white/20">
-                Inyungu {formatCurrency(stats.profit)}
-              </span>
-              <span className="inline-flex items-center rounded-full bg-white/15 px-2.5 py-1 text-[10px] font-bold text-white/95 backdrop-blur-md border border-white/20">
-                Margin {stats.margin.toFixed(1)}%
-              </span>
-            </div>
+            {!isCashierMode && (
+              <div className="mt-3 flex flex-wrap gap-2">
+                <span className="inline-flex items-center rounded-full bg-white/15 px-2.5 py-1 text-[10px] font-bold text-white/95 backdrop-blur-md border border-white/20">
+                  Inyungu {formatCurrency(stats.profit)}
+                </span>
+                <span className="inline-flex items-center rounded-full bg-white/15 px-2.5 py-1 text-[10px] font-bold text-white/95 backdrop-blur-md border border-white/20">
+                  Margin {stats.margin.toFixed(1)}%
+                </span>
+              </div>
+            )}
           </div>
         </section>
 
@@ -503,18 +539,24 @@ const InventoryPage: React.FC = () => {
                         </div>
                         <div className="glass-sub-card px-2 py-1.5">
                           <p className="text-[9px] text-muted-foreground font-medium">
-                            Inyungu
+                            {isCashierMode ? "Igipimo" : "Inyungu"}
                           </p>
-                          <p
-                            className={cn(
-                              "text-xs font-extrabold tabular-nums truncate",
-                              profit >= 0
-                                ? "text-emerald-700 dark:text-emerald-400"
-                                : "text-rose-600 dark:text-rose-400"
-                            )}
-                          >
-                            {formatCurrency(profit)}
-                          </p>
+                          {isCashierMode ? (
+                            <p className="text-xs font-semibold tabular-nums truncate text-muted-foreground uppercase">
+                              {item.unit || "pcs"}
+                            </p>
+                          ) : (
+                            <p
+                              className={cn(
+                                "text-xs font-extrabold tabular-nums truncate",
+                                profit >= 0
+                                  ? "text-emerald-700 dark:text-emerald-400"
+                                  : "text-rose-600 dark:text-rose-400"
+                              )}
+                            >
+                              {formatCurrency(profit)}
+                            </p>
+                          )}
                         </div>
                       </div>
 
@@ -526,20 +568,23 @@ const InventoryPage: React.FC = () => {
                             setEditingSellingPrice(String(item.selling_price));
                             setEditingCostPrice(String(item.cost_price));
                             setEditingQuantity(String(item.quantity));
+                            setEditingBarcode(item.barcode || "");
                           }}
                           className="sella-btn-glass flex-1 h-9 rounded-xl text-xs"
                         >
                           <Pencil size={13} />
                           Hindura
                         </button>
-                        <button
-                          type="button"
-                          onClick={() => void handleDelete(item.id)}
-                          className="w-9 h-9 rounded-xl bg-rose-500/10 text-rose-600 border border-rose-200/60 flex items-center justify-center active:scale-95 backdrop-blur-sm"
-                          aria-label="Siba"
-                        >
-                          <Trash2 size={14} />
-                        </button>
+                        {!isCashierMode && (
+                          <button
+                            type="button"
+                            onClick={() => void handleDelete(item.id)}
+                            className="w-9 h-9 rounded-xl bg-rose-500/10 text-rose-600 border border-rose-200/60 flex items-center justify-center active:scale-95 backdrop-blur-sm"
+                            aria-label="Siba"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -691,6 +736,17 @@ const InventoryPage: React.FC = () => {
                   />
                 </div>
               </div>
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground">
+                  Barcode (Scan cyangwa Andika)
+                </label>
+                <input
+                  className={cn(fieldClass, "mt-1")}
+                  placeholder="EAN-13, UPC, Code128..."
+                  value={newBarcode}
+                  onChange={(e) => setNewBarcode(e.target.value)}
+                />
+              </div>
               {newSellingPrice && newCostPrice && (
                 <div className="rounded-xl bg-emerald-400/12 border border-emerald-200/50 px-3 py-2.5 flex justify-between text-sm backdrop-blur-sm">
                   <span className="text-emerald-800/80 flex items-center gap-1.5">
@@ -775,6 +831,17 @@ const InventoryPage: React.FC = () => {
                     onChange={(e) => setEditingCostPrice(e.target.value)}
                   />
                 </div>
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground">
+                  Barcode
+                </label>
+                <input
+                  className={cn(fieldClass, "mt-1")}
+                  placeholder="Barcode..."
+                  value={editingBarcode}
+                  onChange={(e) => setEditingBarcode(e.target.value)}
+                />
               </div>
             </div>
             <div className="p-4 border-t border-[#1A6FFF]/10 flex gap-2 pb-[max(1rem,var(--sella-safe-bottom))]">

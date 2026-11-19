@@ -19,6 +19,7 @@
     "ios:sync": "npm run cap:sync && npx cap open ios",
     "android:apk": "npm run cap:sync && cd android && ./gradlew assembleDebug",
     "desktop": "electron desktop/main.cjs",
+    "desktop:dev": "ELECTRON_START_URL=http://localhost:8080 electron desktop/main.cjs",
     "verify": "npm run typecheck && npm run lint && npm test && npm run build",
     "test:rls": "node scripts/rls-two-shop-matrix.mjs"
   },
@@ -72,6 +73,7 @@
     "@types/react-window": "^1.8.8",
     "@vitejs/plugin-react-swc": "^3.11.0",
     "autoprefixer": "^10.4.24",
+    "electron": "^45.4.1",
     "eslint": "^9.32.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "fake-indexeddb": "^6.2.8",
