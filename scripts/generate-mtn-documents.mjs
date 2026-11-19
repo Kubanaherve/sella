@@ -25,7 +25,7 @@ const SELLA_SVG_PATHS = `
   <path d="M31 28 C23 31 22 36 26 41 C30 46 39 49 50 51 L70 55 C85 58 93 64 94 74 C96 86 86 95 69 95 H61 C69 94 75 91 75 85 C75 77 65 72 51 69 L30 65 C15 62 10 56 12 47 L14 40 C16 33 22 28 31 28 Z" fill-rule="evenodd"/>
 `;
 
-function getStampSvg(color = "#153a8a", dateStr = "18 NOV 2026") {
+function getStampSvg(color = "#153a8a", dateStr = "19 NOV 2026") {
   return `
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 520" width="100%" height="100%">
   <defs>
@@ -167,7 +167,7 @@ const COMMON_CSS = `
 // DOCUMENT 1: Corporate Application Letter
 // ─────────────────────────────────────────────────────────────────────────────
 function buildApplicationLetterHtml() {
-  const stampSvg = getStampSvg("#153a8a", "18 NOV 2026");
+  const stampSvg = getStampSvg("#153a8a", "19 NOV 2026");
 
   return `<!doctype html>
 <html lang="en">
@@ -333,7 +333,7 @@ function buildApplicationLetterHtml() {
     <!-- Date & Ref -->
     <div class="meta-bar">
       <span><strong>Ref:</strong> KFT/MTN-MOMO/2026/01</span>
-      <span><strong>Date:</strong> 18 November 2026</span>
+      <span><strong>Date:</strong> 19 November 2026</span>
     </div>
 
     <!-- Recipient -->
@@ -378,8 +378,8 @@ function buildApplicationLetterHtml() {
         <td><strong>KUBANA FRIEND TECHNOLOGIES</strong> (Republic of Rwanda)</td>
       </tr>
       <tr>
-        <th>Authorized Signatory &amp; CEO</th>
-        <td><strong>Hervé Friend Kubana</strong> (Tel: +250 796 580 545)</td>
+        <th>Authorized Signatory &amp; Ownership</th>
+        <td><strong>Hervé Friend Kubana</strong> — Founder, Sole Shareholder &amp; Managing Director (Tel: +250 796 580 545)</td>
       </tr>
       <tr>
         <th>Product &amp; Integration URL</th>
@@ -397,7 +397,7 @@ function buildApplicationLetterHtml() {
 
     <div class="body-text">
       <strong>Enclosed KYC &amp; Verification Documents:</strong><br />
-      In compliance with Mobile Money Rwanda Ltd KYC standards, we enclose: (1) RDB Full Registration Certificate, (2) RRA TIN Registration Certificate, (3) Color Copy of National ID of Managing Director, (4) Certified Board Resolution, and (5) Sella Technical Integration Architecture Specification.
+      In compliance with Mobile Money Rwanda Ltd KYC standards, we enclose: (1) RDB Full Registration Certificate (Single-Member Company), (2) RRA TIN Registration Certificate, (3) Color Copy of National ID of Managing Director, (4) Certified Sole Shareholder Resolution, and (5) Sella Technical Integration Architecture Specification.
     </div>
 
     <div class="body-text">
@@ -414,7 +414,7 @@ function buildApplicationLetterHtml() {
           <img src="${sigDataUri}" class="signature-img" alt="Herve Friend Kubana Signature" />
         </div>
         <div style="font-size: 11px; font-weight: 900; color: #0f172a; margin-top: 6px;">HERVÉ FRIEND KUBANA</div>
-        <div style="font-size: 9.5px; font-weight: 700; color: #1e3a8a;">Managing Director &amp; Chief Executive Officer (CEO)</div>
+        <div style="font-size: 9.5px; font-weight: 700; color: #1e3a8a;">Founder, Sole Shareholder &amp; Managing Director</div>
         <div style="font-size: 9px; color: #475569;">KUBANA FRIEND TECHNOLOGIES</div>
       </div>
 
@@ -438,7 +438,7 @@ function buildApplicationLetterHtml() {
 // DOCUMENT 2: Board / Managing Director Resolution
 // ─────────────────────────────────────────────────────────────────────────────
 function buildCorporateResolutionHtml() {
-  const stampSvg = getStampSvg("#153a8a", "18 NOV 2026");
+  const stampSvg = getStampSvg("#153a8a", "19 NOV 2026");
 
   return `<!doctype html>
 <html lang="en">
@@ -576,14 +576,14 @@ function buildCorporateResolutionHtml() {
 
     <!-- Title Banner -->
     <div class="title-banner">
-      <h2>SPECIAL CORPORATE RESOLUTION OF THE EXECUTIVE BOARD</h2>
-      <p>Authorization for Corporate Mobile Money Account &amp; MoMo Open API Integration</p>
+      <h2>SPECIAL RESOLUTION OF THE SOLE SHAREHOLDER &amp; MANAGING DIRECTOR</h2>
+      <p>Pursuant to Law N° 007/2021 Governing Companies in Rwanda • Single-Shareholder Company</p>
     </div>
 
     <!-- Resolution Content -->
     <div class="resolution-body">
       <div class="preamble">
-        The Executive Leadership and Board of Directors of <strong>KUBANA FRIEND TECHNOLOGIES</strong>, meeting at the company registered offices in Kigali, Rwanda on this <strong>18th day of November, 2026</strong>, hereby formally adopts and ratifies the following binding corporate resolutions:
+        I, the undersigned, <strong>HERVÉ FRIEND KUBANA</strong>, being the Founder, 100% Sole Shareholder, and Managing Director of <strong>KUBANA FRIEND TECHNOLOGIES</strong>, a private company duly incorporated under the laws of the Republic of Rwanda with the Rwanda Development Board (RDB), having full, exclusive legal and operational capacity, hereby adopt and certify the following formal corporate resolutions on this <strong>19th day of November, 2026</strong>:
       </div>
 
       <div class="resolution-item">
@@ -593,7 +593,7 @@ function buildCorporateResolutionHtml() {
 
       <div class="resolution-item">
         <strong class="res-title">2. Appointment of Sole Authorized Signatory &amp; Custodian</strong>
-        IT IS RESOLVED that <strong>HERVÉ FRIEND KUBANA</strong>, in his official capacity as <strong>Managing Director &amp; Chief Executive Officer (CEO)</strong>, is hereby designated, authorized, and empowered as the sole authorized signatory, administrator, and custodian of the corporate Mobile Money SIM card and account. He is granted full unilateral authority to sign applications, receive credentials, configure account PINs, withdraw or disburse corporate funds, and execute all agreements with Mobile Money Rwanda Ltd.
+        IT IS RESOLVED that the undersigned, <strong>HERVÉ FRIEND KUBANA</strong>, in his official capacity as <strong>Founder, Sole Shareholder &amp; Managing Director</strong>, is hereby designated, authorized, and empowered as the sole authorized signatory, administrator, and custodian of the corporate Mobile Money SIM card and account. He holds full unilateral authority to sign applications, execute merchant contracts, configure account PINs, withdraw or disburse corporate funds, and direct all commercial interactions with Mobile Money Rwanda Ltd.
       </div>
 
       <div class="resolution-item">
@@ -608,7 +608,7 @@ function buildCorporateResolutionHtml() {
 
       <div class="resolution-item">
         <strong class="res-title">5. Validity and Reliance</strong>
-        IT IS RESOLVED that a certified copy of this Resolution be furnished to Mobile Money Rwanda Ltd (MTN Rwanda), and that Mobile Money Rwanda Ltd shall be fully protected in relying upon this Resolution until formal written notice of modification or revocation is officially served by the Company.
+        IT IS RESOLVED that a certified copy of this Sole Shareholder Resolution be furnished to Mobile Money Rwanda Ltd (MTN Rwanda), and that Mobile Money Rwanda Ltd shall be fully protected in relying upon this Resolution as conclusive evidence of sole signing authority until formal written notice of modification or revocation is officially served by the Company.
       </div>
     </div>
   </div>
@@ -616,7 +616,7 @@ function buildCorporateResolutionHtml() {
   <div>
     <!-- Execution Section -->
     <div style="font-size: 10px; font-weight: 700; color: #1e293b; margin-bottom: 6px;">
-      IN WITNESS WHEREOF, the undersigned Managing Director and Chief Executive Officer has executed and sealed this Resolution under the corporate authority of KUBANA FRIEND TECHNOLOGIES on this 18th day of November, 2026.
+      IN WITNESS WHEREOF, I, HERVÉ FRIEND KUBANA, Founder, Sole Shareholder, and Managing Director, have executed and sealed this Resolution under the corporate authority of KUBANA FRIEND TECHNOLOGIES on this 19th day of November, 2026.
     </div>
 
     <div class="sign-stamp-row">
@@ -625,7 +625,7 @@ function buildCorporateResolutionHtml() {
           <img src="${sigDataUri}" class="signature-img" alt="Herve Friend Kubana Signature" />
         </div>
         <div style="font-size: 11px; font-weight: 900; color: #0f172a; margin-top: 6px;">HERVÉ FRIEND KUBANA</div>
-        <div style="font-size: 9.5px; font-weight: 700; color: #1e3a8a;">Managing Director &amp; Chief Executive Officer (CEO)</div>
+        <div style="font-size: 9.5px; font-weight: 700; color: #1e3a8a;">Founder, Sole Shareholder &amp; Managing Director</div>
         <div style="font-size: 9px; color: #475569;">KUBANA FRIEND TECHNOLOGIES • Registered in Rwanda</div>
       </div>
 
@@ -637,7 +637,7 @@ function buildCorporateResolutionHtml() {
     </div>
 
     <div class="footer-note">
-      CERTIFIED BOARD RESOLUTION • KUBANA FRIEND TECHNOLOGIES • KIGALI, RWANDA • VERIFIED DOCUMENT REF: KFT-RES-2026-MOMO
+      CERTIFIED SOLE SHAREHOLDER RESOLUTION • KUBANA FRIEND TECHNOLOGIES • KIGALI, RWANDA • VERIFIED DOCUMENT REF: KFT-RES-2026-MOMO
     </div>
   </div>
 </div>
@@ -649,7 +649,7 @@ function buildCorporateResolutionHtml() {
 // DOCUMENT 3: Technical API Specification Sheet
 // ─────────────────────────────────────────────────────────────────────────────
 function buildTechnicalSpecHtml() {
-  const stampSvg = getStampSvg("#153a8a", "18 NOV 2026");
+  const stampSvg = getStampSvg("#153a8a", "19 NOV 2026");
 
   return `<!doctype html>
 <html lang="en">
@@ -883,7 +883,7 @@ function buildTechnicalSpecHtml() {
           <img src="${sigDataUri}" class="signature-img" alt="Herve Friend Kubana Signature" />
         </div>
         <div style="font-size: 11px; font-weight: 900; color: #0f172a; margin-top: 6px;">HERVÉ FRIEND KUBANA</div>
-        <div style="font-size: 9.5px; font-weight: 700; color: #1e3a8a;">Chief Executive Officer &amp; Principal Software Architect</div>
+        <div style="font-size: 9.5px; font-weight: 700; color: #1e3a8a;">Founder, Sole Shareholder &amp; Principal Software Architect</div>
         <div style="font-size: 9px; color: #475569;">KUBANA FRIEND TECHNOLOGIES</div>
       </div>
 
@@ -907,7 +907,7 @@ function buildTechnicalSpecHtml() {
 // DOCUMENT 4: Sella Executive Product & Business Profile
 // ─────────────────────────────────────────────────────────────────────────────
 function buildProductProfileHtml() {
-  const stampSvg = getStampSvg("#153a8a", "18 NOV 2026");
+  const stampSvg = getStampSvg("#153a8a", "19 NOV 2026");
 
   return `<!doctype html>
 <html lang="en">
@@ -1156,7 +1156,7 @@ function buildProductProfileHtml() {
           <img src="${sigDataUri}" class="signature-img" alt="Herve Friend Kubana Signature" />
         </div>
         <div style="font-size: 11px; font-weight: 900; color: #0f172a; margin-top: 6px;">HERVÉ FRIEND KUBANA</div>
-        <div style="font-size: 9.5px; font-weight: 700; color: #1e3a8a;">Managing Director &amp; Chief Executive Officer</div>
+        <div style="font-size: 9.5px; font-weight: 700; color: #1e3a8a;">Founder, Sole Shareholder &amp; Managing Director</div>
         <div style="font-size: 9px; color: #475569;">KUBANA FRIEND TECHNOLOGIES</div>
       </div>
 
@@ -1190,7 +1190,7 @@ async function main() {
     },
     {
       id: "corporate-resolution-mtn-momo",
-      title: "Doc 2: Managing Director / Board Corporate Resolution",
+      title: "Doc 2: Sole Shareholder & Managing Director Corporate Resolution",
       htmlFn: buildCorporateResolutionHtml,
     },
     {
