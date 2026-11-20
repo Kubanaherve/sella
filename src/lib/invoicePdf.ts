@@ -68,14 +68,53 @@ export async function buildDebtReportPdf(opts: {
   shopLocation?: string | null;
   shopPayPhone?: string | null;
   shopLogoDataUrl?: string | null;
+  /** Phone downloads use a portrait page. Computers keep the wide page. */
+  format?: "phone" | "desktop";
   rows: DebtorStatementRow[];
   grandTotal: number;
   reportDate?: string;
   generatedAtIso?: string;
   language?: InvoiceData["language"];
 }): Promise<jsPDF> {
-  const { buildBlueGlassStatementPdf } = await import("@/lib/blueGlass/buildDocs");
-  return buildBlueGlassStatementPdf(opts);
+  const { buildListReportPdf, formatReportMoney } = await import("@/lib/listReportPdf");
+  const { debtReportColumns, debtReportFigures, debtReportTableRows } = await import(
+    "@/lib/debtReport"
+  );
+  const format =
+    opts.format ??
+    (typeof window !== "undefined" && window.innerWidth < 1024 ? "phone" : "desktop");
+  const sources = opts.rows.map((row) => ({
+    name: row.name,
+    createdAt: row.createdAt,
+    originalAmount: row.originalAmount,
+    paidAmount: row.paidAmount,
+    paymentAmounts: row.paymentAmounts,
+    lines: row.lines,
+  }));
+  const figures = sources.map((row) => debtReportFigures(row));
+  const sum = (pick: "total" | "paid" | "remaining") =>
+    figures.reduce((total, row) => total + row[pick], 0);
+  return buildListReportPdf({
+    title: "All Debts",
+    generatedAt: opts.generatedAtIso ? new Date(opts.generatedAtIso) : new Date(),
+    shopName: opts.shopName,
+    paymentNumber: opts.shopPayPhone || opts.shopPhone || "",
+    format,
+    columns: debtReportColumns(format),
+    rows: debtReportTableRows(sources),
+    paidColumn: 5,
+    unpaidColumn: 6,
+    itemColumn: 2,
+    totals: [
+      "",
+      "Total",
+      "",
+      formatReportMoney(sum("total")),
+      "",
+      formatReportMoney(sum("paid")),
+      formatReportMoney(sum("remaining")),
+    ],
+  });
 }
 
 export async function downloadDebtReportPdf(

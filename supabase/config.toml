@@ -47,3 +47,15 @@ verify_jwt = true
 
 [functions.admin-clear-rate-limit]
 verify_jwt = true
+
+[functions.lookup-shop-code]
+verify_jwt = false
+
+[functions.cashier-join-and-set-pin]
+verify_jwt = false
+
+[functions.cashier-pin-login]
+verify_jwt = false
+
+[functions.owner-reset-cashier-pin]
+verify_jwt = true

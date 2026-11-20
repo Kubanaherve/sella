@@ -1,13 +1,28 @@
 import { getSupabase, isCloudMode } from "@/integrations/supabase/client";
-import { drainOutbox, OutboxCancelError, type OutboxItem } from "@/db/outbox";
+import {
+  drainOutbox,
+  markOutbox,
+  OutboxConflictError,
+  type DrainResult,
+  type OutboxItem,
+} from "@/db/outbox";
 import { db } from "@/db/localDb";
+import { asOutboxError, isPermanentStockFailure } from "@/lib/syncErrors";
 import { toast } from "sonner";
 
 let listening = false;
 let draining = false;
 
-function isPermanentStockFailure(message: string): boolean {
-  return /insufficient|stock|quantity|not enough|out of stock|inventory/i.test(message);
+const empty: DrainResult = { synced: 0, failed: 0, cancelled: 0, conflicts: 0 };
+
+async function currentOwner(): Promise<string | null> {
+  if (!isCloudMode()) return null;
+  try {
+    const { data } = await getSupabase().auth.getSession();
+    return data.session?.user?.id ?? null;
+  } catch {
+    return null;
+  }
 }
 
 async function restoreLocalStock(items: unknown[]): Promise<boolean> {
@@ -58,45 +73,47 @@ async function invokeOutboxItem(item: OutboxItem): Promise<void> {
   throw new Error(`Unknown outbox operation: ${item.operation}`);
 }
 
-export async function syncOutboxNow(): Promise<{
-  synced: number;
-  failed: number;
-  cancelled: number;
-}> {
-  if (!isCloudMode()) return { synced: 0, failed: 0, cancelled: 0 };
-  if (typeof navigator !== "undefined" && !navigator.onLine) {
-    return { synced: 0, failed: 0, cancelled: 0 };
-  }
-  if (draining) return { synced: 0, failed: 0, cancelled: 0 };
+export async function syncOutboxNow(): Promise<DrainResult> {
+  if (!isCloudMode()) return empty;
+  if (typeof navigator !== "undefined" && !navigator.onLine) return empty;
+  const owner = await currentOwner();
+  if (!owner) return empty;
+  if (draining) return empty;
   draining = true;
   try {
-    const result = await drainOutbox(async (item) => {
+    const result = await drainOutbox(owner, async (item) => {
+      if (item.owner_key !== owner) {
+        throw new Error("Refusing to sync another shop's offline sale");
+      }
       try {
         await invokeOutboxItem(item);
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
-        // Stock conflicts will never succeed on retry — restore local stock and cancel instead of looping
-        if (item.operation === "create_sale_order" && isPermanentStockFailure(msg)) {
-          const payload = item.payload as
-            | { items?: unknown[]; local_stock_adjusted?: boolean }
-            | undefined;
-          // Only add stock back when this device actually reserved it.
-          // Cloud checkout does not decrement Dexie, so a blind restore inflates quantity.
-          const restored =
-            payload?.local_stock_adjusted && payload.items
-              ? await restoreLocalStock(payload.items)
-              : false;
-          toast.error(
-            restored
-              ? "Offline sale cancelled: stock was sold elsewhere. Local stock restored."
-              : "Offline sale cancelled: stock was sold on another device."
-          );
-          window.dispatchEvent(
-            new CustomEvent("sella:outbox-stock-conflict", { detail: { item, message: msg } })
-          );
-          throw new OutboxCancelError(msg);
+        const classified = asOutboxError(item.operation, e);
+        if (classified instanceof OutboxConflictError) {
+          if (item.operation === "create_sale_order" && isPermanentStockFailure(msg)) {
+            const payload = item.payload as
+              | { items?: unknown[]; local_stock_adjusted?: boolean }
+              | undefined;
+            const restored =
+              payload?.local_stock_adjusted && payload.items
+                ? await restoreLocalStock(payload.items)
+                : false;
+            if (restored) {
+              await markOutbox(item.id, { stock_restored: true });
+            }
+            toast.error(
+              restored
+                ? "Sale kept — stock was sold elsewhere. Local stock was put back. Review this receipt."
+                : "Sale kept on this device — stock conflict. It was not deleted."
+            );
+            window.dispatchEvent(
+              new CustomEvent("sella:outbox-stock-conflict", { detail: { item, message: msg } })
+            );
+          }
+          throw classified;
         }
-        throw e;
+        throw classified;
       }
     });
     if (result.synced > 0) {
@@ -109,6 +126,11 @@ export async function syncOutboxNow(): Promise<{
     }
     if (result.failed > 0) {
       toast.error(`${result.failed} offline action(s) failed — will retry`);
+    }
+    if (result.conflicts > 0) {
+      toast.error(
+        `${result.conflicts} offline sale(s) need review — the receipt is still saved`
+      );
     }
     return result;
   } finally {
@@ -126,6 +148,5 @@ export function startOutboxSyncListener() {
   window.addEventListener("online", () => {
     void syncOutboxNow();
   });
-  // Attempt once shortly after boot
   window.setTimeout(() => void syncOutboxNow(), 2500);
 }

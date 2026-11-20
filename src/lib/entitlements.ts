@@ -50,13 +50,20 @@ export function trialDaysRemaining(sub: SubscriptionSnapshot | null, now = new D
 
 export const SUBSCRIPTION_GRACE_DAYS = 3;
 
-/** Checks if a recently expired active or past_due subscription is within the 3-day grace period. */
+/**
+ * 3-day grace after a paid period ends.
+ * The expiry cron sets status to `expired` as soon as the period ends, so
+ * grace must follow currentPeriodEnd for active, past_due, and expired.
+ * Trials and canceled plans are not included.
+ */
 export function isInGracePeriod(sub: SubscriptionSnapshot | null, now = new Date()): boolean {
-  if (!sub || (sub.status !== "active" && sub.status !== "past_due")) return false;
-  if (!sub.currentPeriodEnd) return false;
+  if (!sub || !sub.currentPeriodEnd) return false;
+  if (sub.status !== "active" && sub.status !== "past_due" && sub.status !== "expired") {
+    return false;
+  }
   const expiry = new Date(sub.currentPeriodEnd).getTime();
   const current = now.getTime();
-  if (current <= expiry) return false;
+  if (!Number.isFinite(expiry) || current <= expiry) return false;
   const graceEnd = expiry + SUBSCRIPTION_GRACE_DAYS * 86400000;
   return current <= graceEnd;
 }
@@ -73,7 +80,7 @@ export function graceDaysRemaining(sub: SubscriptionSnapshot | null, now = new D
  * Write access:
  * - Active trial (trial_ends_at > now)
  * - Active subscription (current_period_end > now)
- * - 3-day grace period for active/past_due subscriptions (prevents counter disruption)
+ * - 3-day grace after the paid period, including status `expired`
  */
 export function hasWriteAccess(sub: SubscriptionSnapshot | null, now = new Date()): boolean {
   if (!sub) return false;
@@ -86,7 +93,7 @@ export function hasWriteAccess(sub: SubscriptionSnapshot | null, now = new Date(
     }
     return isInGracePeriod(sub, now);
   }
-  if (sub.status === "past_due") {
+  if (sub.status === "past_due" || sub.status === "expired") {
     return isInGracePeriod(sub, now);
   }
   return false;

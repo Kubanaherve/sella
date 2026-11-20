@@ -1,10 +1,16 @@
 import { useEffect, useState, useCallback } from "react";
-import { isCashierModeActive, setCashierModeActive } from "@/lib/cashierMode";
+import {
+  clearCashierMode,
+  isCashierModeActive,
+  setCashierModeActive,
+} from "@/lib/cashierMode";
+import { verifyOwnerPin } from "@/lib/ownerGate";
 
 /**
  * Hook for staff role segregation.
  * In Cashier Mode ("Umucuruzi"), wholesale cost prices, overall store profits,
  * and dangerous delete buttons are hidden from counter employees.
+ * Leaving cashier mode requires the owner PIN.
  */
 export function useCashierMode() {
   const [isCashier, setIsCashier] = useState(isCashierModeActive);
@@ -25,9 +31,12 @@ export function useCashierMode() {
     setIsCashier(true);
   }, []);
 
-  const exitCashierMode = useCallback(() => {
-    setCashierModeActive(false);
+  const exitCashierMode = useCallback(async (pin: string) => {
+    const ok = await verifyOwnerPin(pin);
+    if (!ok) return false;
+    clearCashierMode();
     setIsCashier(false);
+    return true;
   }, []);
 
   return {

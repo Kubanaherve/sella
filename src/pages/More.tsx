@@ -4,6 +4,7 @@ import {
   Bell,
   CreditCard,
   UserCircle,
+  AlertTriangle,
   Download,
   Shield,
   LogOut,
@@ -53,6 +54,18 @@ const MorePage = () => {
       label: labels.clientsRow,
       hint: labels.clientsHint,
       path: "/clients",
+    },
+    {
+      icon: Users,
+      label: "Abakozi bo mu Iduka",
+      hint: "Gucunga abacuruzi, PIN zabo na sales",
+      path: "/staff",
+    },
+    {
+      icon: AlertTriangle,
+      label: "Sales zitegereje",
+      hint: "Conflict zo gusuzuma",
+      path: "/sync-conflicts",
     },
     {
       icon: Bell,

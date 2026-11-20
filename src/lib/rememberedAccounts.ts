@@ -7,13 +7,46 @@ export interface RememberedAccount {
   shopCode?: string;
   shopName?: string;
   email?: string;
+  role?: "owner" | "cashier" | "staff";
+  isStaff?: boolean;
 }
 
 const ACCOUNTS_KEY = `${BRAND.storagePrefix}remembered_accounts`;
 const LAST_PHONE_KEY = `${BRAND.storagePrefix}last_account_phone`;
 
 function phoneKey(phone: string): string {
-  return phone.replace(/\D/g, "");
+  const digits = phone.replace(/\D/g, "");
+  if (digits.startsWith("00")) return phoneKey(digits.slice(2));
+  if (digits.startsWith("250") && digits.length >= 12) return digits.slice(3, 12);
+  if (digits.startsWith("0") && digits.length === 10) return digits.slice(1);
+  if (digits.length > 9) return digits.slice(-9);
+  return digits;
+}
+
+/** A label made only of digits and phone punctuation is not a person's name. */
+export function looksLikePhoneLabel(value: string): boolean {
+  const trimmed = value.trim();
+  if (!trimmed) return false;
+  const digits = trimmed.replace(/\D/g, "");
+  if (digits.length < 7) return false;
+  return trimmed.replace(/[\d\s+\-().]/g, "").length === 0;
+}
+
+/** First candidate that is a real name. Phone numbers are skipped. */
+export function personName(...candidates: Array<string | null | undefined>): string {
+  for (const raw of candidates) {
+    const name = String(raw ?? "").trim();
+    if (!name || looksLikePhoneLabel(name)) continue;
+    return name;
+  }
+  return "";
+}
+
+function withRealName(account: RememberedAccount): RememberedAccount {
+  return {
+    ...account,
+    displayName: personName(account.displayName, account.shopName),
+  };
 }
 
 export function loadRememberedAccounts(): RememberedAccount[] {
@@ -21,7 +54,7 @@ export function loadRememberedAccounts(): RememberedAccount[] {
     const raw = localStorage.getItem(ACCOUNTS_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw) as RememberedAccount[];
-    return Array.isArray(parsed) ? parsed : [];
+    return Array.isArray(parsed) ? parsed.map(withRealName) : [];
   } catch {
     localStorage.removeItem(ACCOUNTS_KEY);
     return [];
@@ -71,4 +104,19 @@ export function getPreferredAccount(
   }
   if (accounts.length === 1) return accounts[0];
   return null;
+}
+
+/**
+ * Phone + PIN login does not know a name until the shop profile loads.
+ * Never greet with the digits the cashier just typed.
+ */
+export function accountForPhoneLogin(
+  phone: string,
+  remembered: RememberedAccount[] = loadRememberedAccounts()
+): RememberedAccount {
+  const known = remembered.find((account) => phoneKey(account.phone) === phoneKey(phone));
+  if (known) {
+    return withRealName({ ...known, phone });
+  }
+  return { phone, displayName: "", pinLength: 4 };
 }

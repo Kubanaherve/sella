@@ -47,6 +47,9 @@ export async function deleteClient(clientId: string) {
 export async function listActiveDebts() {
   return isCloudBackend() ? cloud.listActiveDebts() : local.listActiveDebts();
 }
+export async function listDebtsForReport() {
+  return isCloudBackend() ? cloud.listDebtsForReport() : local.listDebtsForReport();
+}
 export async function createSaleOrder(...args: Parameters<typeof local.createSaleOrder>) {
   return isCloudBackend() ? cloud.createSaleOrder(...args) : local.createSaleOrder(...args);
 }
@@ -59,8 +62,8 @@ export async function recordPayment(...args: Parameters<typeof local.recordPayme
 export async function listRecentSales(...args: Parameters<typeof local.listRecentSales>) {
   return isCloudBackend() ? cloud.listRecentSales(...args) : local.listRecentSales(...args);
 }
-export async function deleteDebt(debtId: string) {
-  return isCloudBackend() ? cloud.deleteDebt(debtId) : local.deleteDebt(debtId);
+export async function deleteDebt(...args: Parameters<typeof local.deleteDebt>) {
+  return isCloudBackend() ? cloud.deleteDebt(...args) : local.deleteDebt(...args);
 }
 export async function listInventory() {
   return isCloudBackend() ? cloud.listInventory() : local.listInventory();
@@ -91,14 +94,20 @@ export async function getDashboardStats() {
 export async function getDailyReports() {
   return isCloudBackend() ? cloud.getDailyReports() : local.getDailyReports();
 }
-export async function resetSalesMoney() {
-  return isCloudBackend() ? cloud.resetSalesMoney() : local.resetSalesMoney();
+export async function resetSalesMoney(ownerPin: string) {
+  return isCloudBackend()
+    ? cloud.resetSalesMoney(ownerPin)
+    : local.resetSalesMoney(ownerPin);
 }
-export async function factoryResetKeepClients() {
-  return isCloudBackend() ? cloud.factoryResetKeepClients() : local.factoryResetKeepClients();
+export async function factoryResetKeepClients(ownerPin: string) {
+  return isCloudBackend()
+    ? cloud.factoryResetKeepClients(ownerPin)
+    : local.factoryResetKeepClients(ownerPin);
 }
-export async function wipeAllBusinessData() {
-  return isCloudBackend() ? cloud.wipeAllBusinessData() : local.wipeAllBusinessData();
+export async function wipeAllBusinessData(ownerPin: string) {
+  return isCloudBackend()
+    ? cloud.wipeAllBusinessData(ownerPin)
+    : local.wipeAllBusinessData(ownerPin);
 }
 export async function getOwnerPhone() {
   return isCloudBackend() ? cloud.getOwnerPhone() : local.getOwnerPhone();

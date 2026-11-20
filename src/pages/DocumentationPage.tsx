@@ -258,18 +258,18 @@ export default function DocumentationPage() {
       {/* Top Navbar */}
       <header className="sticky top-0 z-40 border-b border-slate-200/80 dark:border-white/10 bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl transition-colors duration-300">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
               <BrandMark variant="icon" size="sm" framed={false} />
               <span className="font-extrabold text-lg text-slate-900 dark:text-white tracking-tight">Sella</span>
             </Link>
-            <span className="text-slate-300 dark:text-white/30 text-sm">/</span>
-            <span className="text-xs font-semibold text-[#1A6FFF] px-2 py-0.5 rounded-full bg-blue-50 dark:bg-[#1A6FFF]/10 border border-blue-200 dark:border-[#1A6FFF]/20">
+            <span className="hidden sm:inline text-slate-300 dark:text-white/30 text-sm">/</span>
+            <span className="hidden sm:inline-block text-xs font-semibold text-[#1A6FFF] px-2 py-0.5 rounded-full bg-blue-50 dark:bg-[#1A6FFF]/10 border border-blue-200 dark:border-[#1A6FFF]/20">
               User Documentation
             </span>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             {/* Theme Toggle Button */}
             <button
               type="button"
@@ -281,13 +281,13 @@ export default function DocumentationPage() {
               {isDark ? <Sun size={16} className="text-amber-400" /> : <Moon size={16} className="text-slate-700" />}
             </button>
 
-            <Link to="/subscribe">
+            <Link to="/subscribe" className="hidden sm:inline-block">
               <Button size="sm" className="btn-gold h-9 text-xs">
                 Subscribe with MoMo
               </Button>
             </Link>
             <Link to="/" className="text-xs text-slate-600 dark:text-white/70 hover:text-slate-900 dark:hover:text-white flex items-center gap-1 transition-colors">
-              <ArrowLeft size={14} /> Back to Home
+              <ArrowLeft size={14} /> <span className="hidden sm:inline">Back to Home</span>
             </Link>
           </div>
         </div>

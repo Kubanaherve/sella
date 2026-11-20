@@ -298,6 +298,9 @@ export function validateMappedRows(
     if (qty == null) {
       warnings.push("Quantity missing — using 0");
     } else if (qty < 0) errors.push("Quantity cannot be negative");
+    else if (!Number.isInteger(qty)) {
+      errors.push("Quantity must be a whole number — stock is stored in whole units");
+    }
 
     if (
       selling != null &&

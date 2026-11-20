@@ -6,10 +6,13 @@ import { labels, formatCurrency, formatDate } from "@/lib/kinyarwanda";
 import { getDateKeyFromIso } from "@/lib/reporting";
 import { lineTotal, sumRwf } from "@/lib/money";
 import { phoneToWhatsAppDigits } from "@/lib/phone";
-import { deleteDebt, listActiveDebts, recordPayment } from "@/db/api";
+import { deleteDebt, listActiveDebts, listDebtsForReport, recordPayment } from "@/db/api";
 import type { PaymentMethod } from "@/db/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { WriteGate } from "@/components/WriteGate";
+import { useCashierMode } from "@/hooks/useCashierMode";
+import { useOwnerPin } from "@/hooks/useOwnerPin";
+import { requestDebtDelete } from "@/lib/debtDeletion";
 import { toast } from "sonner";
 import PaymentModal from "@/components/PaymentModal";
 import {
@@ -59,6 +62,7 @@ interface Customer {
   created_at: string;
   line_items: InvoiceLine[];
   total_amount?: number;
+  payment_amounts?: number[] | null;
 }
 
 const PAGE_SIZE = 50;
@@ -66,6 +70,8 @@ const PAGE_SIZE = 50;
 const DebtsPage = () => {
   const navigate = useNavigate();
   const { canWrite, profile } = useAuth();
+  const { isCashier } = useCashierMode();
+  const { askOwnerPin, ownerPinDialog } = useOwnerPin();
 
   const shopName =
     (profile && "business_name" in profile && profile.business_name) ||
@@ -125,7 +131,9 @@ const DebtsPage = () => {
   };
 
   const mapDebtToCustomer = (
-    debt: Awaited<ReturnType<typeof listActiveDebts>>[number]
+    debt: Awaited<ReturnType<typeof listActiveDebts>>[number] & {
+      payment_amounts?: number[];
+    }
   ): Customer => ({
     id: debt.id,
     name: debt.client_name || "Unknown",
@@ -142,6 +150,7 @@ const DebtsPage = () => {
       unitPrice: i.unit_price,
       takenAt: i.created_at,
     })),
+    payment_amounts: debt.payment_amounts ?? null,
   });
 
   const invoiceFromCustomer = (c: Customer): InvoiceData => {
@@ -301,6 +310,7 @@ const DebtsPage = () => {
         dueDate: c.due_date,
         originalAmount: original,
         paidAmount: paid,
+        paymentAmounts: c.payment_amounts,
         remainingAmount: remaining,
         status:
           remaining <= 0
@@ -326,7 +336,7 @@ const DebtsPage = () => {
     setPreviewLoading(true);
     revokePreviewUrl();
     try {
-      const debts = await listActiveDebts();
+      const debts = await listDebtsForReport();
       const list = debts.map(mapDebtToCustomer);
       const grandTotal = list.reduce((sum, c) => sum + Number(c.amount || 0), 0);
       const today = new Date().toLocaleDateString(
@@ -424,7 +434,7 @@ const DebtsPage = () => {
       let grandTotal = fromPreview?.grandTotal ?? 0;
       let today = fromPreview?.today ?? "";
       if (!list) {
-        const debts = await listActiveDebts();
+        const debts = await listDebtsForReport();
         list = debts.map(mapDebtToCustomer);
         grandTotal = list.reduce((sum, c) => sum + Number(c.amount || 0), 0);
         today = new Date().toLocaleDateString(
@@ -616,7 +626,8 @@ const DebtsPage = () => {
     paymentAmount: number,
     thankYouMessage: string,
     paymentMethod: PaymentMethod,
-    referenceNumber: string | null = null
+    referenceNumber: string | null = null,
+    idempotencyKey?: string
   ) => {
     if (!selectedCustomer || paymentBusy) return;
     if (!canWrite) {
@@ -635,6 +646,7 @@ const DebtsPage = () => {
         paymentMethod,
         notes: thankYouMessage,
         referenceNumber,
+        idempotencyKey,
       });
 
       // WhatsApp only after payment succeeds (avoid false “paid” messages)
@@ -680,14 +692,27 @@ const DebtsPage = () => {
 
   // ── Delete handler ─────────────────────────────────────────────────────────
   const handleDelete = async (customer: Customer) => {
-    if (!canWrite) {
-      toast.error("Subscription yarangiye — jya kuri Billing wishyure to delete");
-      return;
-    }
-    if (!confirm(`${labels.confirmDelete} ${customer.name}?`)) return;
-
     try {
-      await deleteDebt(customer.id);
+      if (isCashier || !canWrite) {
+        await requestDebtDelete({
+          isCashier,
+          canWrite,
+          pin: null,
+          debtId: customer.id,
+          remove: deleteDebt,
+        });
+        return;
+      }
+      if (!confirm(`${labels.confirmDelete} ${customer.name}?`)) return;
+      const pin = await askOwnerPin("PIN y'umuyobozi kugira ngo usibe iri deni");
+      if (!pin) return;
+      await requestDebtDelete({
+        isCashier: false,
+        canWrite: true,
+        pin,
+        debtId: customer.id,
+        remove: deleteDebt,
+      });
 
       toast.success("Byasibwe neza kandi inventory yongerewe");
       setSelectedCustomer(null);
@@ -696,7 +721,7 @@ const DebtsPage = () => {
       window.dispatchEvent(new CustomEvent("inventoryUpdated"));
     } catch (err) {
       console.error("Delete error:", err);
-      toast.error("Habaye ikosa");
+      toast.error(err instanceof Error ? err.message : "Habaye ikosa");
     }
   };
 
@@ -990,13 +1015,15 @@ const DebtsPage = () => {
               >
                 <Check size={18} /> Emeza Kwishyura
               </button>
-              <button
-                type="button"
-                onClick={() => handleDelete(selectedCustomer)}
-                className="w-full min-h-[48px] rounded-2xl border border-rose-200 bg-rose-50 text-rose-700 text-sm font-bold flex items-center justify-center gap-2"
-              >
-                <Trash2 size={16} /> Siba ideni
-              </button>
+              {!isCashier && (
+                <button
+                  type="button"
+                  onClick={() => handleDelete(selectedCustomer)}
+                  className="w-full min-h-[48px] rounded-2xl border border-rose-200 bg-rose-50 text-rose-700 text-sm font-bold flex items-center justify-center gap-2"
+                >
+                  <Trash2 size={16} /> Siba ideni
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -1048,6 +1075,8 @@ const DebtsPage = () => {
           totalAmount={selectedCustomer.amount!}
         />
       )}
+
+      {ownerPinDialog}
 
       <WhatsAppReminderOverlay
         status={reminderStatus}

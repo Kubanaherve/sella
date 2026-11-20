@@ -71,6 +71,23 @@ describe("entitlements", () => {
     expect(hasWriteAccess(pastGrace, now)).toBe(false);
   });
 
+  it("keeps an expired paid plan inside the 3-day grace window", () => {
+    const now = new Date("2026-05-02T12:00:00.000Z");
+    const recent = {
+      ...base,
+      status: "expired" as const,
+      trialEndsAt: null,
+      currentPeriodEnd: "2026-05-01T00:00:00.000Z",
+    };
+    expect(isInGracePeriod(recent, now)).toBe(true);
+    expect(hasWriteAccess(recent, now)).toBe(true);
+    const lapsed = {
+      ...recent,
+      currentPeriodEnd: "2026-04-20T00:00:00.000Z",
+    };
+    expect(hasWriteAccess(lapsed, now)).toBe(false);
+  });
+
   it("keeps past_due shops writing during the same 3-day grace window", () => {
     const now = new Date("2026-05-02T12:00:00.000Z");
     const sub: SubscriptionSnapshot = {

@@ -13,6 +13,7 @@ import { BRAND } from "@/lib/brand";
 import { normalizePhoneE164 } from "@/lib/phone";
 import { getSupabase, hasSupabaseConfig, isCloudMode } from "@/integrations/supabase/client";
 import { isValidEmail, normalizeEmail } from "@/lib/shopIdentity";
+import { BUSINESS_CATEGORIES } from "@/lib/businessCategories";
 import {
   type RememberedAccount,
   loadRememberedAccounts,
@@ -20,13 +21,35 @@ import {
   removeRememberedAccount,
   getPreferredAccount,
   setLastAccountPhone,
+  accountForPhoneLogin,
+  personName,
 } from "@/lib/rememberedAccounts";
 import { clearAppUnlock, isAppUnlocked, setAppUnlocked } from "@/lib/appUnlock";
 import { getAppLanguage, setAppLanguage } from "@/lib/appLanguage";
+import {
+  findShopByCode,
+  staffRegisterOrSetPin,
+  staffLoginWithPin,
+  normalizeShopCode,
+  type ShopInfo,
+} from "@/lib/staff";
+import { setCashierModeActive } from "@/lib/cashierMode";
+import { planCashierSession } from "@/lib/cashierSession";
+import { UserCheck, Users } from "lucide-react";
 
 const PIN_LENGTH = 4;
 
-type Step = "home" | "register" | "email_otp" | "confirm" | "phone_login" | "pin" | "picker";
+type Step =
+  | "home"
+  | "register"
+  | "email_otp"
+  | "confirm"
+  | "phone_login"
+  | "pin"
+  | "picker"
+  | "cashier_shop_code"
+  | "cashier_set_pin"
+  | "cashier_confirm_pin";
 
 interface ConfirmData {
   businessName: string;
@@ -37,6 +60,22 @@ interface ConfirmData {
   emailSent: boolean;
 }
 
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error("timeout")), ms);
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (err) => {
+        clearTimeout(timer);
+        reject(err);
+      }
+    );
+  });
+}
+
 const AuthPage = () => {
   const navigate = useNavigate();
   const { refreshProfile, setSessionFromTokens, mode } = useAuth();
@@ -45,6 +84,7 @@ const AuthPage = () => {
   const [step, setStep] = useState<Step>("home");
   const [phoneLocal, setPhoneLocal] = useState("");
   const [businessName, setBusinessName] = useState("");
+  const [businessCategory, setBusinessCategory] = useState("general_merchandise");
   const [ownerName, setOwnerName] = useState("");
   const [email, setEmail] = useState("");
   const [pin, setPin] = useState("");
@@ -61,6 +101,11 @@ const AuthPage = () => {
   const [pinRetryAfter, setPinRetryAfter] = useState(0);
   const [emailOtp, setEmailOtp] = useState("");
   const [emailOtpSent, setEmailOtpSent] = useState(false);
+  const [cashierShopCode, setCashierShopCode] = useState("");
+  const [cashierName, setCashierName] = useState("");
+  const [cashierPhone, setCashierPhone] = useState("");
+  const [verifiedShop, setVerifiedShop] = useState<ShopInfo | null>(null);
+  const [cashierFirstPin, setCashierFirstPin] = useState("");
 
   const t = (rw: string, en: string) => (lang === "rw" ? rw : en);
   const e164 = normalizePhoneE164(phoneLocal);
@@ -95,7 +140,7 @@ const AuthPage = () => {
         if (isAppUnlocked()) {
           if (cloud) {
             const sb = getSupabase();
-            const { data } = await sb.auth.getSession();
+            const { data } = await withTimeout(sb.auth.getSession(), 4000);
             if (data.session) {
               await refreshProfile();
               navigate("/dashboard");
@@ -116,7 +161,7 @@ const AuthPage = () => {
         if (cloud) {
           try {
             const sb = getSupabase();
-            await sb.auth.signOut({ scope: "local" });
+            await withTimeout(sb.auth.signOut({ scope: "local" }), 4000);
           } catch {
             /* ignore */
           }
@@ -222,6 +267,7 @@ const AuthPage = () => {
           displayName: ownerName.trim(),
           pin,
           businessName: businessName.trim(),
+          businessCategory,
           email: normalizeEmail(email),
         });
         if ("error" in result) {
@@ -290,6 +336,7 @@ const AuthPage = () => {
       const { data, error } = await sb.functions.invoke("register-shop", {
         body: {
           business_name: businessName.trim(),
+          business_category: businessCategory,
           owner_name: ownerName.trim(),
           email: emailNorm,
           phone: e164,
@@ -342,6 +389,7 @@ const AuthPage = () => {
   };
 
   const loginWithPin = async (enteredPin: string) => {
+    if (isLoading) return;
     const phone = selectedAccount?.phone || e164;
     if (!phone) {
       toast.error(t("Andika numero", "Enter phone number"));
@@ -350,6 +398,37 @@ const AuthPage = () => {
     setIsLoading(true);
     setPinError(null);
     try {
+      // Returning cashier account
+      if (selectedAccount?.isStaff || selectedAccount?.role === "cashier") {
+        if (!selectedAccount.shopCode) {
+          throw new Error("Shop Code ntibonetse kuri iyi konti");
+        }
+        const { access_token, refresh_token } = await withTimeout(
+          staffLoginWithPin({
+            shopCode: selectedAccount.shopCode,
+            phone,
+            pin: enteredPin,
+          }),
+          12000
+        );
+        const sessionPlan = planCashierSession({ access_token, refresh_token });
+        if (sessionPlan === "apply-staff-session") {
+          await setSessionFromTokens(access_token, refresh_token);
+        } else if (cloud) {
+          const sb = getSupabase();
+          await withTimeout(sb.auth.signOut({ scope: "local" }), 4000);
+        }
+        setCashierModeActive(true);
+        setAppUnlocked(true);
+        toast.success(
+          t(
+            `Murakaza neza, ${selectedAccount.displayName}!`,
+            `Welcome back, ${selectedAccount.displayName}!`
+          )
+        );
+        navigate("/new-sale");
+        return;
+      }
       if (!cloud) {
         const result = await loginLocal({ phone, pin: enteredPin });
         if ("error" in result) {
@@ -362,7 +441,11 @@ const AuthPage = () => {
         setLastAccountPhone(result.profile.phone_normalized);
         persistAccount({
           phone: result.profile.phone_normalized,
-          displayName: result.profile.display_name || selectedAccount?.displayName || phone,
+          displayName: personName(
+            result.profile.display_name,
+            selectedAccount?.displayName,
+            result.profile.business_name
+          ),
           pinLength: PIN_LENGTH,
           shopName: result.profile.business_name || selectedAccount?.shopName,
           shopCode: result.profile.shop_code || selectedAccount?.shopCode,
@@ -374,9 +457,12 @@ const AuthPage = () => {
       }
 
       const sb = getSupabase();
-      const { data, error } = await sb.functions.invoke("pin-login", {
-        body: { phone: normalizePhoneE164(phone) || phone, pin: enteredPin },
-      });
+      const { data, error } = await withTimeout(
+        sb.functions.invoke("pin-login", {
+          body: { phone: normalizePhoneE164(phone) || phone, pin: enteredPin },
+        }),
+        12000
+      );
       if (error) {
         // Prefer server JSON error over opaque "non-2xx" FunctionsHttpError
         let detail = error.message;
@@ -408,7 +494,11 @@ const AuthPage = () => {
       const prof = data.profile;
       persistAccount({
         phone: normalizePhoneE164(phone) || phone,
-        displayName: prof?.owner_name || selectedAccount?.displayName || phone,
+        displayName: personName(
+          prof?.owner_name,
+          selectedAccount?.displayName,
+          prof?.business_name
+        ),
         pinLength: PIN_LENGTH,
         shopCode: prof?.shop_code || selectedAccount?.shopCode,
         shopName: prof?.business_name || selectedAccount?.shopName,
@@ -465,6 +555,116 @@ const AuthPage = () => {
       </div>
     );
   }
+
+  const submitCashierShopCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!cashierShopCode.trim()) {
+      toast.error(t("Andika Shop Code y'iduka", "Enter the store Shop Code"));
+      return;
+    }
+    if (!cashierPhone.trim()) {
+      toast.error(t("Andika numero ya telefone yawe", "Enter your phone number"));
+      return;
+    }
+    if (!cashierName.trim()) {
+      toast.error(t("Andika izina ryawe", "Enter your name"));
+      return;
+    }
+    const cleanPhone = normalizePhoneE164(cashierPhone);
+    if (!cleanPhone) {
+      toast.error(t("Numero ya telefone ntiyemewe", "Invalid phone number"));
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const shop = await findShopByCode(cashierShopCode);
+      setVerifiedShop(shop);
+      setCashierFirstPin("");
+      setPinError(null);
+      setStep("cashier_set_pin");
+      toast.success(
+        t(`Iduka ribonetse: ${shop.businessName}`, `Shop found: ${shop.businessName}`)
+      );
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Shop Code ntibonetse");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const onCashierSetPin = (enteredPin: string) => {
+    setCashierFirstPin(enteredPin);
+    setPinResetToken((n) => n + 1);
+    setPinError(null);
+    setStep("cashier_confirm_pin");
+  };
+
+  const onCashierConfirmPin = async (enteredPin: string) => {
+    if (enteredPin !== cashierFirstPin) {
+      setPinError(
+        t(
+          "PIN ntizihura! Ongera ushyireho PIN.",
+          "PINs do not match! Please set PIN again."
+        )
+      );
+      setPinResetToken((n) => n + 1);
+      setCashierFirstPin("");
+      setStep("cashier_set_pin");
+      return;
+    }
+    if (!verifiedShop) {
+      toast.error("Shop details missing");
+      setStep("cashier_shop_code");
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const { staff, shop, access_token, refresh_token } = await staffRegisterOrSetPin({
+        shopCode: verifiedShop.shopCode,
+        phone: cashierPhone,
+        name: cashierName,
+        pin: enteredPin,
+        role: "cashier",
+      });
+
+      if (access_token && refresh_token) {
+        try {
+          await setSessionFromTokens(access_token, refresh_token);
+        } catch (sessionErr) {
+          console.warn("Could not set live staff auth session:", sessionErr);
+        }
+      }
+
+      setCashierModeActive(true);
+      setAppUnlocked(true);
+
+      persistAccount({
+        phone: staff.phone_normalized,
+        displayName: staff.name,
+        pinLength: PIN_LENGTH,
+        shopCode: shop.shopCode,
+        shopName: shop.businessName,
+        role: "cashier",
+        isStaff: true,
+      });
+
+      toast.success(
+        t(
+          `Murakaza neza mu iduka, ${staff.name}!`,
+          `Welcome to the shop, ${staff.name}!`
+        )
+      );
+      navigate("/new-sale");
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Ntibyashobotse gushyiraho PIN"
+      );
+      setPinResetToken((n) => n + 1);
+      setStep("cashier_set_pin");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   if (step === "confirm" && confirmData) {
     return (
@@ -544,6 +744,160 @@ const AuthPage = () => {
     );
   }
 
+  if (step === "cashier_shop_code") {
+    return (
+      <div className="min-h-screen sella-hero-bg flex flex-col items-center justify-center p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,calc(var(--sella-safe-top-floor)+0.75rem),env(safe-area-inset-top))]">
+        <BrandMark variant="icon" size="lg" float />
+        <h1 className="text-[#0B3FCC] text-xl font-bold mt-3 text-center">
+          {t("Injira nk'Umukozi mu Iduka", "Join Store as Cashier")}
+        </h1>
+        <p className="text-slate-600 text-xs mt-1 text-center max-w-xs">
+          {t(
+            "Andika Shop Code nyiri iduka yaguhaye hamwe na nimero yawe",
+            "Enter the Shop Code provided by your store owner and your phone"
+          )}
+        </p>
+
+        <form onSubmit={submitCashierShopCode} className="w-full max-w-sm glass-card mt-6 space-y-3.5">
+          <div>
+            <label className="text-xs font-semibold text-muted-foreground mb-1 block">
+              <Store size={12} className="inline mr-1" />
+              {t("Shop Code y'iduka *", "Store Shop Code *")}
+            </label>
+            <Input
+              required
+              value={cashierShopCode}
+              onChange={(e) => setCashierShopCode(e.target.value.toUpperCase())}
+              placeholder="urugero: SEL-8421"
+              className="input-glow h-11 text-center font-mono font-bold tracking-widest text-base uppercase"
+            />
+            <p className="text-[10px] text-muted-foreground mt-0.5 text-center">
+              {t("Iyi code uyihabwa na nyir'ubucuruzi", "Get this code from your store owner")}
+            </p>
+          </div>
+
+          <div>
+            <label className="text-xs font-semibold text-muted-foreground mb-1 block">
+              <Phone size={12} className="inline mr-1" />
+              {t("Telefone yawe *", "Your Phone Number *")}
+            </label>
+            <Input
+              required
+              type="tel"
+              value={cashierPhone}
+              onChange={(e) => setCashierPhone(e.target.value)}
+              placeholder="0788..."
+              className="input-glow h-11"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-semibold text-muted-foreground mb-1 block">
+              <Users size={12} className="inline mr-1" />
+              {t("Izina ryawe (Umukozi) *", "Your Name (Cashier) *")}
+            </label>
+            <Input
+              required
+              value={cashierName}
+              onChange={(e) => setCashierName(e.target.value)}
+              placeholder="urugero: Aline"
+              className="input-glow h-11"
+            />
+          </div>
+
+          <Button
+            type="submit"
+            className="w-full btn-gold h-12 text-base font-semibold"
+            disabled={isLoading}
+          >
+            {isLoading ? "Tegereza…" : t("Komeza (Submit Shop Code)", "Continue (Submit Shop Code)")}
+          </Button>
+        </form>
+
+        <button
+          type="button"
+          className="mt-6 text-slate-500 text-sm"
+          onClick={() => setStep("home")}
+        >
+          ← {t("Subira", "Back")}
+        </button>
+      </div>
+    );
+  }
+
+  if (step === "cashier_set_pin" && verifiedShop) {
+    return (
+      <div className="min-h-screen sella-hero-bg flex flex-col items-center justify-center p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,calc(var(--sella-safe-top-floor)+0.75rem),env(safe-area-inset-top))]">
+        <BrandMark variant="icon" size="xl" float />
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/25 text-emerald-800 dark:text-emerald-300 text-xs font-bold mt-3">
+          <Store size={13} />
+          <span>{verifiedShop.businessName} ({verifiedShop.shopCode})</span>
+        </div>
+        <p className="text-[#0B3FCC] text-base font-semibold mt-2">
+          {t(`Murakaza neza, ${cashierName}`, `Welcome, ${cashierName}`)}
+        </p>
+        <p className="text-slate-500 text-xs mt-1 text-center max-w-xs">
+          {t("Shyiraho PIN yawe nshya y'akazi (imibare 4)", "Set your personal 4-digit work PIN")}
+        </p>
+        <div className="mt-6 w-full max-w-sm flex justify-center">
+          <PinDialPad
+            onComplete={onCashierSetPin}
+            isLoading={isLoading}
+            displayName={cashierName}
+            pinLength={PIN_LENGTH}
+            resetToken={pinResetToken}
+            errorMessage={pinError}
+          />
+        </div>
+        <button
+          type="button"
+          className="mt-6 text-slate-500 text-sm"
+          onClick={() => setStep("cashier_shop_code")}
+        >
+          ← {t("Hindura amakuru", "Change details")}
+        </button>
+      </div>
+    );
+  }
+
+  if (step === "cashier_confirm_pin" && verifiedShop) {
+    return (
+      <div className="min-h-screen sella-hero-bg flex flex-col items-center justify-center p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,calc(var(--sella-safe-top-floor)+0.75rem),env(safe-area-inset-top))]">
+        <BrandMark variant="icon" size="xl" float />
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/25 text-emerald-800 dark:text-emerald-300 text-xs font-bold mt-3">
+          <Store size={13} />
+          <span>{verifiedShop.businessName}</span>
+        </div>
+        <p className="text-[#0B3FCC] text-base font-bold mt-2">
+          {t("Emeza PIN yawe y'akazi", "Confirm your work PIN")}
+        </p>
+        <p className="text-slate-500 text-xs mt-1 text-center max-w-xs">
+          {t("Ongera wandike ya PIN yawe (imibare 4) kugira ngo wemeze", "Re-enter your 4-digit PIN to confirm")}
+        </p>
+        <div className="mt-6 w-full max-w-sm flex justify-center">
+          <PinDialPad
+            onComplete={onCashierConfirmPin}
+            isLoading={isLoading}
+            displayName={cashierName}
+            pinLength={PIN_LENGTH}
+            resetToken={pinResetToken}
+            errorMessage={pinError}
+          />
+        </div>
+        <button
+          type="button"
+          className="mt-6 text-slate-500 text-sm"
+          onClick={() => {
+            setPinError(null);
+            setStep("cashier_set_pin");
+          }}
+        >
+          ← {t("Ongera ushyireho PIN", "Back to set PIN")}
+        </button>
+      </div>
+    );
+  }
+
   if (step === "pin" && selectedAccount) {
     return (
       <div className="min-h-screen sella-hero-bg flex flex-col items-center justify-center p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,calc(var(--sella-safe-top-floor)+0.75rem),env(safe-area-inset-top))]">
@@ -557,6 +911,12 @@ const AuthPage = () => {
           <p className="text-slate-400 text-[11px] tracking-[0.2em] mt-0.5">
             {selectedAccount.shopCode}
           </p>
+        )}
+        {selectedAccount.isStaff && (
+          <span className="inline-flex items-center gap-1 text-[11px] bg-primary/10 border border-primary/20 text-primary px-2.5 py-0.5 rounded-full font-bold mt-1.5">
+            <Users size={12} />
+            Umukozi (Cashier)
+          </span>
         )}
         <div className="mt-8 w-full max-w-sm flex justify-center">
           <PinDialPad
@@ -631,11 +991,7 @@ const AuthPage = () => {
             disabled={!phoneLocal || isLoading}
             onClick={() => {
               if (!e164) return toast.error(t("Numero ntiyemewe", "Invalid phone"));
-              setSelectedAccount({
-                phone: e164,
-                displayName: phoneLocal,
-                pinLength: PIN_LENGTH,
-              });
+              setSelectedAccount(accountForPhoneLogin(e164));
               setPinError(null);
               setStep("pin");
             }}
@@ -674,8 +1030,17 @@ const AuthPage = () => {
                   {(account.shopName || account.displayName).charAt(0).toUpperCase()}
                 </div>
                 <div>
-                  <p className="font-semibold">{account.shopName || account.displayName}</p>
-                  <p className="text-xs text-muted-foreground">{account.phone}</p>
+                  <p className="font-semibold flex items-center gap-1.5">
+                    <span>{account.shopName || account.displayName}</span>
+                    {account.isStaff && (
+                      <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-bold">
+                        Cashier
+                      </span>
+                    )}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {account.isStaff ? `${account.displayName} · ${account.phone}` : account.phone}
+                  </p>
                   {account.shopCode && (
                     <p className="text-[10px] text-primary font-medium tracking-wider">
                       {account.shopCode}
@@ -685,7 +1050,7 @@ const AuthPage = () => {
               </button>
               <button
                 type="button"
-                className="absolute top-2 right-2 p-2 text-muted-foreground opacity-0 group-hover:opacity-100"
+                className="absolute top-2 right-2 p-2 text-muted-foreground"
                 onClick={() => removeAccount(account.phone)}
               >
                 <X size={16} />
@@ -808,7 +1173,7 @@ const AuthPage = () => {
                 setNameStatus("idle");
               }}
               onBlur={() => checkShopName(businessName)}
-              placeholder="e.g. Jeanne Friend Jewelry"
+              placeholder="e.g. Kigali Mini Market"
               className="input-glow h-11"
             />
             {nameStatus === "checking" && (
@@ -824,6 +1189,23 @@ const AuthPage = () => {
                 {t("Iri zina ryarafashwe — hitamo irindi", "Name already taken — choose another")}
               </p>
             )}
+          </div>
+
+          <div>
+            <label className="text-xs text-muted-foreground mb-1 block">
+              {t("Ubwoko bw'ubucuruzi", "Business type")}
+            </label>
+            <select
+              value={businessCategory}
+              onChange={(e) => setBusinessCategory(e.target.value)}
+              className="input-glow h-11 w-full rounded-md border border-input bg-background px-3 text-sm"
+            >
+              {BUSINESS_CATEGORIES.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {lang === "rw" ? category.rw : category.en}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div>
@@ -933,33 +1315,33 @@ const AuthPage = () => {
     <div className="sella-auth-home min-h-screen sella-hero-bg flex flex-col items-center justify-center p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,calc(var(--sella-safe-top-floor)+0.75rem),env(safe-area-inset-top))]">
       <aside className="sella-auth-brand">
         <div>
-          <p className="text-sm font-semibold tracking-[0.18em] uppercase text-white/70">Sella</p>
+          <p className="text-sm font-semibold tracking-[0.18em] uppercase text-slate-500">Sella</p>
           <h2 className="mt-4">{BRAND.taglineRw}</h2>
-          <p className="mt-4 max-w-sm text-sm leading-relaxed text-white/75">
+          <p className="mt-4 max-w-sm text-sm leading-relaxed text-slate-600">
             Igurisha, ideni, ububiko n'amafaranga — ku mudasobwa, uko umucuruzi akora.
           </p>
         </div>
         <ul className="mt-10 space-y-3 text-sm font-semibold">
           <li className="flex items-center gap-3">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/15">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-[#1A6FFF] shadow-sm">
               <TrendingUp size={16} />
             </span>
             Raporo y'amafaranga yinjiye
           </li>
           <li className="flex items-center gap-3">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/15">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-[#1A6FFF] shadow-sm">
               <List size={16} />
             </span>
             Ideni n'abakiriya mu isura imwe
           </li>
           <li className="flex items-center gap-3">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/15">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-[#1A6FFF] shadow-sm">
               <Package size={16} />
             </span>
             Ububiko n'ibicuruzwa byose
           </li>
         </ul>
-        <p className="text-xs text-white/60">{labels.madeForRwanda}</p>
+        <p className="text-xs text-slate-500">{labels.madeForRwanda}</p>
       </aside>
       <div className="sella-auth-home-main relative flex w-full flex-1 flex-col items-center justify-center p-6">
       <div className="absolute right-4 flex gap-2 top-[max(1rem,calc(max(var(--sella-safe-top-floor),env(safe-area-inset-top,0px))+0.35rem))]">
@@ -1010,6 +1392,21 @@ const AuthPage = () => {
           onClick={() => setStep(rememberedAccounts.length ? "picker" : "phone_login")}
         >
           {t("Injira (telefone + PIN 4)", "Sign in (phone + 4-digit PIN)")}
+        </Button>
+        <Button
+          variant="outline"
+          className="w-full h-12 bg-primary/5 border border-primary/30 text-primary dark:text-primary-foreground hover:bg-primary/10 backdrop-blur font-semibold gap-2"
+          onClick={() => {
+            setCashierShopCode("");
+            setCashierName("");
+            setCashierPhone("");
+            setVerifiedShop(null);
+            setPinError(null);
+            setStep("cashier_shop_code");
+          }}
+        >
+          <Users size={16} />
+          {t("Injira nk'Umukozi (Shop Code + PIN)", "Join as Cashier (Shop Code + PIN)")}
         </Button>
       </div>
 

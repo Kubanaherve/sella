@@ -1,5 +1,6 @@
 import { jsPDF } from "jspdf";
 import { toRwf } from "@/lib/money";
+import { calendarDateKeyInKigali } from "@/lib/dates";
 import { getAppLanguage, type AppLanguage } from "@/lib/appLanguage";
 import { BRAND } from "@/lib/brand";
 import type {
@@ -31,8 +32,9 @@ function formatDocDate(iso: string, lang: AppLanguage): string {
 
 function formatDueIso(iso?: string | null): string {
   if (!iso) return "—";
+  if (/^\d{4}-\d{2}-\d{2}$/.test(iso)) return iso;
   try {
-    return new Date(iso).toISOString().slice(0, 10);
+    return calendarDateKeyInKigali(iso) || String(iso).slice(0, 10);
   } catch {
     return String(iso).slice(0, 10);
   }
@@ -201,7 +203,7 @@ export async function buildBlueGlassStatementPdf(opts: {
     loadBlueGlassIconDataUrl(opts.shopLogoDataUrl),
     loadBlueGlassWordmarkDataUrl(),
   ]);
-  const asOfIso = (opts.generatedAtIso || new Date().toISOString()).slice(0, 10);
+  const asOfIso = calendarDateKeyInKigali(opts.generatedAtIso || new Date());
   const dateLabel =
     opts.reportDate ||
     formatDocDate(opts.generatedAtIso || new Date().toISOString(), lang);

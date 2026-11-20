@@ -34,13 +34,26 @@ export function extendTotal(unitPrice: unknown, quantity: unknown): Rwf {
   return toRwf(u * q);
 }
 
-/** Whole units actually sold. Rejects zero and negative; floors 1.9 → 1. */
-export function saleQuantity(quantity: unknown): number {
+/**
+ * Whole units only.
+ * Stock columns are integers and the checkout RPC floors a fraction, which
+ * would charge for fewer units than the cashier typed. Reject instead.
+ */
+export function stockQuantity(quantity: unknown, min = 0): number {
   const n = typeof quantity === "number" ? quantity : Number(quantity);
-  if (!Number.isFinite(n) || n < 1) {
-    throw new Error("Umubare ugomba kuba 1 nibura");
+  if (!Number.isFinite(n) || n < min || !Number.isInteger(n)) {
+    throw new Error(
+      min >= 1
+        ? "Umubare ugomba kuba umubare wuzuye (1, 2, 3…)"
+        : "Umubare ugomba kuba umubare wuzuye (0, 1, 2…)"
+    );
   }
-  return Math.floor(n);
+  return n;
+}
+
+/** Whole units actually sold. Rejects zero, negative, and fractional quantities. */
+export function saleQuantity(quantity: unknown): number {
+  return stockQuantity(quantity, 1);
 }
 
 const PAYMENT_METHODS = ["cash", "momo", "airtel", "bank"] as const;
@@ -100,7 +113,14 @@ export type PaymentSlice = {
 export function normalizePaymentSlices(
   slices: PaymentSlice[],
   orderTotal: Rwf
-): { slices: PaymentSlice[]; paid: Rwf; remaining: Rwf; changeDue: Rwf } {
+): {
+  slices: PaymentSlice[];
+  paid: Rwf;
+  remaining: Rwf;
+  changeDue: Rwf;
+  /** Cash the customer handed over, including the part given back as change. */
+  cashTendered: Rwf;
+} {
   const cleaned = slices
     .map((s) => ({
       method: s.method,
@@ -113,11 +133,19 @@ export function normalizePaymentSlices(
   const total = toRwf(orderTotal);
   const paid = paidRaw > total ? total : paidRaw;
   const changeDue = paidRaw > total ? paidRaw - total : 0;
+  const cashTendered = sumRwf(
+    cleaned.filter((s) => s.method === "cash").map((s) => s.amount)
+  );
 
-  // If overpay, shrink the last slice so recorded payments == total (change is UI-only unless we add a change row)
+  // Non-cash settles the bill first. Cash is last so extra cash is change,
+  // and cashTendered still records what the customer handed over.
   let remainingToAllocate = paid;
   const normalized: PaymentSlice[] = [];
-  for (const s of cleaned) {
+  const ordered = [
+    ...cleaned.filter((s) => s.method !== "cash"),
+    ...cleaned.filter((s) => s.method === "cash"),
+  ];
+  for (const s of ordered) {
     if (remainingToAllocate <= 0) break;
     const take = Math.min(s.amount, remainingToAllocate);
     normalized.push({ ...s, amount: take });
@@ -129,6 +157,7 @@ export function normalizePaymentSlices(
     paid,
     remaining: Math.max(0, total - paid),
     changeDue,
+    cashTendered,
   };
 }
 

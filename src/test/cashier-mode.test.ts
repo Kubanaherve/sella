@@ -1,9 +1,13 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { isCashierModeActive, setCashierModeActive } from "@/lib/cashierMode";
+import {
+  isCashierModeActive,
+  resetCashierModeForTests,
+  setCashierModeActive,
+} from "@/lib/cashierMode";
 
 describe("cashierMode staff role segregation", () => {
   beforeEach(() => {
-    setCashierModeActive(false);
+    resetCashierModeForTests();
   });
 
   it("defaults to inactive (owner full access)", () => {
@@ -15,10 +19,9 @@ describe("cashierMode staff role segregation", () => {
     expect(isCashierModeActive()).toBe(true);
   });
 
-  it("deactivates cashier mode cleanly back to owner access", () => {
+  it("does not leave cashier mode without the owner PIN path", () => {
     setCashierModeActive(true);
-    expect(isCashierModeActive()).toBe(true);
     setCashierModeActive(false);
-    expect(isCashierModeActive()).toBe(false);
+    expect(isCashierModeActive()).toBe(true);
   });
 });

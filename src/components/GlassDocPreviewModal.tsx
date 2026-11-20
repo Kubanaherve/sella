@@ -41,6 +41,15 @@ export function GlassDocPreviewModal({
   const [pages, setPages] = useState<string[]>([]);
   const [rasterizing, setRasterizing] = useState(false);
   const [rasterError, setRasterError] = useState(false);
+  const [wide, setWide] = useState(false);
+
+  useEffect(() => {
+    const query = window.matchMedia("(min-width: 1024px)");
+    const apply = () => setWide(query.matches);
+    apply();
+    query.addEventListener("change", apply);
+    return () => query.removeEventListener("change", apply);
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -67,7 +76,10 @@ export function GlassDocPreviewModal({
     setRasterizing(true);
     setRasterError(false);
     setPages([]);
-    void pdfBlobUrlToPreviewImages(pdfUrl)
+    void pdfBlobUrlToPreviewImages(pdfUrl, {
+      maxPages: 8,
+      scale: wide ? 1.7 : 2.4,
+    })
       .then((imgs) => {
         if (!cancelled) {
           setPages(imgs);
@@ -83,7 +95,7 @@ export function GlassDocPreviewModal({
     return () => {
       cancelled = true;
     };
-  }, [open, pdfUrl, loading]);
+  }, [open, pdfUrl, loading, wide]);
 
   if (!open || typeof document === "undefined") return null;
 
@@ -114,14 +126,13 @@ export function GlassDocPreviewModal({
         className={cn(
           "sella-popup-glass relative z-10 flex flex-col animate-fade-in",
           "rounded-2xl",
-          /* Compact centered card — fills phone width with side breathing room */
-          "w-full max-w-[24rem]",
+          wide ? "w-full max-w-6xl" : "w-full max-w-[26rem]",
           "max-h-[calc(100dvh-2.5rem-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px))]"
         )}
       >
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_90%_55%_at_0%_0%,rgba(90,200,250,0.16),transparent_55%),radial-gradient(ellipse_70%_50%_at_100%_100%,rgba(26,111,255,0.1),transparent_50%)]"
+          className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.55),transparent_28%)]"
         />
 
         <div className="relative z-10 flex shrink-0 items-center gap-2 border-b border-[#1A6FFF]/10 dark:border-white/10 px-3 py-2">
@@ -148,10 +159,12 @@ export function GlassDocPreviewModal({
         <div className="relative z-10 min-h-0 overflow-hidden px-2.5 py-2">
           <div
             className={cn(
-              "w-full overflow-hidden rounded-xl border border-[#1A6FFF]/10 dark:border-white/10 bg-[#e8eefc] dark:bg-slate-900/60",
+              "w-full overflow-hidden rounded-2xl border border-slate-200/80 dark:border-white/10 bg-[#eef1f6] dark:bg-slate-900/60",
               showLoader || (!pages.length && !rasterError && !children)
                 ? "flex min-h-[12rem] items-center justify-center"
-                : "max-h-[min(52dvh,26rem)]"
+                : wide
+                  ? "max-h-[min(78dvh,42rem)]"
+                  : "max-h-[min(68dvh,36rem)]"
             )}
           >
             {showLoader ? (
@@ -160,14 +173,19 @@ export function GlassDocPreviewModal({
                 <p className="text-[11px] font-semibold">Gutegura preview…</p>
               </div>
             ) : pages.length > 0 ? (
-              <div className="max-h-[min(52dvh,26rem)] overflow-y-auto overscroll-contain px-1.5 py-1.5">
+              <div
+                className={cn(
+                  "overflow-y-auto overscroll-contain px-1.5 py-1.5",
+                  wide ? "max-h-[min(78dvh,42rem)]" : "max-h-[min(68dvh,36rem)]"
+                )}
+              >
                 <div className="mx-auto flex w-full flex-col items-center gap-2">
                   {pages.map((src, i) => (
                     <img
                       key={i}
                       src={src}
                       alt={`${title} · page ${i + 1}`}
-                      className="block h-auto w-full rounded-lg bg-white shadow-sm"
+                      className="block h-auto w-full rounded-xl bg-white shadow-[0_10px_30px_rgba(23,32,51,0.08)]"
                       draggable={false}
                     />
                   ))}

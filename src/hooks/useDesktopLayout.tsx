@@ -6,6 +6,7 @@ import {
   type ReactNode,
 } from "react";
 import { Capacitor } from "@capacitor/core";
+import { isDesktopApp } from "@/lib/platform";
 
 /** Laptop / desktop web. Native phone and tablet builds stay on the mobile shell. */
 export const DESKTOP_MIN_WIDTH = 1024;
@@ -13,6 +14,7 @@ export const DESKTOP_MIN_WIDTH = 1024;
 function readDesktop(): boolean {
   if (typeof window === "undefined") return false;
   if (Capacitor.isNativePlatform()) return false;
+  if (isDesktopApp()) return true;
   return window.matchMedia(`(min-width: ${DESKTOP_MIN_WIDTH}px)`).matches;
 }
 
@@ -29,7 +31,7 @@ export function DesktopLayoutProvider({ children }: { children: ReactNode }) {
     }
     const mql = window.matchMedia(`(min-width: ${DESKTOP_MIN_WIDTH}px)`);
     const apply = () => {
-      const next = mql.matches;
+      const next = isDesktopApp() || mql.matches;
       setDesktop(next);
       document.documentElement.classList.toggle("sella-desktop", next);
     };

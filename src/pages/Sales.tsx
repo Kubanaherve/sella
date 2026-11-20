@@ -78,6 +78,7 @@ const ReportsPage = () => {
   const [filter, setFilter] = useState<FilterOption>("all");
   const [showClearHistoryModal, setShowClearHistoryModal] = useState(false);
   const [isClearingHistory, setIsClearingHistory] = useState(false);
+  const [clearPin, setClearPin] = useState("");
   const [recentSales, setRecentSales] = useState<
     Array<{
       id: string;
@@ -220,11 +221,16 @@ const ReportsPage = () => {
       toast.error("Subscription yarangiye — jya kuri Billing wishyure to clear history");
       return;
     }
+    if (!/^\d{4}$/.test(clearPin)) {
+      toast.error("Andika PIN y'umuyobozi (imibare 4)");
+      return;
+    }
     setIsClearingHistory(true);
     try {
-      await resetSalesMoney();
+      await resetSalesMoney(clearPin);
       await setAppSetting("total_paid", "0");
 
+      setClearPin("");
       setShowClearHistoryModal(false);
       toast.success("Sales report history yasibwe, watangiye bushya ✨");
       fetchReports();
@@ -455,6 +461,16 @@ const ReportsPage = () => {
           <p className="text-[12px] text-muted-foreground">
             Ibi bizasiba amateka ya sales/report (sales + daily report keys) kugirango utangire bushya.
           </p>
+          <input
+            type="password"
+            inputMode="numeric"
+            maxLength={4}
+            autoComplete="off"
+            placeholder="PIN y'umuyobozi"
+            value={clearPin}
+            onChange={(e) => setClearPin(e.target.value.replace(/\D/g, "").slice(0, 4))}
+            className="sella-input-glass w-full rounded-xl px-3 py-2 text-sm"
+          />
           <div className="flex gap-2">
             <Button
               onClick={handleClearSalesReportHistory}

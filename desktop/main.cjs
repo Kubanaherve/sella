@@ -21,6 +21,18 @@ const DIST = path.resolve(__dirname, "../dist");
 const ICON = path.resolve(__dirname, "../public/brand/sella-icon.png");
 const DEV_URL = process.env.ELECTRON_START_URL || "";
 
+// The unpacked `electron` binary otherwise stores IndexedDB under the shared
+// "Electron" profile. A second window then fails with
+// "Internal error opening backing store for indexedDB.open" because LevelDB
+// keeps an exclusive LOCK. Sella gets its own profile and only one process.
+app.setName("Sella");
+app.setPath("userData", path.join(app.getPath("appData"), "Sella"));
+
+const gotSingleInstance = app.requestSingleInstanceLock();
+if (!gotSingleInstance) {
+  app.quit();
+}
+
 protocol.registerSchemesAsPrivileged([
   {
     scheme: "sella",
@@ -71,7 +83,7 @@ function createWindow() {
     title: "Sella",
     titleBarStyle: process.platform === "darwin" ? "hiddenInset" : "default",
     trafficLightPosition: process.platform === "darwin" ? { x: 16, y: 16 } : undefined,
-    backgroundColor: "#040816",
+    backgroundColor: "#F7F8FB",
     icon: fs.existsSync(ICON) ? ICON : undefined,
     webPreferences: {
       preload: path.join(__dirname, "preload.cjs"),
@@ -101,17 +113,30 @@ function createWindow() {
 
   if (DEV_URL) {
     win.loadURL(DEV_URL);
-    return;
-  }
-  if (!fs.existsSync(path.join(DIST, "index.html"))) {
+  } else if (!fs.existsSync(path.join(DIST, "index.html"))) {
     dialog.showErrorBox(
       "Sella",
       "The web build is missing. Run npm run build, or set ELECTRON_START_URL to the Vite server."
     );
     return;
+  } else {
+    win.loadURL("sella://app/");
   }
-  win.loadURL("sella://app/");
+
+  win.once("ready-to-show", () => {
+    win.show();
+    win.focus();
+  });
 }
+
+if (gotSingleInstance) {
+app.on("second-instance", () => {
+  const win = BrowserWindow.getAllWindows()[0];
+  if (!win) return;
+  if (win.isMinimized()) win.restore();
+  win.show();
+  win.focus();
+});
 
 app.whenReady().then(() => {
   protocol.handle("sella", serveDist);
@@ -149,6 +174,7 @@ app.whenReady().then(() => {
     }
   });
 
+  if (app.dock) app.dock.show();
   createWindow();
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
@@ -158,3 +184,4 @@ app.whenReady().then(() => {
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();
 });
+}

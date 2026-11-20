@@ -1,16 +1,31 @@
-/** Supported units for multi-vertical retail shops. */
+/**
+ * Supported units for multi-vertical retail & wholesale traders across Rwanda.
+ * Covers clothing, grocery, hardware, construction materials, pharmacy,
+ * restaurants, agriculture, and general merchandise.
+ */
 export const INVENTORY_UNITS = [
-  { value: "pcs", labelRw: "Ingero (pcs)", labelEn: "Pieces" },
-  { value: "box", labelRw: "Agasanduku", labelEn: "Boxes" },
-  { value: "litre", labelRw: "Litiro", labelEn: "Litres" },
-  { value: "kg", labelRw: "Kg", labelEn: "Kilograms" },
-  { value: "metre", labelRw: "Metero", labelEn: "Metres" },
+  { value: "pcs", labelRw: "Ingero (pcs)", labelEn: "Pieces (pcs)" },
+  { value: "kg", labelRw: "Ibiro (kg)", labelEn: "Kilograms (kg)" },
+  { value: "g", labelRw: "Garama (g)", labelEn: "Grams (g)" },
+  { value: "tonne", labelRw: "Toni (t)", labelEn: "Tonnes (t)" },
+  { value: "litre", labelRw: "Litiro (L)", labelEn: "Litres (L)" },
+  { value: "ml", labelRw: "Mililitiro (ml)", labelEn: "Millilitres (ml)" },
+  { value: "metre", labelRw: "Metero (m)", labelEn: "Metres (m)" },
+  { value: "sqm", labelRw: "Metero kare (m²)", labelEn: "Square Metres (m²)" },
+  { value: "box", labelRw: "Agasanduku / Carton", labelEn: "Boxes / Cartons" },
+  { value: "bag", labelRw: "Isaho / Umufuka", labelEn: "Bags / Sacks" },
   { value: "roll", labelRw: "Umuzingo", labelEn: "Rolls" },
-  { value: "bag", labelRw: "Isaho", labelEn: "Bags" },
+  { value: "pair", labelRw: "Umuguru (Inkweto)", labelEn: "Pairs" },
+  { value: "portion", labelRw: "Ifunguro (Resitora)", labelEn: "Portions" },
+  { value: "pack", labelRw: "Ipaki / Packet", labelEn: "Packets / Packs" },
   { value: "bottle", labelRw: "Icupa", labelEn: "Bottles" },
+  { value: "can", labelRw: "Icyuma / Can", labelEn: "Cans / Tins" },
+  { value: "bundle", labelRw: "Umuba (Imboga/Imigozi)", labelEn: "Bundles" },
   { value: "set", labelRw: "Seti", labelEn: "Sets" },
   { value: "other", labelRw: "Ikindi", labelEn: "Other" },
 ] as const;
+
+export type SupportedUnitValue = (typeof INVENTORY_UNITS)[number]["value"];
 
 export function normalizeUnit(raw: string | null | undefined): string {
   if (!raw) return "pcs";
@@ -25,28 +40,81 @@ export function normalizeUnit(raw: string | null | undefined): string {
     box: "box",
     boxes: "box",
     carton: "box",
+    cartons: "box",
     l: "litre",
     lt: "litre",
     liter: "litre",
+    liters: "litre",
     litre: "litre",
     litres: "litre",
+    ml: "ml",
+    milliliter: "ml",
+    millilitre: "ml",
+    millilitres: "ml",
     kg: "kg",
     kilo: "kg",
+    kilos: "kg",
     kilogram: "kg",
     kilograms: "kg",
+    g: "g",
+    gram: "g",
+    grams: "g",
+    garama: "g",
+    tonne: "tonne",
+    tonnes: "tonne",
+    ton: "tonne",
+    tons: "tonne",
+    toni: "tonne",
+    t: "tonne",
     m: "metre",
     meter: "metre",
     metre: "metre",
     meters: "metre",
     metres: "metre",
+    metero: "metre",
+    sqm: "sqm",
+    "m2": "sqm",
+    "m²": "sqm",
     roll: "roll",
     rolls: "roll",
+    umuzingo: "roll",
     bag: "bag",
     bags: "bag",
+    sack: "bag",
+    sacks: "bag",
+    umufuka: "bag",
     bottle: "bottle",
     bottles: "bottle",
+    icupa: "bottle",
+    amacupa: "bottle",
+    pair: "pair",
+    pairs: "pair",
+    umuguru: "pair",
+    portion: "portion",
+    portions: "portion",
+    ifunguro: "portion",
+    pack: "pack",
+    packs: "pack",
+    packet: "pack",
+    packets: "pack",
+    ipaki: "pack",
+    can: "can",
+    cans: "can",
+    tin: "can",
+    tins: "can",
+    bundle: "bundle",
+    bundles: "bundle",
+    umuba: "bundle",
     set: "set",
     sets: "set",
+    seti: "set",
   };
-  return aliases[v] || (v.length <= 12 ? v : "other");
+  return aliases[v] || (v.length <= 16 ? v : "other");
+}
+
+export function formatUnitLabel(unit: string | null | undefined, lang: "rw" | "en" = "rw"): string {
+  const norm = normalizeUnit(unit);
+  const found = INVENTORY_UNITS.find((u) => u.value === norm);
+  if (!found) return unit || "pcs";
+  return lang === "rw" ? found.labelRw : found.labelEn;
 }

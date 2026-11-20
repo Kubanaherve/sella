@@ -1,6 +1,6 @@
 # SELLA live RLS two-shop matrix
 
-**Ran:** 2026-11-16T20:51:12.153Z  
+**Ran:** 2026-11-19T18:54:12.129Z  
 **Project:** `ixihbqubatyfulnurpco`  
 **Shops:** Demo Jewel Kigali (A) vs Demo Fashion Remera (B)  
 **Rule:** No feature is complete until expected behavior is tested and verified.

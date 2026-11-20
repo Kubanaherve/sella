@@ -17,6 +17,7 @@ import {
   lineTotal,
   normalizePaymentSlices,
   saleQuantity,
+  stockQuantity,
   sumRwf,
   toRwf,
   type PaymentSlice,
@@ -24,6 +25,15 @@ import {
 import { calendarDateKeyInKigali, isWithinLastDaysKigali, resolveSoldAt } from "@/lib/dates";
 import { isNetworkFailure } from "@/lib/network";
 import { enqueueOutbox } from "@/db/outbox";
+import { withReadCache } from "@/db/readCache";
+import { tenantOwnerId } from "@/lib/tenantContext";
+import { requireOwnerPin } from "@/lib/ownerGate";
+import { deleteDebtViaOwnerRpc } from "@/db/deleteDebtCloud";
+import {
+  paymentReferenceConflict,
+  referenceConflictMessage,
+  normalizePaymentReference,
+} from "@/lib/paymentRef";
 import { buildLedgerDailyReports, netSalesVolume } from "@/lib/reporting";
 
 export type { CreateSaleOrderInput, CreateSaleOrderResult };
@@ -54,9 +64,14 @@ function mapPayment(pay: Record<string, unknown>): Payment {
 const sb = () => getSupabase();
 
 async function uid(): Promise<string> {
-  const { data, error } = await sb().auth.getUser();
-  if (error || !data.user) throw new Error("Not signed in");
-  return data.user.id;
+  return tenantOwnerId();
+}
+
+/** Session stored on device — works when getUser() cannot reach the network. */
+async function sessionUserId(): Promise<string> {
+  const { data } = await sb().auth.getSession();
+  if (data.session?.user?.id) return data.session.user.id;
+  return uid();
 }
 
 function mapClient(row: Record<string, unknown>): Client {
@@ -159,13 +174,16 @@ export async function findOrCreateClient(name: string, phone?: string | null): P
 }
 
 export async function listClients(): Promise<Client[]> {
-  const { data, error } = await sb()
-    .from("clients")
-    .select("*")
-    .eq("user_id", await uid())
-    .order("created_at", { ascending: false });
-  if (error) throw error;
-  return (data || []).map(mapClient);
+  const owner = await uid();
+  return withReadCache(owner, "clients", async () => {
+    const { data, error } = await sb()
+      .from("clients")
+      .select("*")
+      .eq("user_id", owner)
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    return (data || []).map(mapClient);
+  });
 }
 
 export async function deleteClient(clientId: string) {
@@ -198,51 +216,136 @@ export type ActiveDebtRow = Debt & {
 };
 
 export async function listActiveDebts(): Promise<ActiveDebtRow[]> {
-  const user_id = await uid();
+  const owner = await uid();
+  return withReadCache(owner, "debts", async () => {
+    const { data: debts, error } = await sb()
+      .from("debts")
+      .select("*")
+      .eq("user_id", owner)
+      .eq("status", "active")
+      .gt("remaining_balance", 0)
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    const rows = debts || [];
+    if (!rows.length) return [];
+
+    const debtIds = rows.map((d) => d.id as string);
+    const clientIds = [...new Set(rows.map((d) => d.client_id as string))];
+    const [{ data: clients, error: clientError }, { data: items, error: itemError }] =
+      await Promise.all([
+        sb().from("clients").select("id, name, phone").in("id", clientIds),
+        sb()
+          .from("debt_items")
+          .select("debt_id, item_name, quantity, unit_price, created_at")
+          .in("debt_id", debtIds),
+      ]);
+    if (clientError) throw clientError;
+    if (itemError) throw itemError;
+
+    const clientById = new Map((clients || []).map((c) => [String(c.id), c]));
+    const itemsByDebt = new Map<string, NonNullable<typeof items>>();
+    for (const item of items || []) {
+      const id = String(item.debt_id);
+      const list = itemsByDebt.get(id) || [];
+      list.push(item);
+      itemsByDebt.set(id, list);
+    }
+
+    return rows.map((debt) => {
+      const client = clientById.get(String(debt.client_id));
+      const line_items = (itemsByDebt.get(String(debt.id)) || []).map((i) => ({
+        name: String(i.item_name),
+        quantity: Number(i.quantity),
+        unit_price: Number(i.unit_price),
+        created_at: String(i.created_at || debt.created_at),
+      }));
+      return {
+        id: debt.id as string,
+        client_id: debt.client_id as string,
+        total_amount: Number(debt.total_amount),
+        remaining_balance: Number(debt.remaining_balance),
+        due_date: debt.due_date as string | null,
+        status: debt.status as Debt["status"],
+        paid_at: (debt.paid_at as string | null) ?? null,
+        notes: (debt.notes as string | null) ?? null,
+        created_at: String(debt.created_at),
+        updated_at: String(debt.updated_at),
+        client_name: client?.name || "Unknown",
+        client_phone: client?.phone || null,
+        items_label: line_items.map((i) => `${i.name}: ${i.quantity}`).join(" , "),
+        line_items,
+      };
+    });
+  });
+}
+
+export async function listDebtsForReport(): Promise<
+  Array<ActiveDebtRow & { payment_amounts: number[] }>
+> {
+  const owner = await uid();
   const { data: debts, error } = await sb()
     .from("debts")
     .select("*")
-    .eq("user_id", user_id)
-    .eq("status", "active")
-    .gt("remaining_balance", 0)
-    .order("created_at", { ascending: false });
+    .eq("user_id", owner)
+    .order("created_at", { ascending: true });
   if (error) throw error;
-
-  const result: ActiveDebtRow[] = [];
-  for (const debt of debts || []) {
-    const { data: client } = await sb()
-      .from("clients")
-      .select("name, phone")
-      .eq("id", debt.client_id)
-      .maybeSingle();
-    const { data: items } = await sb()
-      .from("debt_items")
-      .select("item_name, quantity, unit_price, created_at")
-      .eq("debt_id", debt.id);
-    const line_items = (items || []).map((i) => ({
+  const rows = debts || [];
+  if (!rows.length) return [];
+  const debtIds = rows.map((d) => d.id as string);
+  const clientIds = [...new Set(rows.map((d) => d.client_id as string).filter(Boolean))];
+  const [{ data: clients, error: clientError }, { data: items, error: itemError }, { data: payments, error: payError }] =
+    await Promise.all([
+      clientIds.length
+        ? sb().from("clients").select("id, name, phone").in("id", clientIds)
+        : Promise.resolve({ data: [], error: null }),
+      sb().from("debt_items").select("debt_id, item_name, quantity, unit_price, created_at").in("debt_id", debtIds),
+      sb().from("payments").select("debt_id, amount").eq("user_id", owner).in("debt_id", debtIds),
+    ]);
+  if (clientError) throw clientError;
+  if (itemError) throw itemError;
+  if (payError) throw payError;
+  const clientById = new Map((clients || []).map((c) => [String(c.id), c]));
+  const itemsByDebt = new Map<string, NonNullable<typeof items>>();
+  for (const item of items || []) {
+    const id = String(item.debt_id);
+    const list = itemsByDebt.get(id) || [];
+    list.push(item);
+    itemsByDebt.set(id, list);
+  }
+  const paymentsByDebt = new Map<string, number[]>();
+  for (const payment of payments || []) {
+    if (!payment.debt_id) continue;
+    const id = String(payment.debt_id);
+    const list = paymentsByDebt.get(id) || [];
+    list.push(Number(payment.amount));
+    paymentsByDebt.set(id, list);
+  }
+  return rows.map((debt) => {
+    const client = clientById.get(String(debt.client_id));
+    const line_items = (itemsByDebt.get(String(debt.id)) || []).map((i) => ({
       name: String(i.item_name),
       quantity: Number(i.quantity),
       unit_price: Number(i.unit_price),
       created_at: String(i.created_at || debt.created_at),
     }));
-    result.push({
-      id: debt.id,
-      client_id: debt.client_id,
+    return {
+      id: debt.id as string,
+      client_id: debt.client_id as string,
       total_amount: Number(debt.total_amount),
       remaining_balance: Number(debt.remaining_balance),
-      due_date: debt.due_date,
-      status: debt.status,
-      paid_at: debt.paid_at,
-      notes: debt.notes,
-      created_at: debt.created_at,
-      updated_at: debt.updated_at,
+      due_date: (debt.due_date as string | null) ?? null,
+      status: debt.status as Debt["status"],
+      paid_at: (debt.paid_at as string | null) ?? null,
+      notes: (debt.notes as string | null) ?? null,
+      created_at: String(debt.created_at),
+      updated_at: String(debt.updated_at),
       client_name: client?.name || "Unknown",
-      client_phone: client?.phone || null,
+      client_phone: (client?.phone as string | null) ?? null,
       items_label: line_items.map((i) => `${i.name}: ${i.quantity}`).join(" , "),
       line_items,
-    });
-  }
-  return result;
+      payment_amounts: paymentsByDebt.get(String(debt.id)) || [],
+    };
+  });
 }
 
 function mapDebt(debt: Record<string, unknown>): Debt {
@@ -339,8 +442,12 @@ export async function createSaleOrder(
       quantity: i.quantity,
       unit_price: i.unit_price,
     })),
+    ...(input.cashierUserId ? { cashier_user_id: input.cashierUserId } : {}),
+    ...(input.cashierName ? { cashier_name: input.cashierName } : {}),
+    ...(input.shopId ? { shop_id: input.shopId } : {}),
   };
 
+  const ownerKey = await sessionUserId();
   let data: unknown;
   try {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
@@ -368,6 +475,7 @@ export async function createSaleOrder(
       operation: "create_sale_order",
       payload,
       idempotency_key: idempotencyKey,
+      owner_key: ownerKey,
     });
     const now = new Date().toISOString();
     const receiptNumber = `OFF-${idempotencyKey.slice(0, 8).toUpperCase()}`;
@@ -392,6 +500,7 @@ export async function createSaleOrder(
       paid: orderTotal - normalized.remaining,
       remaining: normalized.remaining,
       changeDue: toRwf(input.changeGiven ?? normalized.changeDue),
+      cashTendered: normalized.cashTendered,
       receiptNumber,
       queuedOffline: true,
       outboxId: queued.id,
@@ -438,6 +547,7 @@ export async function createSaleOrder(
     paid: toRwf(row.paid),
     remaining: toRwf(row.remaining),
     changeDue: toRwf(row.changeDue),
+    cashTendered: normalized.cashTendered,
     receiptNumber: String(row.receiptNumber || row.debt.receipt_number || makeReceiptNumber()),
   };
 }
@@ -476,6 +586,7 @@ export async function recordPayment(input: {
   paymentMethod: PaymentMethod;
   notes?: string;
   referenceNumber?: string | null;
+  idempotencyKey?: string | null;
 }): Promise<Payment> {
   const amount = toRwf(input.amount);
   if (amount <= 0) throw new Error("Amafaranga ntayemewe");
@@ -486,14 +597,36 @@ export async function recordPayment(input: {
     );
   }
 
-  const idempotency_key = crypto.randomUUID();
+  const ownerKey = await sessionUserId();
+  const idempotency_key = input.idempotencyKey?.trim() || crypto.randomUUID();
+  const reference = input.referenceNumber?.trim() || null;
   const p_payload = {
     idempotency_key,
     debt_id: input.debtId,
     amount,
     payment_method: method,
     notes: input.notes || null,
-    reference_number: input.referenceNumber?.trim() || null,
+    reference_number: reference,
+  };
+
+  const queuePayment = async (): Promise<Payment> => {
+    await enqueueOutbox({
+      operation: "record_payment",
+      payload: p_payload,
+      idempotency_key,
+      owner_key: ownerKey,
+    });
+    return {
+      id: idempotency_key,
+      debt_id: input.debtId,
+      client_id: "offline",
+      amount,
+      payment_method: method,
+      reference_number: reference,
+      notes: input.notes || "queued offline",
+      idempotency_key,
+      created_at: new Date().toISOString(),
+    };
   };
 
   let data: unknown;
@@ -502,31 +635,35 @@ export async function recordPayment(input: {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
       throw new Error("offline");
     }
+    if (normalizePaymentReference(reference)) {
+      const existing = await sb()
+        .from("payments")
+        .select("debt_id, payment_method, reference_number")
+        .eq("user_id", ownerKey);
+      if (existing.error) {
+        if (isNetworkFailure(existing.error)) return queuePayment();
+        throw new Error(existing.error.message);
+      }
+      const message = referenceConflictMessage(
+        paymentReferenceConflict(existing.data || [], {
+          debtId: input.debtId,
+          method,
+          reference,
+        })
+      );
+      if (message) throw new Error(message);
+    }
     const res = await sb().rpc("record_payment", { p_payload });
     data = res.data;
     error = res.error;
   } catch (err) {
     if (isNetworkFailure(err) || String((err as Error)?.message) === "offline") {
-      await enqueueOutbox({
-        operation: "record_payment",
-        payload: p_payload,
-        idempotency_key,
-      });
-      const now = new Date().toISOString();
-      return {
-        id: idempotency_key,
-        debt_id: input.debtId,
-        client_id: "offline",
-        amount,
-        payment_method: method,
-        reference_number: input.referenceNumber?.trim() || null,
-        notes: input.notes || "queued offline",
-        created_at: now,
-      };
+      return queuePayment();
     }
     throw err instanceof Error ? err : new Error(String(err));
   }
   if (error) {
+    if (isNetworkFailure(error)) return queuePayment();
     const msg = error.message || "";
     if (/could not find the function|schema cache/i.test(msg)) {
       throw new Error(
@@ -569,40 +706,13 @@ export async function listRecentSales(limit = 40): Promise<
   });
 }
 
-export async function deleteDebt(debtId: string) {
-  const user_id = await uid();
-  const { data: items } = await sb()
-    .from("debt_items")
-    .select("*")
-    .eq("debt_id", debtId)
-    .eq("user_id", user_id);
-  const now = new Date().toISOString();
-  for (const item of items || []) {
-    if (!item.inventory_item_id) continue;
-    const { data: inv } = await sb()
-      .from("inventory_items")
-      .select("quantity")
-      .eq("id", item.inventory_item_id)
-      .eq("user_id", user_id)
-      .maybeSingle();
-    if (inv) {
-      await sb()
-        .from("inventory_items")
-        .update({ quantity: inv.quantity + item.quantity, updated_at: now })
-        .eq("id", item.inventory_item_id)
-        .eq("user_id", user_id);
-    }
-  }
-  await sb().from("payments").delete().eq("debt_id", debtId).eq("user_id", user_id);
-  await sb().from("debt_items").delete().eq("debt_id", debtId).eq("user_id", user_id);
-  // Match localApi: remove sales rows tied to this debt (avoid orphan ledger)
-  await sb().from("sales").delete().eq("debt_id", debtId).eq("user_id", user_id);
-  const { error } = await sb()
-    .from("debts")
-    .delete()
-    .eq("id", debtId)
-    .eq("user_id", user_id);
-  if (error) throw error;
+export async function deleteDebt(debtId: string, ownerPin: string) {
+  const client = sb();
+  await deleteDebtViaOwnerRpc(
+    (name, args) => client.rpc(name, args),
+    debtId,
+    ownerPin
+  );
 }
 
 function mapInventoryRow(row: Record<string, unknown>): InventoryItem {
@@ -612,9 +722,7 @@ function mapInventoryRow(row: Record<string, unknown>): InventoryItem {
     quantity: Number(row.quantity),
     selling_price: Number(row.selling_price),
     cost_price: Number(row.cost_price),
-    date_bought:
-      String(row.date_bought || "").slice(0, 10) ||
-      String(row.created_at || "").slice(0, 10),
+    date_bought: kigaliDateOnly(String(row.date_bought || row.created_at || "")),
     notes: (row.notes as string | null) ?? null,
     category: (row.category as string | null) ?? null,
     image_url: (row.image_url as string | null) ?? null,
@@ -625,20 +733,47 @@ function mapInventoryRow(row: Record<string, unknown>): InventoryItem {
     supplier: (row.supplier as string | null) ?? null,
     min_quantity:
       row.min_quantity == null ? null : Number(row.min_quantity),
+    variant_label: (row.variant_label as string | null) ?? null,
+    min_order_qty:
+      row.min_order_qty == null ? null : Number(row.min_order_qty),
     description: (row.description as string | null) ?? null,
     created_at: String(row.created_at || ""),
     updated_at: String(row.updated_at || ""),
   };
 }
 
+function kigaliDateOnly(value: string): string {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+  return calendarDateKeyInKigali(value) || value.slice(0, 10);
+}
+
 export async function listInventory(): Promise<InventoryItem[]> {
-  const { data, error } = await sb()
-    .from("inventory_items")
-    .select("*")
-    .eq("user_id", await uid())
-    .order("created_at", { ascending: false });
-  if (error) throw error;
-  return (data || []).map((row) => mapInventoryRow(row as Record<string, unknown>));
+  const owner = await uid();
+  return withReadCache(owner, "inventory", async () => {
+    const { data, error } = await sb()
+      .from("inventory_items")
+      .select("*")
+      .eq("user_id", owner)
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    return (data || []).map((row) => mapInventoryRow(row as Record<string, unknown>));
+  });
+}
+
+function cleanVariant(value: string | null | undefined): string | null {
+  const text = (value || "").trim().slice(0, 80);
+  return text || null;
+}
+
+function cleanMinOrder(value: number | null | undefined): number | null {
+  if (value == null || !Number.isFinite(value)) return null;
+  const n = Math.round(value);
+  return n > 0 ? n : null;
+}
+
+function isMissingCatalogColumn(error: { message?: string; code?: string }): boolean {
+  const msg = `${error.code || ""} ${error.message || ""}`;
+  return /variant_label|min_order_qty|schema cache|PGRST204/i.test(msg);
 }
 
 function inventoryMoney(value: number, label: string): number {
@@ -672,8 +807,7 @@ export async function addInventoryItem(
 ): Promise<InventoryItem> {
   const itemName = input.item_name.trim();
   if (!itemName) throw new Error("Izina ry'ikintu rirakenewe");
-  const quantity = Number(input.quantity);
-  if (!Number.isFinite(quantity) || quantity < 0) throw new Error("Umubare ntuyemewe");
+  const quantity = stockQuantity(input.quantity, 0);
   await assertCloudUniqueCodes(input);
   const { data, error } = await sb()
     .from("inventory_items")
@@ -692,11 +826,39 @@ export async function addInventoryItem(
       brand: input.brand ?? null,
       supplier: input.supplier ?? null,
       min_quantity: input.min_quantity ?? null,
+      variant_label: cleanVariant(input.variant_label),
+      min_order_qty: cleanMinOrder(input.min_order_qty),
       description: input.description ?? null,
       date_bought: input.date_bought || undefined,
     })
     .select("*")
     .single();
+  if (error && isMissingCatalogColumn(error)) {
+    const { data: retry, error: retryError } = await sb()
+      .from("inventory_items")
+      .insert({
+        user_id: await uid(),
+        item_name: itemName,
+        quantity,
+        selling_price: inventoryMoney(input.selling_price, "Igiciro cyo kugurisha"),
+        cost_price: inventoryMoney(input.cost_price, "Igiciro cyo kugura"),
+        notes: input.notes ?? null,
+        category: input.category ?? null,
+        image_url: input.image_url ?? null,
+        sku: input.sku?.trim() || null,
+        barcode: input.barcode?.trim() || null,
+        unit: input.unit ?? "pcs",
+        brand: input.brand ?? null,
+        supplier: input.supplier ?? null,
+        min_quantity: input.min_quantity ?? null,
+        description: input.description ?? null,
+        date_bought: input.date_bought || undefined,
+      })
+      .select("*")
+      .single();
+    if (retryError) throw retryError;
+    return mapInventoryRow(retry as Record<string, unknown>);
+  }
   if (error) throw error;
   return mapInventoryRow(data as Record<string, unknown>);
 }
@@ -712,9 +874,7 @@ export async function updateInventoryItem(
     next.item_name = name;
   }
   if (next.quantity !== undefined) {
-    const quantity = Number(next.quantity);
-    if (!Number.isFinite(quantity) || quantity < 0) throw new Error("Umubare ntuyemewe");
-    next.quantity = quantity;
+    next.quantity = stockQuantity(next.quantity, 0);
   }
   if (next.selling_price !== undefined) {
     next.selling_price = inventoryMoney(next.selling_price, "Igiciro cyo kugurisha");
@@ -722,17 +882,30 @@ export async function updateInventoryItem(
   if (next.cost_price !== undefined) {
     next.cost_price = inventoryMoney(next.cost_price, "Igiciro cyo kugura");
   }
+  if (next.variant_label !== undefined) next.variant_label = cleanVariant(next.variant_label);
+  if (next.min_order_qty !== undefined) next.min_order_qty = cleanMinOrder(next.min_order_qty);
   if (next.sku !== undefined || next.barcode !== undefined) {
     await assertCloudUniqueCodes(
       { sku: next.sku, barcode: next.barcode },
       id
     );
   }
+  const owner = await uid();
   const { error } = await sb()
     .from("inventory_items")
     .update({ ...next, updated_at: new Date().toISOString() })
     .eq("id", id)
-    .eq("user_id", await uid());
+    .eq("user_id", owner);
+  if (error && isMissingCatalogColumn(error)) {
+    const { variant_label: _variant, min_order_qty: _min, ...rest } = next;
+    const { error: retryError } = await sb()
+      .from("inventory_items")
+      .update({ ...rest, updated_at: new Date().toISOString() })
+      .eq("id", id)
+      .eq("user_id", owner);
+    if (retryError) throw retryError;
+    return;
+  }
   if (error) throw error;
 }
 
@@ -956,13 +1129,15 @@ export async function getDailyReports(): Promise<DailyReport[]> {
   });
 }
 
-export async function resetSalesMoney() {
+export async function resetSalesMoney(ownerPin: string) {
+  await requireOwnerPin(ownerPin);
   const user_id = await uid();
   await sb().from("sales").delete().eq("user_id", user_id);
   await sb().from("payments").delete().eq("user_id", user_id);
 }
 
-export async function factoryResetKeepClients() {
+export async function factoryResetKeepClients(ownerPin: string) {
+  await requireOwnerPin(ownerPin);
   const user_id = await uid();
   await sb().from("sales").delete().eq("user_id", user_id);
   await sb().from("payments").delete().eq("user_id", user_id);
@@ -970,7 +1145,8 @@ export async function factoryResetKeepClients() {
   await sb().from("debts").delete().eq("user_id", user_id);
 }
 
-export async function wipeAllBusinessData() {
+export async function wipeAllBusinessData(ownerPin: string) {
+  await requireOwnerPin(ownerPin);
   const user_id = await uid();
   await sb().from("sales").delete().eq("user_id", user_id);
   await sb().from("payments").delete().eq("user_id", user_id);

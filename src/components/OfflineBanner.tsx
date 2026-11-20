@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { countPendingOutbox } from "@/db/outbox";
-import { isCloudMode } from "@/integrations/supabase/client";
+import { Link } from "react-router-dom";
+import { countOutboxAttention } from "@/db/outbox";
+import { getSupabase, isCloudMode } from "@/integrations/supabase/client";
 
 /** Connectivity banner + offline outbox pending count (cloud). */
 export function OfflineBanner() {
@@ -8,14 +9,32 @@ export function OfflineBanner() {
     typeof navigator === "undefined" ? true : navigator.onLine
   );
   const [pending, setPending] = useState(0);
+  const [conflicts, setConflicts] = useState(0);
 
   useEffect(() => {
     const refreshPending = () => {
       if (!isCloudMode()) {
         setPending(0);
+        setConflicts(0);
         return;
       }
-      void countPendingOutbox().then(setPending).catch(() => setPending(0));
+      void (async () => {
+        try {
+          const { data } = await getSupabase().auth.getSession();
+          const owner = data.session?.user?.id;
+          if (!owner) {
+            setPending(0);
+            setConflicts(0);
+            return;
+          }
+          const counts = await countOutboxAttention(owner);
+          setPending(counts.pending);
+          setConflicts(counts.conflicts);
+        } catch {
+          setPending(0);
+          setConflicts(0);
+        }
+      })();
     };
     const on = () => {
       setOnline(true);
@@ -35,7 +54,7 @@ export function OfflineBanner() {
     };
   }, []);
 
-  if (online && pending === 0) return null;
+  if (online && pending === 0 && conflicts === 0) return null;
 
   return (
     <div
@@ -46,9 +65,15 @@ export function OfflineBanner() {
         paddingBottom: "0.45rem",
       }}
     >
-      {!online
-        ? "Nta interineti — amakuru ya locale akora; sync izagaruka iyo wahuye."
-        : `${pending} offline action(s) waiting to sync`}
+      {conflicts > 0 ? (
+        <Link to="/sync-conflicts" className="underline font-semibold">
+          {conflicts} sale(s) kept on this device — stock conflict, review needed
+        </Link>
+      ) : !online ? (
+        "Nta interineti — amakuru ya locale akora; sync izagaruka iyo wahuye."
+      ) : (
+        `${pending} offline action(s) waiting to sync`
+      )}
     </div>
   );
 }

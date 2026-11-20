@@ -16,6 +16,14 @@ import { normalizePhoneE164 } from "@/lib/phone";
 import { hashPin, verifyPin } from "@/lib/pin";
 import { normalizeEmail } from "@/lib/shopIdentity";
 import { generateLocalShopCode } from "@/lib/shopCode";
+import { normalizeBusinessCategory } from "@/lib/businessCategories";
+import { isCashierModeActive } from "@/lib/cashierMode";
+import { assertDebtDeleteAllowed, CASHIER_DELETE_ERROR } from "@/lib/debtDeletion";
+import {
+  normalizePaymentReference,
+  paymentReferenceConflict,
+  referenceConflictMessage,
+} from "@/lib/paymentRef";
 import {
   assertPaymentMethod,
   extendTotal,
@@ -23,6 +31,7 @@ import {
   normalizePaymentSlices,
   paymentStatusFromBalances,
   saleQuantity,
+  stockQuantity,
   sumRwf,
   toRwf,
   type PaymentSlice,
@@ -69,6 +78,7 @@ export async function signupLocal(input: {
   displayName: string;
   businessName: string;
   email: string;
+  businessCategory?: string | null;
 }): Promise<{ profile: Profile } | { error: string }> {
   const phone_normalized = normalizePhoneE164(input.phone);
   if (!phone_normalized) return { error: "Numero ntiyemewe" };
@@ -111,6 +121,7 @@ export async function signupLocal(input: {
     email,
     email_normalized: email,
     shop_code,
+    business_category: normalizeBusinessCategory(input.businessCategory),
     pin_hash: await hashPin(input.pin),
     created_at: now,
     updated_at: now,
@@ -145,6 +156,13 @@ export async function verifyProfilePin(profileId: string, pin: string): Promise<
   const profile = await db.profiles.get(profileId);
   if (!profile) return false;
   return verifyPin(pin, profile.pin_hash);
+}
+
+async function assertOwnerPin(pin: string): Promise<void> {
+  const profile = await getSessionProfile();
+  if (!profile || !(await verifyProfilePin(profile.id, pin.trim()))) {
+    throw new Error("PIN y'umuyobozi sibyo");
+  }
 }
 
 export async function changePin(profileId: string, oldPin: string, newPin: string) {
@@ -373,25 +391,86 @@ export async function listActiveDebts(): Promise<ActiveDebtRow[]> {
     )
     .toArray();
   debts.sort((a, b) => b.created_at.localeCompare(a.created_at));
+  if (!debts.length) return [];
 
-  const result: ActiveDebtRow[] = [];
-  for (const debt of debts) {
-    const client = await db.clients.get(debt.client_id);
-    const items = await db.debt_items.where("debt_id").equals(debt.id).toArray();
-    result.push({
+  const clients = await db.clients.bulkGet(debts.map((d) => d.client_id));
+  const clientById = new Map(
+    clients.filter((c): c is NonNullable<typeof c> => !!c).map((c) => [c.id, c])
+  );
+  const items = await db.debt_items
+    .where("debt_id")
+    .anyOf(debts.map((d) => d.id))
+    .toArray();
+  const itemsByDebt = new Map<string, typeof items>();
+  for (const item of items) {
+    const list = itemsByDebt.get(item.debt_id) || [];
+    list.push(item);
+    itemsByDebt.set(item.debt_id, list);
+  }
+
+  return debts.map((debt) => {
+    const client = clientById.get(debt.client_id);
+    const lineSource = itemsByDebt.get(debt.id) || [];
+    const line_items = lineSource.map((i) => ({
+      name: i.item_name,
+      quantity: i.quantity,
+      unit_price: i.unit_price,
+      created_at: i.created_at || debt.created_at,
+    }));
+    return {
       ...debt,
       client_name: client?.name || "Unknown",
       client_phone: client?.phone || null,
-      items_label: items.map((i) => `${i.item_name}: ${i.quantity}`).join(" , "),
-      line_items: items.map((i) => ({
-        name: i.item_name,
-        quantity: i.quantity,
-        unit_price: i.unit_price,
-        created_at: i.created_at || debt.created_at,
-      })),
-    });
+      items_label: line_items.map((i) => `${i.name}: ${i.quantity}`).join(" , "),
+      line_items,
+    };
+  });
+}
+
+export async function listDebtsForReport(): Promise<
+  Array<ActiveDebtRow & { payment_amounts: number[] }>
+> {
+  const profileId = await requireProfileId();
+  const debts = (await db.debts.filter((d) => ownedByProfile(d, profileId)).toArray()).sort((a, b) =>
+    a.created_at.localeCompare(b.created_at)
+  );
+  if (!debts.length) return [];
+  const clients = await db.clients.bulkGet(debts.map((d) => d.client_id));
+  const clientById = new Map(
+    clients.filter((c): c is NonNullable<typeof c> => !!c).map((c) => [c.id, c])
+  );
+  const items = await db.debt_items.where("debt_id").anyOf(debts.map((d) => d.id)).toArray();
+  const payments = await db.payments.filter((payment) => debts.some((debt) => debt.id === payment.debt_id)).toArray();
+  const itemsByDebt = new Map<string, typeof items>();
+  for (const item of items) {
+    const list = itemsByDebt.get(item.debt_id) || [];
+    list.push(item);
+    itemsByDebt.set(item.debt_id, list);
   }
-  return result;
+  const paymentsByDebt = new Map<string, number[]>();
+  for (const payment of payments) {
+    if (!payment.debt_id) continue;
+    const list = paymentsByDebt.get(payment.debt_id) || [];
+    list.push(payment.amount);
+    paymentsByDebt.set(payment.debt_id, list);
+  }
+  return debts.map((debt) => {
+    const client = clientById.get(debt.client_id);
+    const line_items = (itemsByDebt.get(debt.id) || []).map((i) => ({
+      name: i.item_name,
+      quantity: i.quantity,
+      unit_price: i.unit_price,
+      created_at: i.created_at || debt.created_at,
+    }));
+    return {
+      ...debt,
+      client_name: client?.name || "Unknown",
+      client_phone: client?.phone || null,
+      items_label: line_items.map((i) => `${i.name}: ${i.quantity}`).join(" , "),
+      line_items,
+      payment_amounts: paymentsByDebt.get(debt.id) || [],
+    };
+  });
 }
 
 export async function createSaleOrder(
@@ -468,6 +547,8 @@ export async function createSaleOrder(
     paid_at: normalized.remaining <= 0 ? now : null,
     notes: null,
     discount_amount: discount,
+    change_given: toRwf(input.changeGiven ?? normalized.changeDue),
+    receipt_number: receiptNumber,
     created_at: now,
     updated_at: now,
   };
@@ -513,6 +594,9 @@ export async function createSaleOrder(
         const sale: Sale = {
           id: newId(),
           profile_id: profileId,
+          shop_id: input.shopId || profileId,
+          cashier_user_id: input.cashierUserId || null,
+          cashier_name: input.cashierName || null,
           client_id: client.id,
           item_name: item.item_name,
           quantity: item.quantity,
@@ -560,6 +644,7 @@ export async function createSaleOrder(
     paid: normalized.paid,
     remaining: normalized.remaining,
     changeDue: normalized.changeDue,
+    cashTendered: normalized.cashTendered,
     receiptNumber,
   };
 }
@@ -597,6 +682,7 @@ export async function recordPayment(input: {
   paymentMethod: PaymentMethod;
   notes?: string;
   referenceNumber?: string | null;
+  idempotencyKey?: string | null;
 }): Promise<Payment> {
   const profileId = await requireProfileId();
   const debt = await db.debts.get(input.debtId);
@@ -605,20 +691,26 @@ export async function recordPayment(input: {
   if (amount <= 0) throw new Error("Amafaranga ntayemewe");
   const method = assertPaymentMethod(input.paymentMethod);
   const reference = input.referenceNumber?.trim() || null;
+  const idempotencyKey = input.idempotencyKey?.trim() || null;
+  if (idempotencyKey) {
+    const prior = await db.payments
+      .filter(
+        (p) => ownedByProfile(p, profileId) && p.idempotency_key === idempotencyKey
+      )
+      .first();
+    if (prior) return prior;
+  }
   if (amount > toRwf(debt.remaining_balance)) {
     throw new Error("Amafaranga arenza ideni");
   }
   if (reference) {
-    const dup = await db.payments
-      .where("debt_id")
-      .equals(input.debtId)
-      .filter(
-        (p) =>
-          ownedByProfile(p, profileId) &&
-          (p.reference_number || "").trim().toLowerCase() === reference.toLowerCase()
-      )
-      .first();
-    if (dup) throw new Error("Iyi reference yamaze gukoreshwa kuri iri deni");
+    const message = await referenceConflictForProfile(
+      profileId,
+      input.debtId,
+      method,
+      reference
+    );
+    if (message) throw new Error(message);
   }
 
   const now = nowIso();
@@ -632,10 +724,24 @@ export async function recordPayment(input: {
     payment_method: method,
     reference_number: reference,
     notes: input.notes || null,
+    idempotency_key: idempotencyKey,
     created_at: now,
   };
 
+  let replay: Payment | null = null;
   await db.transaction("rw", db.payments, db.debts, db.sales, async () => {
+    if (idempotencyKey) {
+      const prior = await db.payments
+        .filter(
+          (p) =>
+            ownedByProfile(p, profileId) && p.idempotency_key === idempotencyKey
+        )
+        .first();
+      if (prior) {
+        replay = prior;
+        return;
+      }
+    }
     const fresh = await db.debts.get(input.debtId);
     if (!fresh || !ownedByProfile(fresh, profileId)) {
       throw new Error("Ideni ntiribonetse");
@@ -644,15 +750,13 @@ export async function recordPayment(input: {
       throw new Error("Amafaranga arenza ideni");
     }
     if (reference) {
-      const dup = await db.payments
-        .where("debt_id")
-        .equals(input.debtId)
-        .filter(
-          (p) =>
-            (p.reference_number || "").trim().toLowerCase() === reference.toLowerCase()
-        )
-        .first();
-      if (dup) throw new Error("Iyi reference yamaze gukoreshwa kuri iri deni");
+      const message = await referenceConflictForProfile(
+        profileId,
+        input.debtId,
+        method,
+        reference
+      );
+      if (message) throw new Error(message);
     }
     const rem = toRwf(fresh.remaining_balance) - amount;
     await db.payments.add(payment);
@@ -671,7 +775,7 @@ export async function recordPayment(input: {
     }
   });
 
-  return payment;
+  return replay || payment;
 }
 
 export async function listRecentSales(limit = 40): Promise<
@@ -697,13 +801,14 @@ export async function listRecentSales(limit = 40): Promise<
   return out;
 }
 
-export async function deleteDebt(debtId: string) {
+export async function deleteDebt(debtId: string, ownerPin: string) {
+  const pin = assertDebtDeleteAllowed(ownerPin);
   const profileId = await requireProfileId();
+  await assertOwnerPin(pin);
   const debt = await db.debts.get(debtId);
   if (!debt || !ownedByProfile(debt, profileId)) {
     throw new Error("Ideni ntiribonetse");
   }
-  const items = await db.debt_items.where("debt_id").equals(debtId).toArray();
   const now = nowIso();
   await db.transaction(
     "rw",
@@ -713,6 +818,12 @@ export async function deleteDebt(debtId: string) {
     db.sales,
     db.debts,
     async () => {
+      if (isCashierModeActive()) throw new Error(CASHIER_DELETE_ERROR);
+      const fresh = await db.debts.get(debtId);
+      if (!fresh || !ownedByProfile(fresh, profileId)) {
+        throw new Error("Ideni ntiribonetse");
+      }
+      const items = await db.debt_items.where("debt_id").equals(debtId).toArray();
       for (const item of items) {
         if (item.inventory_item_id) {
           const inv = await db.inventory_items.get(item.inventory_item_id);
@@ -729,6 +840,19 @@ export async function deleteDebt(debtId: string) {
       await db.sales.filter((s) => s.debt_id === debtId).delete();
       await db.debts.delete(debtId);
     }
+  );
+}
+
+async function referenceConflictForProfile(
+  profileId: string,
+  debtId: string,
+  method: string,
+  reference: string | null
+): Promise<string | null> {
+  if (!normalizePaymentReference(reference)) return null;
+  const rows = await db.payments.filter((p) => ownedByProfile(p, profileId)).toArray();
+  return referenceConflictMessage(
+    paymentReferenceConflict(rows, { debtId, method, reference })
   );
 }
 
@@ -763,6 +887,17 @@ async function assertUniqueInventoryCodes(
   }
 }
 
+function cleanVariant(value: string | null | undefined): string | null {
+  const text = (value || "").trim().slice(0, 80);
+  return text || null;
+}
+
+function cleanMinOrder(value: number | null | undefined): number | null {
+  if (value == null || !Number.isFinite(value)) return null;
+  const n = Math.round(value);
+  return n > 0 ? n : null;
+}
+
 function inventoryMoney(value: number, label: string): number {
   const n = toRwf(value);
   if (!Number.isFinite(n) || n < 0) throw new Error(`${label} ntikemewe`);
@@ -775,8 +910,7 @@ export async function addInventoryItem(
   const profileId = await requireProfileId();
   const itemName = input.item_name.trim();
   if (!itemName) throw new Error("Izina ry'ikintu rirakenewe");
-  const quantity = Number(input.quantity);
-  if (!Number.isFinite(quantity) || quantity < 0) throw new Error("Umubare ntuyemewe");
+  const quantity = stockQuantity(input.quantity, 0);
   await assertUniqueInventoryCodes(profileId, input);
   const now = nowIso();
   const item: InventoryItem = {
@@ -796,6 +930,8 @@ export async function addInventoryItem(
     brand: input.brand ?? null,
     supplier: input.supplier ?? null,
     min_quantity: input.min_quantity ?? null,
+    variant_label: cleanVariant(input.variant_label),
+    min_order_qty: cleanMinOrder(input.min_order_qty),
     description: input.description ?? null,
     created_at: now,
     updated_at: now,
@@ -820,9 +956,7 @@ export async function updateInventoryItem(
     next.item_name = name;
   }
   if (next.quantity !== undefined) {
-    const quantity = Number(next.quantity);
-    if (!Number.isFinite(quantity) || quantity < 0) throw new Error("Umubare ntuyemewe");
-    next.quantity = quantity;
+    next.quantity = stockQuantity(next.quantity, 0);
   }
   if (next.selling_price !== undefined) {
     next.selling_price = inventoryMoney(next.selling_price, "Igiciro cyo kugurisha");
@@ -830,6 +964,8 @@ export async function updateInventoryItem(
   if (next.cost_price !== undefined) {
     next.cost_price = inventoryMoney(next.cost_price, "Igiciro cyo kugura");
   }
+  if (next.variant_label !== undefined) next.variant_label = cleanVariant(next.variant_label);
+  if (next.min_order_qty !== undefined) next.min_order_qty = cleanMinOrder(next.min_order_qty);
   if (next.sku !== undefined || next.barcode !== undefined) {
     await assertUniqueInventoryCodes(
       profileId,
@@ -978,7 +1114,8 @@ export async function getDailyReports(): Promise<DailyReport[]> {
   return buildLedgerDailyReports({ sales, payments, debts });
 }
 
-export async function resetSalesMoney() {
+export async function resetSalesMoney(ownerPin: string) {
+  await assertOwnerPin(ownerPin);
   const profileId = await requireProfileId();
   await db.transaction("rw", db.sales, db.payments, async () => {
     await db.sales.filter((s) => ownedByProfile(s, profileId)).delete();
@@ -986,7 +1123,8 @@ export async function resetSalesMoney() {
   });
 }
 
-export async function factoryResetKeepClients() {
+export async function factoryResetKeepClients(ownerPin: string) {
+  await assertOwnerPin(ownerPin);
   const profileId = await requireProfileId();
   await db.transaction(
     "rw",
@@ -1003,7 +1141,8 @@ export async function factoryResetKeepClients() {
   );
 }
 
-export async function wipeAllBusinessData() {
+export async function wipeAllBusinessData(ownerPin: string) {
+  await assertOwnerPin(ownerPin);
   const profileId = await requireProfileId();
   await db.transaction(
     "rw",

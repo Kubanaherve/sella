@@ -1,15 +1,17 @@
-import { lazy, Suspense, useCallback, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useState, type ReactNode } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "./contexts/AuthContext";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { ThemeProvider, useTheme } from "./contexts/ThemeContext";
 import { SubscriptionGuard } from "./components/SubscriptionGuard";
 import { AppShell } from "./components/AppShell";
 import { DesktopLayoutProvider } from "./hooks/useDesktopLayout";
 import { SellaSplash } from "./components/SellaSplash";
+import { DesktopSplash } from "./components/DesktopSplash";
+import { isDesktopApp } from "./lib/platform";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { ConfigGate } from "./components/ConfigGate";
 import { Analytics } from "./components/marketing/Analytics";
@@ -35,9 +37,11 @@ const ResetPasswordPage = lazy(() => import("./pages/ResetPassword"));
 const ImportCustomersPage = lazy(() => import("./pages/ImportCustomers"));
 const ImportInventoryPage = lazy(() => import("./pages/ImportInventory"));
 const AccountPage = lazy(() => import("./pages/Account"));
+const SyncConflictsPage = lazy(() => import("./pages/SyncConflicts"));
 const AdminPaymentsPage = lazy(() => import("./pages/AdminPayments"));
 const AdminDashboardPage = lazy(() => import("./pages/AdminDashboard"));
 const NotificationsPage = lazy(() => import("./pages/Notifications"));
+const StaffManagementPage = lazy(() => import("./pages/StaffManagement"));
 const LegalTermsPage = lazy(() => import("./pages/LegalTerms"));
 const PrivacyPolicyPage = lazy(() => import("./pages/PrivacyPolicy"));
 const DocumentationPage = lazy(() => import("./pages/DocumentationPage"));
@@ -73,6 +77,43 @@ function ThemedToasts() {
   return <Sonner position="top-center" richColors theme={appearance} />;
 }
 
+function DesktopBoot({ children }: { children: ReactNode }) {
+  const desktop = isDesktopApp();
+  const { isLoading } = useAuth();
+  const [minElapsed, setMinElapsed] = useState(false);
+  const [gaveUp, setGaveUp] = useState(false);
+  const [attempt, setAttempt] = useState(0);
+
+  useEffect(() => {
+    if (!desktop) return;
+    setMinElapsed(false);
+    setGaveUp(false);
+    const min = window.setTimeout(() => setMinElapsed(true), 700);
+    const max = window.setTimeout(() => setGaveUp(true), 8000);
+    return () => {
+      window.clearTimeout(min);
+      window.clearTimeout(max);
+    };
+  }, [desktop, attempt]);
+
+  if (!desktop) return <>{children}</>;
+
+  const ready = minElapsed && !isLoading;
+  if (!ready && !gaveUp) return <DesktopSplash />;
+  if (!ready && gaveUp && isLoading) {
+    return (
+      <DesktopSplash
+        failed
+        onRetry={() => {
+          setAttempt((n) => n + 1);
+          window.location.reload();
+        }}
+      />
+    );
+  }
+  return <>{children}</>;
+}
+
 const App = () => {
   const [showSplash, setShowSplash] = useState(() => {
     // Only native mobile app requires the full boot splash; web pages (landing, docs, privacy, subscribe) load instantly
@@ -105,6 +146,7 @@ const App = () => {
         {showSplash && <SellaSplash onDone={finishSplash} />}
         <Toaster />
         <ThemedToasts />
+        <DesktopBoot>
         <DesktopLayoutProvider>
         <BrowserRouter>
           <Analytics />
@@ -113,7 +155,13 @@ const App = () => {
               <Routes>
                 <Route
                   path="/"
-                  element={Capacitor.isNativePlatform() ? <AuthPage /> : <LandingPage />}
+                  element={
+                    Capacitor.isNativePlatform() || isDesktopApp() ? (
+                      <AuthPage />
+                    ) : (
+                      <LandingPage />
+                    )
+                  }
                 />
                 <Route path="/app" element={<AuthPage />} />
                 <Route path="/login" element={<AuthPage />} />
@@ -147,6 +195,8 @@ const App = () => {
                   <Route path="/new-sale" element={<ErrorBoundary label="sale"><AddDebtPage /></ErrorBoundary>} />
                   <Route path="/receipt-settings" element={<ReceiptSettingsPage />} />
                   <Route path="/account" element={<AccountPage />} />
+                  <Route path="/staff" element={<ErrorBoundary label="staff"><StaffManagementPage /></ErrorBoundary>} />
+                  <Route path="/sync-conflicts" element={<ErrorBoundary label="sync-conflicts"><SyncConflictsPage /></ErrorBoundary>} />
                   <Route path="/subscribe" element={<ErrorBoundary label="subscribe"><SubscribePage /></ErrorBoundary>} />
                   <Route path="/billing" element={<BillingPage />} />
                   <Route path="/import-customers" element={<ImportCustomersPage />} />
@@ -162,6 +212,7 @@ const App = () => {
           </SubscriptionGuard>
         </BrowserRouter>
         </DesktopLayoutProvider>
+        </DesktopBoot>
       </AuthProvider>
       </ConfigGate>
     </TooltipProvider>

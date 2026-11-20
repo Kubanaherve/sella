@@ -1,4 +1,6 @@
 import { BRAND } from "@/lib/brand";
+import { clearReadCache } from "@/db/readCache";
+import { clearTenantContext } from "@/lib/tenantContext";
 
 /** Cache keys safe to wipe on account switch — never wipe remembered shops / last phone. */
 const EPHEMERAL_PREFIXES = [
@@ -47,12 +49,10 @@ export function clearAccountLocalCaches(options?: { wipeLocalDb?: boolean }) {
 }
 
 export function onAccountSwitch(previousUserId: string | null, nextUserId: string | null) {
-  // Different cloud user on same device — clear ephemeral caches only
-  if (previousUserId && nextUserId && previousUserId !== nextUserId) {
+  clearTenantContext();
+  // Different cloud user, or logout: drop every shop cache. Remembered shops stay.
+  if (previousUserId && previousUserId !== nextUserId) {
     clearAccountLocalCaches({ wipeLocalDb: false });
-  }
-  // Logout: do NOT wipe remembered accounts or Dexie (PIN unlock + offline data)
-  if (previousUserId && !nextUserId) {
-    clearAccountLocalCaches({ wipeLocalDb: false });
+    void clearReadCache();
   }
 }

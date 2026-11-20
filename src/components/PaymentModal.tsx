@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,7 +21,8 @@ interface PaymentModalProps {
     amount: number,
     thankYouMessage: string,
     paymentMethod: PaymentMethod,
-    referenceNumber: string | null
+    referenceNumber: string | null,
+    idempotencyKey: string
   ) => void | Promise<void>;
   customerName: string;
   totalAmount: number;
@@ -49,14 +50,18 @@ const PaymentModal = ({
   );
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const attemptKey = useRef(crypto.randomUUID());
+  const wasOpen = useRef(false);
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && !wasOpen.current) {
+      attemptKey.current = crypto.randomUUID();
       setPaymentAmount(totalAmount.toString());
       setReferenceNumber("");
       setError("");
       setSubmitting(false);
     }
+    wasOpen.current = isOpen;
   }, [isOpen, totalAmount]);
 
   const handleConfirm = async () => {
@@ -78,7 +83,8 @@ const PaymentModal = ({
         amount,
         thankYouMessage,
         paymentMethod,
-        referenceNumber.trim() || null
+        referenceNumber.trim() || null,
+        attemptKey.current
       );
       setPaymentAmount(String(due));
     } catch {

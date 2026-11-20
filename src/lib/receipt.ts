@@ -31,6 +31,8 @@ export type ReceiptData = {
   thankYouMessage?: string;
   paymentStatus: "paid" | "credit" | "partial";
   changeDue?: number;
+  /** Cash handed to the cashier, including the part returned as change. */
+  cashTendered?: number;
   queuedOffline?: boolean;
 };
 
@@ -83,6 +85,9 @@ export function buildWhatsAppReceiptMessage(data: ReceiptData): string {
     pays || "None yet (credit)",
     "",
     `Outstanding balance: ${formatCurrency(data.remaining)}`,
+    data.cashTendered && data.cashTendered > 0
+      ? `Cash tendered: ${formatCurrency(data.cashTendered)}`
+      : "",
     data.changeDue && data.changeDue > 0
       ? `Change: ${formatCurrency(data.changeDue)}`
       : "",

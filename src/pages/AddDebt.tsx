@@ -1,14 +1,17 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { createSaleOrder, listInventory } from "@/db/api";
 import { useAuth } from "@/contexts/AuthContext";
+import { isCashierModeActive } from "@/lib/cashierMode";
+import { getPreferredAccount } from "@/lib/rememberedAccounts";
 import { WriteGate } from "@/components/WriteGate";
 import type { InventoryItem, PaymentMethod, SalePaymentSlice } from "@/db/types";
 import { formatCurrency, labels } from "@/lib/kinyarwanda";
 import { lineTotal, sumRwf, toRwf } from "@/lib/money";
+import { calendarDateKeyInKigali } from "@/lib/dates";
 import {
   ArrowLeft,
   Check,
@@ -50,7 +53,7 @@ const METHODS: { value: PaymentMethod; label: string; short: string }[] = [
 
 const NewSalePage: React.FC = () => {
   const navigate = useNavigate();
-  const { canWrite, profile } = useAuth();
+  const { canWrite, profile, user } = useAuth();
   const { customers } = useCustomerSuggestions();
 
   const [step, setStep] = useState<Step>("cart");
@@ -65,7 +68,7 @@ const NewSalePage: React.FC = () => {
   const [cart, setCart] = useState<CartLine[]>([]);
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
-  const [dueDate, setDueDate] = useState(new Date().toISOString().slice(0, 10));
+  const [dueDate, setDueDate] = useState(calendarDateKeyInKigali());
   const [discount, setDiscount] = useState("0");
   const [paySlices, setPaySlices] = useState<SalePaymentSlice[]>([
     { method: "cash", amount: 0 },
@@ -300,6 +303,9 @@ const NewSalePage: React.FC = () => {
 
     setSaving(true);
     try {
+      const activeAcct = getPreferredAccount();
+      const isCashier = isCashierModeActive() || activeAcct?.isStaff || activeAcct?.role === "cashier";
+
       const result = await createSaleOrder({
         clientName: customerName.trim() || undefined,
         phone: customerPhone.trim() || undefined,
@@ -308,6 +314,9 @@ const NewSalePage: React.FC = () => {
         discountAmount: discountRwf,
         payments: slices,
         changeGiven: changeDue,
+        cashierUserId: isCashier ? user?.id || activeAcct?.phone || null : null,
+        cashierName: isCashier ? activeAcct?.displayName || "Cashier" : null,
+        shopId: (profile && "shop_code" in profile && profile.shop_code) || activeAcct?.shopCode || undefined,
         items: cart.map((c) => ({
           inventory_item_id: c.id,
           item_name: c.name,
@@ -356,6 +365,7 @@ const NewSalePage: React.FC = () => {
         paid: result.paid,
         remaining: result.remaining,
         changeDue,
+        cashTendered: result.cashTendered,
         payments: result.payments.map((p) => ({
           method: p.payment_method,
           amount: p.amount,

@@ -441,6 +441,20 @@ BEGIN
   ) THEN
     RAISE EXCEPTION 'Iyi reference yamaze gukoreshwa kuri iri deni';
   END IF;
+  IF v_method = 'momo' AND v_ref IS NOT NULL THEN
+    PERFORM pg_advisory_xact_lock(hashtext(v_uid::text || ':momo-ref:' || lower(v_ref)));
+    IF EXISTS (
+      SELECT 1 FROM public.payments p
+      WHERE p.user_id = v_uid
+        AND p.debt_id IS DISTINCT FROM v_debt.id
+        AND p.payment_method = 'momo'
+        AND p.reference_number IS NOT NULL
+        AND length(trim(p.reference_number)) > 0
+        AND lower(trim(p.reference_number)) = lower(v_ref)
+    ) THEN
+      RAISE EXCEPTION 'Iyi reference ya MoMo yamaze gukoreshwa muri iyi shop';
+    END IF;
+  END IF;
 
   v_remaining := v_debt.remaining_balance - v_amount;
   v_status := CASE WHEN v_remaining <= 0 THEN 'paid' ELSE 'partial' END;

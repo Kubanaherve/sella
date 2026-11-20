@@ -11,17 +11,30 @@ export function isCashierModeActive(): boolean {
   }
 }
 
-export function setCashierModeActive(active: boolean) {
+function persist(active: boolean) {
   try {
-    if (active) {
-      localStorage.setItem(CASHIER_MODE_KEY, "1");
-    } else {
-      localStorage.removeItem(CASHIER_MODE_KEY);
-    }
+    if (active) localStorage.setItem(CASHIER_MODE_KEY, "1");
+    else localStorage.removeItem(CASHIER_MODE_KEY);
     window.dispatchEvent(
       new CustomEvent("sella:cashier_mode_changed", { detail: { active } })
     );
   } catch {
     /* private browsing fallback */
   }
+}
+
+/** Enter cashier mode. Leaving it requires verifyOwnerPin — this ignores `false`. */
+export function setCashierModeActive(active: boolean) {
+  if (!active) return;
+  persist(true);
+}
+
+/** Called only after the owner PIN has been verified. */
+export function clearCashierMode() {
+  persist(false);
+}
+
+/** Test setup. Production screens use clearCashierMode after a PIN check. */
+export function resetCashierModeForTests() {
+  persist(false);
 }

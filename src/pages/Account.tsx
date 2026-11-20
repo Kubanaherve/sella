@@ -20,6 +20,10 @@ import {
 import { db } from "@/db/localDb";
 import { removeRememberedAccount } from "@/lib/rememberedAccounts";
 import { toast } from "sonner";
+import { useOwnerPin } from "@/hooks/useOwnerPin";
+import { requireOwnerPin } from "@/lib/ownerGate";
+import { useCashierMode } from "@/hooks/useCashierMode";
+import { businessCategoryLabel } from "@/lib/businessCategories";
 
 const AccountPage = () => {
   const navigate = useNavigate();
@@ -30,6 +34,8 @@ const AccountPage = () => {
       ""
   );
   const [busy, setBusy] = useState(false);
+  const { askOwnerPin, ownerPinDialog } = useOwnerPin();
+  const { isCashierMode } = useCashierMode();
 
   const shopName =
     (profile && "business_name" in profile && profile.business_name) || null;
@@ -71,12 +77,15 @@ const AccountPage = () => {
       return;
     }
     if (!confirm("Final confirmation: delete everything?")) return;
+    const pin = await askOwnerPin("PIN kugira ngo usibe konti n'amakuru");
+    if (!pin) return;
     setBusy(true);
     try {
+      await requireOwnerPin(pin);
       if (mode === "cloud" && isCloudMode()) {
         await deleteAccountRemote();
       } else if (profile?.id) {
-        await wipeAllBusinessData();
+        await wipeAllBusinessData(pin);
         await db.profiles.delete(profile.id);
         await logoutLocal();
       }
@@ -91,11 +100,13 @@ const AccountPage = () => {
     }
   };
 
-  const runDangerous = async (label: string, fn: () => Promise<void>) => {
+  const runDangerous = async (label: string, fn: (pin: string) => Promise<void>) => {
     if (!confirm(`${label}\n\nContinue?`)) return;
+    const pin = await askOwnerPin(label);
+    if (!pin) return;
     setBusy(true);
     try {
-      await fn();
+      await fn(pin);
       toast.success("Byakozwe");
       window.dispatchEvent(new CustomEvent("paymentMade"));
     } catch (e) {
@@ -114,6 +125,11 @@ const AccountPage = () => {
           {shopCode && (
             <p className="text-xs text-primary font-semibold tracking-wider">{shopCode}</p>
           )}
+          {profile && "business_category" in profile && profile.business_category && (
+            <p className="text-xs text-muted-foreground">
+              {businessCategoryLabel(String(profile.business_category), "en")}
+            </p>
+          )}
           {email && <p className="text-muted-foreground break-all">{email}</p>}
           {phone && <p className="text-muted-foreground">{phone}</p>}
         </div>
@@ -124,6 +140,29 @@ const AccountPage = () => {
         <ChangePinCard />
         <DeviceManager />
 
+        {!isCashierMode && (
+          <div className="glass-card rounded-2xl border border-border/60 p-4 space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <div>
+                <p className="font-semibold text-sm">Abakozi bo mu Iduka (Staff Management)</p>
+                <p className="text-[11px] text-muted-foreground">
+                  Gucunga abacuruzi, guhindura PIN, no kureba sales buri mukozi yinjije.
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate("/staff")}
+                className="h-8 text-xs shrink-0 btn-navy"
+              >
+                Gucunga
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {ownerPinDialog}
+        {!isCashierMode && (
         <div className="glass-card rounded-2xl border border-border/60 p-4 space-y-2">
           <p className="font-semibold text-sm">Advanced data tools</p>
           <p className="text-[11px] text-muted-foreground">
@@ -134,8 +173,8 @@ const AccountPage = () => {
             className="w-full"
             disabled={busy}
             onClick={() =>
-              runDangerous("Reset sales money (keep unpaid debts)?", async () => {
-                await resetSalesMoney();
+              runDangerous("Reset sales money (keep unpaid debts)?", async (pin) => {
+                await resetSalesMoney(pin);
                 await setAppSetting("total_paid", "0");
               })
             }
@@ -147,8 +186,8 @@ const AccountPage = () => {
             className="w-full"
             disabled={busy}
             onClick={() =>
-              runDangerous("Factory reset (keep clients)?", async () => {
-                await factoryResetKeepClients();
+              runDangerous("Factory reset (keep clients)?", async (pin) => {
+                await factoryResetKeepClients(pin);
                 await setAppSetting("total_capital", "0");
                 await setAppSetting("total_paid", "0");
               })
@@ -161,14 +200,15 @@ const AccountPage = () => {
             className="w-full border-destructive/40 text-destructive"
             disabled={busy}
             onClick={() =>
-              runDangerous("Wipe ALL business data (clients, stock, debts)?", async () => {
-                await wipeAllBusinessData();
+              runDangerous("Wipe ALL business data (clients, stock, debts)?", async (pin) => {
+                await wipeAllBusinessData(pin);
               })
             }
           >
             Wipe all business data
           </Button>
         </div>
+        )}
 
         {isSuperAdmin && (
           <Button variant="outline" className="w-full" onClick={() => navigate("/admin/payments")}>

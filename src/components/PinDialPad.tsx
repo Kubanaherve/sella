@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Delete } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { hapticError, hapticLight } from "@/lib/haptics";
+import { personName } from "@/lib/rememberedAccounts";
 
 interface PinDialPadProps {
   onComplete: (pin: string) => void;
@@ -51,16 +52,17 @@ export function PinDialPad({
   };
 
   const digits = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "del"];
+  const greeted = personName(displayName);
 
   return (
     <div className="flex flex-col items-center w-full">
-      {displayName && (
+      {greeted && (
         <p className="text-[#0B3FCC] dark:text-[#9EC4FF] text-base font-medium mb-1 tracking-tight">
-          Muraho, {displayName}
+          Muraho, {greeted}
         </p>
       )}
       <p className="text-slate-500 dark:text-slate-400 text-xs mb-6">
-        Injiza PIN yawe · {maxLength} digits
+        Injiza PIN yawe · imibare {maxLength}
       </p>
 
       <div className={cn("flex gap-3.5 mb-3", shake && "animate-[shake_0.4s_ease-in-out]")}>

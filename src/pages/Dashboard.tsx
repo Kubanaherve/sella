@@ -26,6 +26,8 @@ import { BRAND } from "@/lib/brand";
 import { accessLabel } from "@/lib/entitlements";
 import { WriteGate } from "@/components/WriteGate";
 import { hapticLight } from "@/lib/haptics";
+import { hourInKigali } from "@/lib/dates";
+import { personName } from "@/lib/rememberedAccounts";
 import { ListPageSkeleton } from "@/components/ListPageSkeleton";
 import { cn } from "@/lib/utils";
 
@@ -87,17 +89,19 @@ const DashboardPage = () => {
     mode,
   } = useAuth();
 
-  const displayName =
-    (profile && "display_name" in profile && profile.display_name) ||
-    (profile && "owner_name" in profile && profile.owner_name) ||
-    "User";
-  const shopCode =
-    profile && "shop_code" in profile && profile.shop_code
-      ? String(profile.shop_code)
-      : null;
   const shopName =
     profile && "business_name" in profile && profile.business_name
       ? String(profile.business_name)
+      : null;
+  const displayName =
+    personName(
+      profile && "owner_name" in profile ? profile.owner_name : null,
+      profile && "display_name" in profile ? profile.display_name : null,
+      shopName
+    ) || "User";
+  const shopCode =
+    profile && "shop_code" in profile && profile.shop_code
+      ? String(profile.shop_code)
       : null;
 
   const cacheUserKey =
@@ -220,7 +224,7 @@ const DashboardPage = () => {
     });
   }, [period]);
 
-  const greeting = greetingForHour(new Date().getHours());
+  const greeting = greetingForHour(hourInKigali());
 
   const shortcuts = [
     {

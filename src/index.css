@@ -2105,14 +2105,13 @@ html.sella-desktop .min-h-screen.sella-hero-bg:not(.sella-auth-home)::before {
   align-items: center;
   justify-content: center;
   padding: 2.5rem;
-  color: white;
+  color: #0f172a;
   font-family: Sora, Outfit, system-ui, sans-serif;
   font-size: clamp(3rem, 5vw, 4.75rem);
   font-weight: 800;
   letter-spacing: -0.045em;
-  background:
-    radial-gradient(ellipse 80% 60% at 20% 0%, rgba(90, 200, 250, 0.45), transparent 55%),
-    linear-gradient(165deg, #071a5c 0%, #0b3fcc 52%, #1a6fff 100%);
+  background: #f4f7fb;
+  border-right: 1px solid #e6ebf2;
 }
 
 html.sella-desktop .min-h-screen.sella-hero-bg:not(.sella-auth-home)::after {
@@ -2122,7 +2121,7 @@ html.sella-desktop .min-h-screen.sella-hero-bg:not(.sella-auth-home)::after {
   bottom: 2.25rem;
   width: min(40vw, 480px);
   text-align: center;
-  color: rgba(255, 255, 255, 0.78);
+  color: #64748b;
   font-size: 0.82rem;
   font-weight: 600;
   letter-spacing: 0.04em;
@@ -2145,10 +2144,9 @@ html.sella-desktop .sella-auth-brand {
   flex-direction: column;
   justify-content: space-between;
   padding: 2.5rem 2.75rem;
-  color: white;
-  background:
-    radial-gradient(ellipse 80% 60% at 20% 0%, rgba(90, 200, 250, 0.45), transparent 55%),
-    linear-gradient(165deg, #071a5c 0%, #0b3fcc 52%, #1a6fff 100%);
+  color: #0f172a;
+  background: #f4f7fb;
+  border-right: 1px solid #e6ebf2;
 }
 
 .sella-auth-brand h2 {
@@ -2162,6 +2160,25 @@ html.sella-desktop .sella-auth-brand {
 html.sella-desktop :focus-visible {
   outline: 2px solid hsl(var(--ring));
   outline-offset: 2px;
+}
+
+@media (max-width: 860px) {
+  html.sella-desktop .sella-auth-home {
+    grid-template-columns: 1fr;
+  }
+
+  html.sella-desktop .sella-auth-brand {
+    display: none;
+  }
+
+  html.sella-desktop .min-h-screen.sella-hero-bg:not(.sella-auth-home) {
+    padding-left: 0;
+  }
+
+  html.sella-desktop .min-h-screen.sella-hero-bg:not(.sella-auth-home)::before,
+  html.sella-desktop .min-h-screen.sella-hero-bg:not(.sella-auth-home)::after {
+    display: none;
+  }
 }
 
 @media (max-width: 1180px) {

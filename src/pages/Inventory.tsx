@@ -25,6 +25,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { useCashierMode } from "@/hooks/useCashierMode";
+import { useOwnerPin } from "@/hooks/useOwnerPin";
 import { PageHeader } from "@/components/PageHeader";
 import { EmptyState } from "@/components/EmptyState";
 import { ListPageSkeleton } from "@/components/ListPageSkeleton";
@@ -41,6 +42,7 @@ const InventoryPage: React.FC = () => {
   const { canWrite } = useAuth();
   const navigate = useNavigate();
   const { isCashierMode, enterCashierMode, exitCashierMode } = useCashierMode();
+  const { askOwnerPin, ownerPinDialog } = useOwnerPin();
 
   const [items, setItems] = useState<InventoryItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -62,6 +64,8 @@ const InventoryPage: React.FC = () => {
   const [newUnit, setNewUnit] = useState("pcs");
   const [newSku, setNewSku] = useState("");
   const [newBarcode, setNewBarcode] = useState("");
+  const [newVariant, setNewVariant] = useState("");
+  const [newMinOrder, setNewMinOrder] = useState("");
   const [isAdding, setIsAdding] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -215,6 +219,8 @@ const InventoryPage: React.FC = () => {
     setNewUnit("pcs");
     setNewSku("");
     setNewBarcode("");
+    setNewVariant("");
+    setNewMinOrder("");
   };
 
   const handleAddItem = async () => {
@@ -248,6 +254,8 @@ const InventoryPage: React.FC = () => {
         unit: newUnit || "pcs",
         sku: newSku.trim() || null,
         barcode: newBarcode.trim() || null,
+        variant_label: newVariant.trim() || null,
+        min_order_qty: newMinOrder.trim() ? Number(newMinOrder) : null,
       });
       setItems((prev) => [data, ...prev]);
       toast.success("Ikintu cyongewe muri stock");
@@ -266,6 +274,7 @@ const InventoryPage: React.FC = () => {
 
   return (
     <div className="sella-page">
+      {ownerPinDialog}
       <PageHeader
         title={labels.inventoryTitle}
         subtitle={`${stats.skus} ubwoko · ${stats.units} mu bubiko`}
@@ -275,13 +284,23 @@ const InventoryPage: React.FC = () => {
             <button
               type="button"
               onClick={() => {
-                if (isCashierMode) {
-                  exitCashierMode();
-                  toast.success("Muvuye muri Cashier Mode (Ububiko bwose buragaragara)");
-                } else {
-                  enterCashierMode();
-                  toast.info("Mwinjiye muri Cashier Mode (Inyungu n'ibiciro byo kurangura bihishwe)");
-                }
+                void (async () => {
+                  if (isCashierMode) {
+                    const pin = await askOwnerPin(
+                      "PIN y'umuyobozi kugira ngo usohoke muri Cashier Mode"
+                    );
+                    if (!pin) return;
+                    const ok = await exitCashierMode(pin);
+                    if (!ok) {
+                      toast.error("PIN y'umuyobozi sibyo");
+                      return;
+                    }
+                    toast.success("Muvuye muri Cashier Mode (Ububiko bwose buragaragara)");
+                  } else {
+                    enterCashierMode();
+                    toast.info("Mwinjiye muri Cashier Mode (Inyungu n'ibiciro byo kurangura bihishwe)");
+                  }
+                })();
               }}
               className={cn(
                 "h-9 px-2.5 rounded-xl text-xs flex items-center gap-1.5 transition-all",
@@ -501,7 +520,7 @@ const InventoryPage: React.FC = () => {
                             {item.item_name}
                           </h3>
                           <p className="text-[11px] text-muted-foreground truncate mt-0.5">
-                            {[item.category, item.unit || "pcs", item.sku]
+                            {[item.category, item.variant_label, item.unit || "pcs", item.sku]
                               .filter(Boolean)
                               .join(" · ") || "Ikicuruzwa"}
                           </p>
@@ -732,6 +751,32 @@ const InventoryPage: React.FC = () => {
                     placeholder="CEM-50"
                     value={newSku}
                     onChange={(e) => setNewSku(e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2.5">
+                <div>
+                  <label className="text-xs font-semibold text-muted-foreground">
+                    Ingano / ibara
+                  </label>
+                  <input
+                    className={cn(fieldClass, "mt-1")}
+                    placeholder="50kg, XL, red"
+                    value={newVariant}
+                    onChange={(e) => setNewVariant(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-muted-foreground">
+                    Min. order
+                  </label>
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    className={cn(fieldClass, "mt-1")}
+                    placeholder="Wholesale"
+                    value={newMinOrder}
+                    onChange={(e) => setNewMinOrder(e.target.value)}
                   />
                 </div>
               </div>

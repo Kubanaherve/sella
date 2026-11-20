@@ -7,10 +7,18 @@ export interface Profile {
   phone: string;
   phone_normalized: string;
   display_name: string;
+  owner_name?: string | null;
   business_name?: string | null;
   email?: string | null;
   email_normalized?: string | null;
   shop_code?: string | null;
+  /** Trade vertical. See RWANDAN_BUSINESS_CATEGORIES. */
+  business_category?: string | null;
+  store_description?: string | null;
+  store_logo_url?: string | null;
+  store_cover_url?: string | null;
+  store_address?: string | null;
+  store_tin?: string | null;
   pin_hash: string;
   created_at: string;
   updated_at: string;
@@ -41,6 +49,9 @@ export interface Debt {
   notes: string | null;
   /** Basket discount already removed from total_amount. Omitted on older rows. */
   discount_amount?: number;
+  /** Cash handed back at checkout. Omitted on older rows. */
+  change_given?: number;
+  receipt_number?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -65,6 +76,8 @@ export interface Payment {
   payment_method: PaymentMethod;
   reference_number: string | null;
   notes: string | null;
+  /** Replays of the same checkout attempt must not post twice. */
+  idempotency_key?: string | null;
   created_at: string;
 }
 
@@ -99,7 +112,16 @@ export interface InventoryItem {
   brand?: string | null;
   supplier?: string | null;
   min_quantity?: number | null;
+  variant_label?: string | null;
+  min_order_qty?: number | null;
   description?: string | null;
+  variations?: string | null;
+  specifications?: string | null;
+  warranty?: string | null;
+  dimensions?: string | null;
+  weight?: string | null;
+  material?: string | null;
+  is_available?: boolean | null;
   created_at: string;
   updated_at: string;
 }
@@ -117,9 +139,18 @@ export type InventoryWriteInput = {
   brand?: string | null;
   supplier?: string | null;
   min_quantity?: number | null;
+  variant_label?: string | null;
+  min_order_qty?: number | null;
   description?: string | null;
   image_url?: string | null;
   date_bought?: string | null;
+  variations?: string | null;
+  specifications?: string | null;
+  warranty?: string | null;
+  dimensions?: string | null;
+  weight?: string | null;
+  material?: string | null;
+  is_available?: boolean | null;
 };
 
 export type InventoryUpdatePatch = Partial<
@@ -137,14 +168,26 @@ export type InventoryUpdatePatch = Partial<
     | "brand"
     | "supplier"
     | "min_quantity"
+    | "variant_label"
+    | "min_order_qty"
     | "description"
     | "image_url"
+    | "variations"
+    | "specifications"
+    | "warranty"
+    | "dimensions"
+    | "weight"
+    | "material"
+    | "is_available"
   >
 >;
 
 export interface Sale {
   id: string;
   profile_id?: string;
+  shop_id?: string;
+  cashier_user_id?: string | null;
+  cashier_name?: string | null;
   client_id: string | null;
   item_name: string;
   quantity: number;
@@ -179,6 +222,9 @@ export type CreateSaleOrderInput = {
   changeGiven?: number;
   /** When the sale happened. Defaults to now. Future timestamps are rejected. */
   soldAt?: string | null;
+  cashierUserId?: string | null;
+  cashierName?: string | null;
+  shopId?: string | null;
   items: Array<{
     inventory_item_id: string;
     item_name: string;
@@ -196,6 +242,8 @@ export type CreateSaleOrderResult = {
   paid: number;
   remaining: number;
   changeDue: number;
+  /** Cash the customer handed over, including change. */
+  cashTendered?: number;
   receiptNumber: string;
   /** True when saved to durable outbox — not yet confirmed by server */
   queuedOffline?: boolean;
@@ -223,5 +271,75 @@ export interface AppSetting {
 export interface SessionRecord {
   id: string;
   profile_id: string;
+  created_at: string;
+}
+
+export type StaffRole = "cashier" | "manager";
+export type StaffStatus = "active" | "deactivated";
+
+export interface ShopStaff {
+  id: string;
+  profile_id: string;
+  owner_id?: string;
+  shop_code: string;
+  name: string;
+  phone: string;
+  phone_normalized: string;
+  role: StaffRole;
+  status: StaffStatus;
+  pin_hash?: string;
+  salt?: string;
+  last_active_at: string | null;
+  session_revoked_at?: string | null;
+  total_sales_count?: number;
+  total_sales_volume?: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export type MarketplaceOrderStatus =
+  | "pending"
+  | "confirmed"
+  | "preparing"
+  | "ready"
+  | "completed"
+  | "cancelled";
+
+export type MarketplacePaymentStatus = "pending" | "paid" | "failed" | "refunded";
+export type MarketplaceDeliveryType = "pickup" | "delivery";
+
+export interface MarketplaceOrder {
+  id: string;
+  profile_id?: string;
+  shop_id?: string;
+  shop_code?: string;
+  shop_name?: string;
+  order_number: string;
+  customer_name: string;
+  customer_phone: string;
+  customer_email?: string | null;
+  delivery_type: MarketplaceDeliveryType;
+  delivery_address?: string | null;
+  status: MarketplaceOrderStatus;
+  payment_status: MarketplacePaymentStatus;
+  payment_method: PaymentMethod;
+  payment_reference?: string | null;
+  total_amount: number;
+  notes?: string | null;
+  items?: MarketplaceOrderItem[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MarketplaceOrderItem {
+  id: string;
+  order_id: string;
+  profile_id?: string;
+  inventory_item_id?: string | null;
+  item_name: string;
+  quantity: number;
+  unit_price: number;
+  total_price: number;
+  selected_variation?: string | null;
   created_at: string;
 }

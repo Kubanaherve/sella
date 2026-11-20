@@ -54,4 +54,6 @@ export type DebtorStatementRow = {
   remainingAmount: number;
   status?: InvoicePaymentStatus;
   lines: InvoiceLine[];
+  /** Payment-record amounts. When set, paid is their sum rather than a derived guess. */
+  paymentAmounts?: number[] | null;
 };

@@ -81,7 +81,7 @@ export function SellaSplash({ onDone, minMs = MOTION.splashMax }: Props) {
         <div className="relative flex h-[168px] w-full items-center justify-center sm:h-[184px]">
           {(phase === "write" || phase === "cross") && (
             <div
-              className={`absolute inset-x-0 flex justify-center transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+              className={`absolute inset-x-0 flex justify-center transition-all duration-500 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)] ${
                 wordLeaving
                   ? "opacity-0 scale-95 translate-y-1 blur-[2px]"
                   : "opacity-100 scale-100"

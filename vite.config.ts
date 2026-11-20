@@ -4,6 +4,111 @@ import path from "path";
 import { componentTagger } from "lovable-tagger";
 import { VitePWA } from "vite-plugin-pwa";
 
+function sellaStaffApiPlugin() {
+  const attachMiddleware = (server: any) => {
+    server.middlewares.use(async (req: any, res: any, next: any) => {
+      const url = new URL(req.url, "http://localhost");
+      if (url.pathname === "/api/lookup-shop-code" && req.method === "POST") {
+        let body = "";
+        req.on("data", (chunk: any) => {
+          body += chunk;
+        });
+        req.on("end", async () => {
+          try {
+            const data = JSON.parse(body || "{}");
+            const { handleLookupShopCode } = await import("./src/server/staffApiHandler.ts");
+            const result = await handleLookupShopCode(data.shop_code || data.shopCode);
+            res.statusCode = result.status;
+            res.setHeader("Content-Type", "application/json");
+            res.end(JSON.stringify(result));
+          } catch (e: any) {
+            res.statusCode = 500;
+            res.setHeader("Content-Type", "application/json");
+            res.end(JSON.stringify({ ok: false, error: e.message }));
+          }
+        });
+        return;
+      }
+
+      if (url.pathname === "/api/cashier-join-and-set-pin" && req.method === "POST") {
+        let body = "";
+        req.on("data", (chunk: any) => {
+          body += chunk;
+        });
+        req.on("end", async () => {
+          try {
+            const data = JSON.parse(body || "{}");
+            const { handleCashierJoinAndSetPin } = await import("./src/server/staffApiHandler.ts");
+            const result = await handleCashierJoinAndSetPin(data);
+            res.statusCode = result.status;
+            res.setHeader("Content-Type", "application/json");
+            res.end(JSON.stringify(result));
+          } catch (e: any) {
+            res.statusCode = 500;
+            res.setHeader("Content-Type", "application/json");
+            res.end(JSON.stringify({ success: false, error: e.message }));
+          }
+        });
+        return;
+      }
+
+      if (url.pathname === "/api/cashier-pin-login" && req.method === "POST") {
+        let body = "";
+        req.on("data", (chunk: any) => {
+          body += chunk;
+        });
+        req.on("end", async () => {
+          try {
+            const data = JSON.parse(body || "{}");
+            const { handleCashierPinLogin } = await import("./src/server/staffApiHandler.ts");
+            const result = await handleCashierPinLogin(data);
+            res.statusCode = result.status;
+            res.setHeader("Content-Type", "application/json");
+            res.end(JSON.stringify(result));
+          } catch (e: any) {
+            res.statusCode = 500;
+            res.setHeader("Content-Type", "application/json");
+            res.end(JSON.stringify({ success: false, error: e.message }));
+          }
+        });
+        return;
+      }
+
+      if (url.pathname === "/api/owner-reset-cashier-pin" && req.method === "POST") {
+        let body = "";
+        req.on("data", (chunk: any) => {
+          body += chunk;
+        });
+        req.on("end", async () => {
+          try {
+            const data = JSON.parse(body || "{}");
+            const authHeader = req.headers["authorization"] || "";
+            const callerToken = authHeader.replace(/^Bearer\s+/i, "").trim();
+            const { handleOwnerResetCashierPin } = await import("./src/server/staffApiHandler.ts");
+            const result = await handleOwnerResetCashierPin(data, callerToken);
+            res.statusCode = result.status;
+            res.setHeader("Content-Type", "application/json");
+            res.end(JSON.stringify(result));
+          } catch (e: any) {
+            res.statusCode = 500;
+            res.setHeader("Content-Type", "application/json");
+            res.end(JSON.stringify({ success: false, error: e.message }));
+          }
+        });
+        return;
+      }
+
+      next();
+    });
+  };
+
+  return {
+    name: "sella-staff-api",
+    configureServer: attachMiddleware,
+    configurePreviewServer: attachMiddleware,
+  };
+}
+
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   server: {
@@ -15,6 +120,7 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react(),
+    sellaStaffApiPlugin(),
     mode === "development" && componentTagger(),
     VitePWA({
       registerType: "autoUpdate",
@@ -99,9 +205,11 @@ export default defineConfig(({ mode }) => ({
     rollupOptions: {
       output: {
         manualChunks(id) {
+          if (id.includes("node_modules/pdfjs-dist")) {
+            return "vendor-pdfjs";
+          }
           if (
             id.includes("node_modules/jspdf") ||
-            id.includes("node_modules/pdfjs-dist") ||
             id.includes("node_modules/html2canvas")
           ) {
             return "vendor-pdf";

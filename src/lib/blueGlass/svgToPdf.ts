@@ -6,7 +6,18 @@ import sellaGlassScriptUrl from "@/assets/brand/sella-glass-script-pdf.png";
 let cachedIconDataUrl: string | null = null;
 let cachedWordmarkDataUrl: string | null = null;
 
-async function toDataUrl(url: string): Promise<string> {
+async function toDataUrl(url: string, fileName: string): Promise<string> {
+  if (url.startsWith("data:")) return url;
+  if (typeof process !== "undefined" && process.versions?.node) {
+    const { existsSync, readFileSync } = await import(/* @vite-ignore */ "node:fs");
+    const path = await import(/* @vite-ignore */ "node:path");
+    const fromUrl = path.resolve(process.cwd(), url.replace(/^\//, ""));
+    const named = path.resolve(process.cwd(), "src/assets/brand", fileName);
+    const file = existsSync(fromUrl) ? fromUrl : named;
+    if (existsSync(file)) {
+      return `data:image/png;base64,${readFileSync(file).toString("base64")}`;
+    }
+  }
   const res = await fetch(url);
   const blob = await res.blob();
   return await new Promise<string>((resolve, reject) => {
@@ -23,14 +34,14 @@ export async function loadBlueGlassIconDataUrl(
 ): Promise<string> {
   if (override) return override;
   if (cachedIconDataUrl) return cachedIconDataUrl;
-  cachedIconDataUrl = await toDataUrl(sellaIconUrl);
+  cachedIconDataUrl = await toDataUrl(sellaIconUrl, "sella-blueglass-icon.png");
   return cachedIconDataUrl;
 }
 
 /** Handwritten glass-bold Sella script for papers / PDFs. */
 export async function loadBlueGlassWordmarkDataUrl(): Promise<string> {
   if (cachedWordmarkDataUrl) return cachedWordmarkDataUrl;
-  cachedWordmarkDataUrl = await toDataUrl(sellaGlassScriptUrl);
+  cachedWordmarkDataUrl = await toDataUrl(sellaGlassScriptUrl, "sella-glass-script-pdf.png");
   return cachedWordmarkDataUrl;
 }
 

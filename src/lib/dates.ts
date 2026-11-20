@@ -15,6 +15,17 @@ export function calendarDateKeyInKigali(when: Date | string = new Date()): strin
   }).format(d);
 }
 
+/** 0–23 in Africa/Kigali, so greetings do not follow the device timezone. */
+export function hourInKigali(when: Date = new Date()): number {
+  const hour = new Intl.DateTimeFormat("en-GB", {
+    timeZone: KIGALI_TZ,
+    hour: "2-digit",
+    hourCycle: "h23",
+  }).format(when);
+  const n = Number(hour.replace(/\D/g, ""));
+  return Number.isFinite(n) ? n : when.getUTCHours();
+}
+
 /** Checkout timestamp. Rejects future dates so reports cannot be pre-dated ahead. */
 export function resolveSoldAt(soldAt?: string | null, now = new Date()): string {
   if (!soldAt) return now.toISOString();

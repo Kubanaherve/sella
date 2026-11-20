@@ -71,6 +71,11 @@ Deno.serve(async (req) => {
   try {
     const body = await req.json();
     const businessName = String(body.business_name || "").trim();
+    const businessCategory = String(body.business_category || "general_merchandise")
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9_-]/g, "")
+      .slice(0, 40) || "general_merchandise";
     const ownerName = String(body.owner_name || "").trim();
     const email = normalizeEmail(String(body.email || ""));
     const phone = normalizePhoneE164(String(body.phone || ""));
@@ -163,6 +168,7 @@ Deno.serve(async (req) => {
         email,
         email_normalized: email,
         business_name: businessName,
+        business_category: businessCategory,
         owner_name: ownerName,
         pin_length: 4,
       },
@@ -176,26 +182,35 @@ Deno.serve(async (req) => {
       (typeof codeRow === "string" && codeRow) ||
       `SEL-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
 
-    const { data: profile, error: profErr } = await sb
+    const profileRow = {
+      user_id: user.id,
+      business_name: businessName,
+      business_category: businessCategory,
+      owner_name: ownerName,
+      phone,
+      phone_normalized: phone,
+      email,
+      email_normalized: email,
+      email_verified: true,
+      shop_code: shopCode,
+      updated_at: new Date().toISOString(),
+    };
+    let { data: profile, error: profErr } = await sb
       .from("profiles")
-      .upsert(
-        {
-          user_id: user.id,
-          business_name: businessName,
-          owner_name: ownerName,
-          phone,
-          phone_normalized: phone,
-          email,
-          email_normalized: email,
-          email_verified: true,
-          shop_code: shopCode,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: "user_id" }
-      )
+      .upsert(profileRow, { onConflict: "user_id" })
       .select("*")
       .single();
-    if (profErr) throw profErr;
+    if (profErr && /business_category|schema cache|PGRST204/i.test(profErr.message || "")) {
+      const { business_category: _category, ...withoutCategory } = profileRow;
+      const retry = await sb
+        .from("profiles")
+        .upsert(withoutCategory, { onConflict: "user_id" })
+        .select("*")
+        .single();
+      profile = retry.data;
+      profErr = retry.error;
+    }
+    if (profErr || !profile) throw profErr || new Error("Profile create failed");
 
     await sb.from("user_subscriptions").upsert(
       {

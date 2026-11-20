@@ -22,6 +22,12 @@ import {
   hasWriteAccess,
   getMonthlyPriceRwf,
 } from "@/lib/entitlements";
+import {
+  isCashierIdentity,
+  profileFromShopLookup,
+  subscriptionFromWriteAccess,
+  type ShopLookup,
+} from "@/lib/cashierShop";
 import { onAccountSwitch } from "@/lib/sessionIsolation";
 import { setActiveWorkspaceId } from "@/db/workspaceSession";
 import { clearAppUnlock, isAppUnlocked } from "@/lib/appUnlock";
@@ -39,6 +45,7 @@ export interface CloudProfile {
   email_verified?: boolean;
   national_id?: string | null;
   shop_code?: string | null;
+  business_category?: string | null;
   currency: string;
   role: string;
   is_superadmin: boolean;
@@ -74,6 +81,22 @@ function mapProvider(row: Record<string, unknown>): PaymentProvider {
   return row.status === "trialing" ? "trial" : "paypack";
 }
 
+async function cashierShopCode(): Promise<string> {
+  const { db } = await import("@/db/localDb");
+  const staff = await db.staff.filter((row) => row.status === "active").first();
+  return staff?.shop_code || "";
+}
+
+async function lookupShop(
+  sb: ReturnType<typeof getSupabase>,
+  shopCode: string
+): Promise<ShopLookup | null> {
+  if (!shopCode) return null;
+  const { data, error } = await sb.rpc("get_shop_info_by_code", { p_shop_code: shopCode });
+  if (error || !data || typeof data !== "object") return null;
+  return data as ShopLookup;
+}
+
 function mapUserSub(row: Record<string, unknown> | null, userId: string): SubscriptionSnapshot | null {
   if (!row) return null;
   return {
@@ -87,6 +110,22 @@ function mapUserSub(row: Record<string, unknown> | null, userId: string): Subscr
     currentPeriodEnd: (row.current_period_end as string) || null,
     cancelAtPeriodEnd: !(row.auto_renew as boolean),
   };
+}
+
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error("timeout")), ms);
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (err) => {
+        clearTimeout(timer);
+        reject(err);
+      }
+    );
+  });
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -113,13 +152,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
     const sb = getSupabase();
+    if (isCashierIdentity({ email: user.email })) {
+      const shopCode = await cashierShopCode();
+      const lookup = await lookupShop(sb, shopCode);
+      const ownerId = lookup?.owner_id || user.id;
+      setSubscription(subscriptionFromWriteAccess(ownerId, Boolean(lookup?.has_write_access)));
+      return;
+    }
     const { data } = await sb
       .from("user_subscriptions")
       .select("*")
       .eq("user_id", user.id)
       .maybeSingle();
     setSubscription(mapUserSub(data, user.id));
-  }, [mode, user?.id]);
+  }, [mode, user?.id, user?.email]);
 
   const loadCloudSession = useCallback(
     async (sessionUser: User | null) => {
@@ -145,11 +191,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setWorkspaceId(`user:${sessionUser.id}`);
       setActiveWorkspaceId(`user:${sessionUser.id}`);
 
+      const appRole = (sessionUser.app_metadata as { role?: unknown } | undefined)?.role;
+      if (
+        isCashierIdentity({
+          email: sessionUser.email,
+          appRole: typeof appRole === "string" ? appRole : null,
+        })
+      ) {
+        const meta = sessionUser.user_metadata as { shop_code?: unknown } | undefined;
+        const shopCode =
+          typeof meta?.shop_code === "string" && meta.shop_code
+            ? meta.shop_code
+            : await cashierShopCode();
+        const lookup = await lookupShop(sb, shopCode);
+        const profile = profileFromShopLookup(lookup, shopCode, sessionUser.id);
+        setProfile(profile);
+        setSubscription(
+          subscriptionFromWriteAccess(profile.user_id, Boolean(lookup?.has_write_access))
+        );
+        return;
+      }
+
       const { data: prof } = await sb
         .from("profiles")
         .select("*")
         .eq("user_id", sessionUser.id)
         .maybeSingle();
+
       setProfile(prof as CloudProfile | null);
 
       const { data: sub } = await sb
@@ -251,13 +319,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const sb = getSupabase();
           if (!isAppUnlocked()) {
             try {
-              await sb.auth.signOut({ scope: "local" });
+              await withTimeout(sb.auth.signOut({ scope: "local" }), 4000);
             } catch {
               /* ignore */
             }
             clearAuthState();
           } else {
-            const { data } = await sb.auth.getSession();
+            const { data } = await withTimeout(sb.auth.getSession(), 4000);
             await loadCloudSession(data.session?.user ?? null);
           }
           const { data: listener } = sb.auth.onAuthStateChange((_event, session) => {

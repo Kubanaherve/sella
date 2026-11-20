@@ -1,6 +1,6 @@
 # Sella
 
-Multi-tenant SaaS for Rwanda businesses: clients, credit sales, inventory, reports.
+Multi-tenant shop system for Rwanda: sales, credit, inventory, and staff. A clothing shop, grocery, quincaillerie, supermarket, wholesaler, or any other legitimate business uses the same register. The shop chooses a business type at registration. Products keep their own unit (piece, kg, litre, bag, packet, pair, carton), an optional size or color, and an optional wholesale minimum.
 
 **Brand assets:** `src/assets/brand/` + `public/brand/` via `BrandMark`.
 

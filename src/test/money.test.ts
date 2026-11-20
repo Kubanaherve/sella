@@ -57,6 +57,7 @@ describe("money helpers", () => {
     const r = normalizePaymentSlices([{ method: "cash", amount: 55000 }], 50000);
     expect(r.paid).toBe(50000);
     expect(r.changeDue).toBe(5000);
+    expect(r.cashTendered).toBe(55000);
     expect(r.remaining).toBe(0);
   });
 
@@ -69,10 +70,10 @@ describe("money helpers", () => {
     expect(parseMoneyText("")).toBeNull();
   });
 
-  it("rejects a zero sale quantity and floors fractional units", () => {
-    expect(() => saleQuantity(0)).toThrow(/1/);
-    expect(() => saleQuantity(-2)).toThrow(/1/);
-    expect(saleQuantity(1.9)).toBe(1);
+  it("rejects a zero or fractional sale quantity", () => {
+    expect(() => saleQuantity(0)).toThrow(/wuzuye|1/);
+    expect(() => saleQuantity(-2)).toThrow(/wuzuye|1/);
+    expect(() => saleQuantity(1.9)).toThrow(/wuzuye/);
     expect(saleQuantity("3")).toBe(3);
   });
 

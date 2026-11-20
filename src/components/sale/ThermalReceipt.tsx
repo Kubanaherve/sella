@@ -81,7 +81,10 @@ export function ThermalReceipt({ data, play, onDone, className }: Props) {
             <p className="text-[9px] text-slate-500 mb-2">
               {new Date(data.createdAt).toLocaleString()}
             </p>
+            <p className="mb-1">#{data.receiptNumber}</p>
+            {data.shopPhone ? <p className="mb-1">Tel: {data.shopPhone}</p> : null}
             <p className="mb-1">Customer: {data.customerName}</p>
+            {data.customerPhone ? <p className="mb-1">{data.customerPhone}</p> : null}
             <div className="border-t border-dashed border-slate-300 my-1.5" />
             {data.lines.map((l, i) => (
               <div key={i} className="flex justify-between gap-1">
@@ -106,6 +109,21 @@ export function ThermalReceipt({ data, play, onDone, className }: Props) {
               <span>Paid</span>
               <span>{formatCurrency(data.paid)}</span>
             </div>
+            {data.payments.map((p, i) => (
+              <div key={i} className="flex justify-between gap-1">
+                <span>
+                  {p.method}
+                  {p.referenceNumber ? ` ${p.referenceNumber}` : ""}
+                </span>
+                <span>{formatCurrency(p.amount)}</span>
+              </div>
+            ))}
+            {data.cashTendered ? (
+              <div className="flex justify-between">
+                <span>Cash tendered</span>
+                <span>{formatCurrency(data.cashTendered)}</span>
+              </div>
+            ) : null}
             {data.changeDue ? (
               <div className="flex justify-between">
                 <span>{labels.changeDue}</span>
@@ -116,6 +134,9 @@ export function ThermalReceipt({ data, play, onDone, className }: Props) {
               <span>Balance</span>
               <span>{formatCurrency(data.remaining)}</span>
             </div>
+            {data.queuedOffline ? (
+              <p className="mt-1 text-center text-[9px]">Saved offline — will sync</p>
+            ) : null}
             {phase === "done" && (
               <p className="mt-2 text-center text-[9px] text-slate-500">
                 {data.thankYouMessage || "Murakoze!"}

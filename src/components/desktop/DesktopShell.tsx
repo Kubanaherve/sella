@@ -3,6 +3,7 @@ import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { ChevronsRight, LogOut, PanelLeft, Plus, Search, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { useCashierMode } from "@/hooks/useCashierMode";
+import { useOwnerPin } from "@/hooks/useOwnerPin";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { OfflineBanner } from "@/components/OfflineBanner";
@@ -49,6 +50,7 @@ export function DesktopShell() {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const { isCashierMode, enterCashierMode, exitCashierMode } = useCashierMode();
+  const { askOwnerPin, ownerPinDialog } = useOwnerPin();
 
   const shopName =
     (profile && "business_name" in profile && profile.business_name) ||
@@ -133,6 +135,7 @@ export function DesktopShell() {
 
   return (
     <div className={cn("sella-desktop-root", collapsed && "is-collapsed")}>
+      {ownerPinDialog}
       <a href="#sella-main" className="sella-skip-link">
         Simbuka ujye ku birimo
       </a>
@@ -239,13 +242,23 @@ export function DesktopShell() {
             <button
               type="button"
               onClick={() => {
-                if (isCashierMode) {
-                  exitCashierMode();
-                  toast.success("Muvuye muri Cashier Mode (Ububiko n'inyungu biragaragara)");
-                } else {
-                  enterCashierMode();
-                  toast.info("Mwinjiye muri Cashier Mode (Inyungu n'ibiciro byo kurangura bihishwe)");
-                }
+                void (async () => {
+                  if (isCashierMode) {
+                    const pin = await askOwnerPin(
+                      "PIN y'umuyobozi kugira ngo usohoke muri Cashier Mode"
+                    );
+                    if (!pin) return;
+                    const ok = await exitCashierMode(pin);
+                    if (!ok) {
+                      toast.error("PIN y'umuyobozi sibyo");
+                      return;
+                    }
+                    toast.success("Muvuye muri Cashier Mode (Ububiko n'inyungu biragaragara)");
+                  } else {
+                    enterCashierMode();
+                    toast.info("Mwinjiye muri Cashier Mode (Inyungu n'ibiciro byo kurangura bihishwe)");
+                  }
+                })();
               }}
               className={cn(
                 "h-9 px-2.5 rounded-xl text-xs flex items-center gap-1.5 transition-all",

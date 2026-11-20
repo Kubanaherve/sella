@@ -10,6 +10,7 @@ import {
   listInventory,
   recordCashSale,
   recordPayment,
+  resetSalesMoney,
   signupLocal,
 } from "@/db/localApi";
 
@@ -278,28 +279,72 @@ describe("createSaleOrder (local)", () => {
     expect((await listInventory())[0].quantity).toBe(1);
   });
 
-  it("floors a fractional quantity so stock and the charge stay in step", async () => {
+  it("rejects a fractional quantity so stock and the charge cannot drift", async () => {
     const item = await addInventoryItem({
       item_name: "Sugar",
       quantity: 10,
       cost_price: 500,
       selling_price: 1000,
     });
+    await expect(
+      createSaleOrder({
+        clientName: "Walk-in",
+        amount: 1900,
+        payments: [{ method: "cash", amount: 1900 }],
+        items: [
+          {
+            inventory_item_id: item.id,
+            item_name: item.item_name,
+            quantity: 1.9,
+            unit_price: 1000,
+          },
+        ],
+      })
+    ).rejects.toThrow(/wuzuye/);
+    expect((await listInventory())[0].quantity).toBe(10);
+  });
+
+  it("replays the same repayment once", async () => {
+    const item = await addInventoryItem({
+      item_name: "Soap",
+      quantity: 5,
+      cost_price: 200,
+      selling_price: 1000,
+    });
     const sale = await createSaleOrder({
-      clientName: "Walk-in",
-      amount: 1000,
-      payments: [{ method: "cash", amount: 1000 }],
+      clientName: "Keza",
+      phone: "0788123456",
+      amount: 2000,
+      payments: [],
       items: [
         {
           inventory_item_id: item.id,
           item_name: item.item_name,
-          quantity: 1.9,
+          quantity: 2,
           unit_price: 1000,
         },
       ],
     });
-    expect(sale.sales[0].quantity).toBe(1);
-    expect(sale.paid).toBe(1000);
-    expect((await listInventory())[0].quantity).toBe(9);
+    const key = "pay-replay-1";
+    const first = await recordPayment({
+      debtId: sale.debt.id,
+      amount: 1000,
+      paymentMethod: "cash",
+      idempotencyKey: key,
+    });
+    const second = await recordPayment({
+      debtId: sale.debt.id,
+      amount: 1000,
+      paymentMethod: "cash",
+      idempotencyKey: key,
+    });
+    expect(second.id).toBe(first.id);
+    const stored = await db.debts.get(sale.debt.id);
+    expect(stored?.remaining_balance).toBe(1000);
+  });
+
+  it("refuses to wipe sales without the owner PIN", async () => {
+    await expect(resetSalesMoney("0000")).rejects.toThrow(/PIN/);
+    await resetSalesMoney("1234");
   });
 });
