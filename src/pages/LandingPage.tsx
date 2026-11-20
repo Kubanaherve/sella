@@ -80,6 +80,9 @@ export default function LandingPage() {
           </div>
 
           <nav className="hidden md:flex items-center gap-6 text-xs font-semibold text-slate-600 dark:text-white/70">
+            <Link to="/marketplace" className="text-primary hover:text-primary/80 transition-colors font-bold flex items-center gap-1">
+              <span>Isoko (Marketplace)</span>
+            </Link>
             <a href="#showcase" className="hover:text-slate-900 dark:hover:text-white transition-colors">
               Platform
             </a>
@@ -137,6 +140,7 @@ export default function LandingPage() {
         </div>
         {menuOpen && (
           <nav className="md:hidden border-t border-slate-200/80 dark:border-white/10 px-4 py-3 grid gap-1 bg-white/95 dark:bg-slate-950/95">
+            <Link to="/marketplace" onClick={() => setMenuOpen(false)} className="px-2 py-2.5 text-sm font-bold text-primary">Isoko (Marketplace)</Link>
             <a href="#features" onClick={() => setMenuOpen(false)} className="px-2 py-2.5 text-sm font-semibold">Features</a>
             <a href="#pricing" onClick={() => setMenuOpen(false)} className="px-2 py-2.5 text-sm font-semibold">Pricing</a>
             <Link to="/download" onClick={() => setMenuOpen(false)} className="px-2 py-2.5 text-sm font-semibold">Download</Link>

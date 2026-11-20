@@ -52,7 +52,8 @@ function MobileAppShell() {
     location.pathname.startsWith("/import") ||
     location.pathname.startsWith("/assistant") ||
     location.pathname.startsWith("/debts") ||
-    location.pathname.startsWith("/inventory");
+    location.pathname.startsWith("/inventory") ||
+    location.pathname.startsWith("/orders-manage");
 
   return (
     <div className="sella-app-shell">

@@ -16,6 +16,11 @@ build
 .env.*
 !.env.example
 supabase/.temp/
+screenshots/
+qa-evidence/
+tests/qa-evidence/
+*.pdf
+*.xlsx
 
 # Editor directories and files
 .vscode/*

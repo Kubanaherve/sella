@@ -14,6 +14,7 @@ import {
   List,
   TrendingUp,
   Package,
+  ShoppingBag,
   Bell,
   ChevronRight,
   ArrowUpRight,
@@ -254,6 +255,13 @@ const DashboardPage = () => {
       path: "/inventory",
       tone: "bg-slate-50/80 text-slate-800 border border-slate-200/60 dark:bg-slate-700/25 dark:text-slate-200 dark:border-slate-500/20 backdrop-blur-md",
       iconTone: "bg-slate-100 text-slate-700 dark:bg-slate-700/50 dark:text-slate-200",
+    },
+    {
+      icon: ShoppingBag,
+      label: "Komande",
+      path: "/orders-manage",
+      tone: "bg-emerald-50/80 text-emerald-900 border border-emerald-100/60 dark:bg-emerald-500/15 dark:text-emerald-200 dark:border-emerald-400/20 backdrop-blur-md",
+      iconTone: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/25 dark:text-emerald-200",
     },
   ];
 

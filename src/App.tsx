@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { ThemeProvider, useTheme } from "./contexts/ThemeContext";
+import { CartProvider } from "./contexts/CartContext";
 import { SubscriptionGuard } from "./components/SubscriptionGuard";
 import { AppShell } from "./components/AppShell";
 import { DesktopLayoutProvider } from "./hooks/useDesktopLayout";
@@ -58,6 +59,10 @@ const DeleteAccountRequestPage = lazy(() => import("./pages/DeleteAccountRequest
 const MorePage = lazy(() => import("./pages/More"));
 const ReceiptSettingsPage = lazy(() => import("./pages/ReceiptSettings"));
 const AssistantPage = lazy(() => import("./pages/Assistant"));
+const MarketplacePage = lazy(() => import("./pages/Marketplace"));
+const StoreProfilePage = lazy(() => import("./pages/StoreProfile"));
+const CustomerOrdersPage = lazy(() => import("./pages/CustomerOrders"));
+const OrdersPage = lazy(() => import("./pages/Orders"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 function PageFallback() {
@@ -148,6 +153,7 @@ const App = () => {
         <ThemedToasts />
         <DesktopBoot>
         <DesktopLayoutProvider>
+        <CartProvider>
         <BrowserRouter>
           <Analytics />
           <SubscriptionGuard>
@@ -163,6 +169,10 @@ const App = () => {
                     )
                   }
                 />
+                <Route path="/marketplace" element={<MarketplacePage />} />
+                <Route path="/store/:shopCode" element={<StoreProfilePage />} />
+                <Route path="/orders" element={<CustomerOrdersPage />} />
+                <Route path="/orders/:orderId" element={<CustomerOrdersPage />} />
                 <Route path="/app" element={<AuthPage />} />
                 <Route path="/login" element={<AuthPage />} />
                 <Route path="/docs" element={<DocumentationPage />} />
@@ -187,6 +197,7 @@ const App = () => {
                   <Route path="/debts" element={<ErrorBoundary label="debts"><DebtsPage /></ErrorBoundary>} />
                   <Route path="/sales" element={<ErrorBoundary label="sales"><SalesPage /></ErrorBoundary>} />
                   <Route path="/inventory" element={<ErrorBoundary label="inventory"><InventoryPage /></ErrorBoundary>} />
+                  <Route path="/orders-manage" element={<ErrorBoundary label="orders"><OrdersPage /></ErrorBoundary>} />
                   <Route path="/more" element={<MorePage />} />
                   <Route path="/assistant" element={<AssistantPage />} />
                   <Route path="/clients" element={<ClientsPage />} />
@@ -211,6 +222,7 @@ const App = () => {
             </Suspense>
           </SubscriptionGuard>
         </BrowserRouter>
+        </CartProvider>
         </DesktopLayoutProvider>
         </DesktopBoot>
       </AuthProvider>

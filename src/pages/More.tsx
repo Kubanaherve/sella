@@ -11,6 +11,9 @@ import {
   ChevronRight,
   FileText,
   MessageCircle,
+  ShoppingBag,
+  Store,
+  ExternalLink,
 } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { useAuth } from "@/contexts/AuthContext";
@@ -43,6 +46,18 @@ const MorePage = () => {
     danger?: boolean;
     hide?: boolean;
   }> = [
+    {
+      icon: ShoppingBag,
+      label: "Komande z'Isoko (Orders)",
+      hint: "Gucunga komande zakiriwe ku isoko",
+      path: "/orders-manage",
+    },
+    {
+      icon: Store,
+      label: "Sella Isoko (Marketplace)",
+      hint: "Kureba isoko rusange ry'abacuruzi",
+      path: "/marketplace",
+    },
     {
       icon: MessageCircle,
       label: labels.assistantRow,

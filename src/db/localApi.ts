@@ -933,6 +933,13 @@ export async function addInventoryItem(
     variant_label: cleanVariant(input.variant_label),
     min_order_qty: cleanMinOrder(input.min_order_qty),
     description: input.description ?? null,
+    variations: input.variations ?? null,
+    specifications: input.specifications ?? null,
+    warranty: input.warranty ?? null,
+    dimensions: input.dimensions ?? null,
+    weight: input.weight ?? null,
+    material: input.material ?? null,
+    is_available: input.is_available ?? true,
     created_at: now,
     updated_at: now,
   };
@@ -1171,4 +1178,350 @@ export async function getOwnerPhone(): Promise<string | null> {
 
 export async function setOwnerPhone(phone: string) {
   await setAppSetting("owner_phone", phone);
+}
+
+// ---------------------------------------------------------------------------
+// Universal Marketplace & Store Management Functions (Local-first)
+// ---------------------------------------------------------------------------
+
+export async function updateStoreProfile(
+  patch: Partial<
+    Pick<
+      Profile,
+      | "business_name"
+      | "owner_name"
+      | "business_category"
+      | "store_description"
+      | "store_logo_url"
+      | "store_cover_url"
+      | "store_address"
+      | "store_tin"
+      | "phone"
+      | "email"
+    >
+  >
+): Promise<Profile> {
+  const profileId = await requireProfileId();
+  const existing = await db.profiles.get(profileId);
+  if (!existing) throw new Error("Profile not found");
+
+  const clean: Partial<Profile> = {
+    updated_at: nowIso(),
+  };
+
+  if (patch.business_name !== undefined) {
+    const bName = patch.business_name?.trim();
+    if (bName && bName.length >= 2) {
+      if (bName.toLowerCase() !== (existing.business_name || "").toLowerCase()) {
+        const available = await isShopNameAvailableLocal(bName);
+        if (!available) throw new Error("Izina ry'iduka rirafashwe — hitamo irindi");
+      }
+      clean.business_name = bName;
+    }
+  }
+
+  if (patch.owner_name !== undefined) clean.owner_name = patch.owner_name?.trim() || null;
+  if (patch.business_category !== undefined) {
+    clean.business_category = normalizeBusinessCategory(patch.business_category);
+  }
+  if (patch.store_description !== undefined) {
+    clean.store_description = patch.store_description?.trim() || null;
+  }
+  if (patch.store_logo_url !== undefined) {
+    clean.store_logo_url = patch.store_logo_url?.trim() || null;
+  }
+  if (patch.store_cover_url !== undefined) {
+    clean.store_cover_url = patch.store_cover_url?.trim() || null;
+  }
+  if (patch.store_address !== undefined) {
+    clean.store_address = patch.store_address?.trim() || null;
+  }
+  if (patch.store_tin !== undefined) {
+    clean.store_tin = patch.store_tin?.trim() || null;
+  }
+
+  await db.profiles.update(profileId, clean);
+  const updated = await db.profiles.get(profileId);
+  return updated || existing;
+}
+
+export interface CreateMarketplaceOrderInput {
+  shopCode: string;
+  customerName: string;
+  customerPhone: string;
+  customerEmail?: string | null;
+  deliveryType: import("./types").MarketplaceDeliveryType;
+  deliveryAddress?: string | null;
+  paymentMethod: import("./types").PaymentMethod;
+  paymentReference?: string | null;
+  notes?: string | null;
+  items: Array<{
+    inventoryItemId?: string | null;
+    itemName: string;
+    quantity: number;
+    unitPrice: number;
+    selectedVariation?: string | null;
+  }>;
+}
+
+export async function createMarketplaceOrder(
+  input: CreateMarketplaceOrderInput
+): Promise<import("./types").MarketplaceOrder> {
+  const shop = await db.profiles
+    .where("shop_code")
+    .equalsIgnoreCase(input.shopCode.trim())
+    .first();
+
+  const profileId = shop?.id || (await requireProfileId().catch(() => "marketplace_guest"));
+  const orderId = newId();
+  const orderNumber = `ORD-${Date.now().toString(36).toUpperCase()}-${Math.random()
+    .toString(36)
+    .slice(2, 6)
+    .toUpperCase()}`;
+  const now = nowIso();
+
+  let totalAmount = 0;
+  const orderItems: import("./types").MarketplaceOrderItem[] = [];
+
+  for (const item of input.items) {
+    const qty = Math.max(1, Number(item.quantity) || 1);
+    const unitPrice = toRwf(item.unitPrice);
+    const itemTotal = extendTotal(unitPrice, qty);
+    totalAmount += itemTotal;
+
+    const orderItem: import("./types").MarketplaceOrderItem = {
+      id: newId(),
+      order_id: orderId,
+      profile_id: profileId,
+      inventory_item_id: item.inventoryItemId || null,
+      item_name: item.itemName.trim(),
+      quantity: qty,
+      unit_price: unitPrice,
+      total_price: itemTotal,
+      selected_variation: item.selectedVariation?.trim() || null,
+      created_at: now,
+    };
+    orderItems.push(orderItem);
+
+    // If item exists in inventory, decrement stock cleanly
+    if (item.inventoryItemId) {
+      try {
+        const inv = await db.inventory_items.get(item.inventoryItemId);
+        if (inv && inv.quantity >= qty) {
+          await db.inventory_items.update(inv.id, {
+            quantity: Math.max(0, inv.quantity - qty),
+            updated_at: now,
+          });
+        }
+      } catch (e) {
+        console.warn("Stock decrement warning for order item:", e);
+      }
+    }
+  }
+
+  const order: import("./types").MarketplaceOrder = {
+    id: orderId,
+    profile_id: profileId,
+    shop_id: profileId,
+    shop_code: shop?.shop_code || input.shopCode,
+    shop_name: shop?.business_name || "Iduka",
+    order_number: orderNumber,
+    customer_name: input.customerName.trim(),
+    customer_phone: input.customerPhone.trim(),
+    customer_email: input.customerEmail?.trim() || null,
+    delivery_type: input.deliveryType,
+    delivery_address: input.deliveryAddress?.trim() || null,
+    status: "pending",
+    payment_status: input.paymentReference ? "paid" : "pending",
+    payment_method: input.paymentMethod,
+    payment_reference: input.paymentReference?.trim() || null,
+    total_amount: totalAmount,
+    notes: input.notes?.trim() || null,
+    items: orderItems,
+    created_at: now,
+    updated_at: now,
+  };
+
+  await db.transaction("rw", db.marketplace_orders, db.marketplace_order_items, async () => {
+    await db.marketplace_orders.add(order);
+    for (const oi of orderItems) {
+      await db.marketplace_order_items.add(oi);
+    }
+  });
+
+  return order;
+}
+
+export async function listMarketplaceOrders(
+  shopCodeOrProfileId?: string
+): Promise<import("./types").MarketplaceOrder[]> {
+  let orders: import("./types").MarketplaceOrder[] = [];
+
+  if (shopCodeOrProfileId) {
+    orders = await db.marketplace_orders
+      .filter(
+        (o) =>
+          o.profile_id === shopCodeOrProfileId ||
+          (o.shop_code || "").toLowerCase() === shopCodeOrProfileId.toLowerCase()
+      )
+      .toArray();
+  } else {
+    const profileId = await requireProfileId().catch(() => null);
+    if (profileId) {
+      orders = await db.marketplace_orders
+        .where("profile_id")
+        .equals(profileId)
+        .toArray();
+    } else {
+      orders = await db.marketplace_orders.toArray();
+    }
+  }
+
+  orders.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+  // Attach items
+  for (const o of orders) {
+    o.items = await db.marketplace_order_items.where("order_id").equals(o.id).toArray();
+  }
+
+  return orders;
+}
+
+export async function getMarketplaceOrder(
+  orderNumberOrId: string
+): Promise<import("./types").MarketplaceOrder | null> {
+  const key = orderNumberOrId.trim();
+  const order = await db.marketplace_orders
+    .filter((o) => o.id === key || o.order_number.toUpperCase() === key.toUpperCase())
+    .first();
+
+  if (!order) return null;
+  order.items = await db.marketplace_order_items.where("order_id").equals(order.id).toArray();
+  return order;
+}
+
+export async function updateMarketplaceOrderStatus(
+  orderId: string,
+  status: import("./types").MarketplaceOrderStatus,
+  paymentStatus?: import("./types").MarketplacePaymentStatus
+): Promise<import("./types").MarketplaceOrder> {
+  const order = await db.marketplace_orders.get(orderId);
+  if (!order) throw new Error("Order not found");
+
+  const patch: Partial<import("./types").MarketplaceOrder> = {
+    status,
+    updated_at: nowIso(),
+  };
+  if (paymentStatus) {
+    patch.payment_status = paymentStatus;
+  }
+
+  await db.marketplace_orders.update(orderId, patch);
+  const updated = await db.marketplace_orders.get(orderId);
+  if (!updated) throw new Error("Order update failed");
+  updated.items = await db.marketplace_order_items.where("order_id").equals(orderId).toArray();
+  return updated;
+}
+
+export async function listMarketplaceProducts(filter?: {
+  category?: string;
+  query?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  inStockOnly?: boolean;
+}): Promise<
+  Array<
+    InventoryItem & {
+      shop_name?: string;
+      shop_code?: string;
+      shop_category?: string;
+    }
+  >
+> {
+  const allItems = await db.inventory_items.toArray();
+  const allProfiles = await db.profiles.toArray();
+  const profileMap = new Map<string, Profile>(allProfiles.map((p) => [p.id, p]));
+
+  const q = (filter?.query || "").toLowerCase().trim();
+  const cat = filter?.category?.toLowerCase().trim();
+
+  return allItems
+    .filter((item) => {
+      if (filter?.inStockOnly && item.quantity <= 0) return false;
+      if (filter?.minPrice != null && item.selling_price < filter.minPrice) return false;
+      if (filter?.maxPrice != null && item.selling_price > filter.maxPrice) return false;
+
+      if (cat && cat !== "all") {
+        const itemCat = (item.category || "").toLowerCase();
+        const shop = item.profile_id ? profileMap.get(item.profile_id) : undefined;
+        const shopCat = (shop?.business_category || "").toLowerCase();
+        if (itemCat !== cat && shopCat !== cat) return false;
+      }
+
+      if (q) {
+        const haystack = [
+          item.item_name,
+          item.category || "",
+          item.brand || "",
+          item.description || "",
+          item.sku || "",
+        ]
+          .join(" ")
+          .toLowerCase();
+        if (!haystack.includes(q)) return false;
+      }
+
+      return true;
+    })
+    .map((item) => {
+      const shop = item.profile_id ? profileMap.get(item.profile_id) : undefined;
+      return {
+        ...item,
+        shop_name: shop?.business_name || "Iduka",
+        shop_code: shop?.shop_code || "SEL-XXXX",
+        shop_category: shop?.business_category || "general_merchandise",
+      };
+    });
+}
+
+export async function listMarketplaceStores(
+  query?: string,
+  category?: string
+): Promise<Array<Profile & { product_count?: number }>> {
+  const profiles = await db.profiles.toArray();
+  const items = await db.inventory_items.toArray();
+
+  const countMap = new Map<string, number>();
+  for (const i of items) {
+    if (i.profile_id) {
+      countMap.set(i.profile_id, (countMap.get(i.profile_id) || 0) + 1);
+    }
+  }
+
+  const q = (query || "").toLowerCase().trim();
+  const cat = category?.toLowerCase().trim();
+
+  return profiles
+    .filter((p) => {
+      if (cat && cat !== "all") {
+        if ((p.business_category || "").toLowerCase() !== cat) return false;
+      }
+      if (q) {
+        const haystack = [
+          p.business_name || "",
+          p.owner_name || "",
+          p.shop_code || "",
+          p.business_category || "",
+          p.store_address || "",
+        ]
+          .join(" ")
+          .toLowerCase();
+        if (!haystack.includes(q)) return false;
+      }
+      return true;
+    })
+    .map((p) => ({
+      ...p,
+      product_count: countMap.get(p.id) || 0,
+    }));
 }

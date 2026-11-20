@@ -116,4 +116,64 @@ export async function setOwnerPhone(phone: string) {
   return isCloudBackend() ? cloud.setOwnerPhone(phone) : local.setOwnerPhone(phone);
 }
 
+// ---------------------------------------------------------------------------
+// Universal Marketplace & Store Management Functions
+// ---------------------------------------------------------------------------
+
+export async function updateStoreProfile(
+  ...args: Parameters<typeof local.updateStoreProfile>
+) {
+  return isCloudBackend()
+    ? cloud.updateStoreProfile(...args)
+    : local.updateStoreProfile(...args);
+}
+
+export async function createMarketplaceOrder(
+  ...args: Parameters<typeof local.createMarketplaceOrder>
+) {
+  return isCloudBackend()
+    ? cloud.createMarketplaceOrder(...args)
+    : local.createMarketplaceOrder(...args);
+}
+
+export async function listMarketplaceOrders(
+  ...args: Parameters<typeof local.listMarketplaceOrders>
+) {
+  return isCloudBackend()
+    ? cloud.listMarketplaceOrders(...args)
+    : local.listMarketplaceOrders(...args);
+}
+
+export async function getMarketplaceOrder(
+  ...args: Parameters<typeof local.getMarketplaceOrder>
+) {
+  return isCloudBackend()
+    ? cloud.getMarketplaceOrder(...args)
+    : local.getMarketplaceOrder(...args);
+}
+
+export async function updateMarketplaceOrderStatus(
+  ...args: Parameters<typeof local.updateMarketplaceOrderStatus>
+) {
+  return isCloudBackend()
+    ? cloud.updateMarketplaceOrderStatus(...args)
+    : local.updateMarketplaceOrderStatus(...args);
+}
+
+export async function listMarketplaceProducts(
+  ...args: Parameters<typeof local.listMarketplaceProducts>
+) {
+  return isCloudBackend()
+    ? cloud.listMarketplaceProducts(...args)
+    : local.listMarketplaceProducts(...args);
+}
+
+export async function listMarketplaceStores(
+  ...args: Parameters<typeof local.listMarketplaceStores>
+) {
+  return isCloudBackend()
+    ? cloud.listMarketplaceStores(...args)
+    : local.listMarketplaceStores(...args);
+}
+
 export type { DailyReport } from "@/db/cloudApi";

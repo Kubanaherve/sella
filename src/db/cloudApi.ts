@@ -35,6 +35,7 @@ import {
   normalizePaymentReference,
 } from "@/lib/paymentRef";
 import { buildLedgerDailyReports, netSalesVolume } from "@/lib/reporting";
+import { normalizeBusinessCategory } from "@/lib/businessCategories";
 
 export type { CreateSaleOrderInput, CreateSaleOrderResult };
 
@@ -737,6 +738,13 @@ function mapInventoryRow(row: Record<string, unknown>): InventoryItem {
     min_order_qty:
       row.min_order_qty == null ? null : Number(row.min_order_qty),
     description: (row.description as string | null) ?? null,
+    variations: (row.variations as string | null) ?? null,
+    specifications: (row.specifications as string | null) ?? null,
+    warranty: (row.warranty as string | null) ?? null,
+    dimensions: (row.dimensions as string | null) ?? null,
+    weight: (row.weight as string | null) ?? null,
+    material: (row.material as string | null) ?? null,
+    is_available: row.is_available == null ? true : Boolean(row.is_available),
     created_at: String(row.created_at || ""),
     updated_at: String(row.updated_at || ""),
   };
@@ -1163,4 +1171,315 @@ export async function getOwnerPhone(): Promise<string | null> {
 
 export async function setOwnerPhone(phone: string) {
   await setAppSetting("owner_phone", phone);
+}
+
+// ---------------------------------------------------------------------------
+// Universal Marketplace & Store Management Functions (Cloud)
+// ---------------------------------------------------------------------------
+
+export async function updateStoreProfile(
+  patch: Partial<
+    Pick<
+      import("./types").Profile,
+      | "business_name"
+      | "owner_name"
+      | "business_category"
+      | "store_description"
+      | "store_logo_url"
+      | "store_cover_url"
+      | "store_address"
+      | "store_tin"
+      | "phone"
+      | "email"
+    >
+  >
+): Promise<import("./types").Profile> {
+  const user_id = await uid();
+  const updatePayload: Record<string, unknown> = {
+    updated_at: new Date().toISOString(),
+  };
+
+  if (patch.business_name !== undefined) updatePayload.business_name = patch.business_name?.trim();
+  if (patch.owner_name !== undefined) updatePayload.owner_name = patch.owner_name?.trim();
+  if (patch.business_category !== undefined) {
+    updatePayload.business_category = normalizeBusinessCategory(patch.business_category);
+  }
+  if (patch.store_description !== undefined) {
+    updatePayload.store_description = patch.store_description?.trim() || null;
+  }
+  if (patch.store_logo_url !== undefined) {
+    updatePayload.store_logo_url = patch.store_logo_url?.trim() || null;
+  }
+  if (patch.store_cover_url !== undefined) {
+    updatePayload.store_cover_url = patch.store_cover_url?.trim() || null;
+  }
+  if (patch.store_address !== undefined) {
+    updatePayload.store_address = patch.store_address?.trim() || null;
+  }
+  if (patch.store_tin !== undefined) {
+    updatePayload.store_tin = patch.store_tin?.trim() || null;
+  }
+
+  const { data, error } = await sb()
+    .from("profiles")
+    .update(updatePayload)
+    .eq("user_id", user_id)
+    .select("*")
+    .single();
+
+  if (error) throw error;
+  return data as unknown as import("./types").Profile;
+}
+
+export async function createMarketplaceOrder(
+  input: import("./localApi").CreateMarketplaceOrderInput
+): Promise<import("./types").MarketplaceOrder> {
+  // Cloud order creation with fallback to local outbox / Dexie
+  const { data: shopProfile } = await sb()
+    .from("profiles")
+    .select("user_id, business_name, shop_code")
+    .ilike("shop_code", input.shopCode.trim())
+    .maybeSingle();
+
+  const targetUserId = shopProfile?.user_id || (await uid().catch(() => null));
+  const orderNumber = `ORD-${Date.now().toString(36).toUpperCase()}-${Math.random()
+    .toString(36)
+    .slice(2, 6)
+    .toUpperCase()}`;
+
+  let totalAmount = 0;
+  for (const item of input.items) {
+    const qty = Math.max(1, Number(item.quantity) || 1);
+    const unitPrice = toRwf(item.unitPrice);
+    totalAmount += extendTotal(unitPrice, qty);
+  }
+
+  const orderPayload = {
+    user_id: targetUserId,
+    shop_code: shopProfile?.shop_code || input.shopCode,
+    order_number: orderNumber,
+    customer_name: input.customerName.trim(),
+    customer_phone: input.customerPhone.trim(),
+    customer_email: input.customerEmail?.trim() || null,
+    delivery_type: input.deliveryType,
+    delivery_address: input.deliveryAddress?.trim() || null,
+    status: "pending",
+    payment_status: input.paymentReference ? "paid" : "pending",
+    payment_method: input.paymentMethod,
+    payment_reference: input.paymentReference?.trim() || null,
+    total_amount: totalAmount,
+    notes: input.notes?.trim() || null,
+  };
+
+  const { data: orderData, error: orderErr } = await sb()
+    .from("marketplace_orders")
+    .insert(orderPayload)
+    .select("*")
+    .single();
+
+  if (orderErr) {
+    // If table not yet migrated on live backend, gracefully use localApi
+    const { createMarketplaceOrder: localCreate } = await import("./localApi");
+    return localCreate(input);
+  }
+
+  const orderId = orderData.id;
+  const orderItemsPayload = input.items.map((i) => {
+    const qty = Math.max(1, Number(i.quantity) || 1);
+    const unitPrice = toRwf(i.unitPrice);
+    return {
+      order_id: orderId,
+      inventory_item_id: i.inventoryItemId || null,
+      item_name: i.itemName.trim(),
+      quantity: qty,
+      unit_price: unitPrice,
+      total_price: extendTotal(unitPrice, qty),
+      selected_variation: i.selectedVariation?.trim() || null,
+    };
+  });
+
+  const { data: itemsData } = await sb()
+    .from("marketplace_order_items")
+    .insert(orderItemsPayload)
+    .select("*");
+
+  return {
+    ...orderData,
+    shop_name: shopProfile?.business_name || "Iduka",
+    items: (itemsData || []) as import("./types").MarketplaceOrderItem[],
+  };
+}
+
+export async function listMarketplaceOrders(
+  shopCodeOrProfileId?: string
+): Promise<import("./types").MarketplaceOrder[]> {
+  const currentUid = await uid().catch(() => null);
+  let query = sb().from("marketplace_orders").select("*, items:marketplace_order_items(*)");
+
+  if (shopCodeOrProfileId) {
+    query = query.or(
+      `user_id.eq.${shopCodeOrProfileId},shop_code.ilike.${shopCodeOrProfileId}`
+    );
+  } else if (currentUid) {
+    query = query.eq("user_id", currentUid);
+  }
+
+  const { data, error } = await query.order("created_at", { ascending: false });
+  if (error) {
+    const { listMarketplaceOrders: localList } = await import("./localApi");
+    return localList(shopCodeOrProfileId);
+  }
+
+  return (data || []) as import("./types").MarketplaceOrder[];
+}
+
+export async function getMarketplaceOrder(
+  orderNumberOrId: string
+): Promise<import("./types").MarketplaceOrder | null> {
+  const key = orderNumberOrId.trim();
+  const { data, error } = await sb()
+    .from("marketplace_orders")
+    .select("*, items:marketplace_order_items(*)")
+    .or(`id.eq.${key},order_number.ilike.${key}`)
+    .maybeSingle();
+
+  if (error || !data) {
+    const { getMarketplaceOrder: localGet } = await import("./localApi");
+    return localGet(orderNumberOrId);
+  }
+
+  return data as import("./types").MarketplaceOrder;
+}
+
+export async function updateMarketplaceOrderStatus(
+  orderId: string,
+  status: import("./types").MarketplaceOrderStatus,
+  paymentStatus?: import("./types").MarketplacePaymentStatus
+): Promise<import("./types").MarketplaceOrder> {
+  const patch: Record<string, unknown> = {
+    status,
+    updated_at: new Date().toISOString(),
+  };
+  if (paymentStatus) patch.payment_status = paymentStatus;
+
+  const { data, error } = await sb()
+    .from("marketplace_orders")
+    .update(patch)
+    .eq("id", orderId)
+    .select("*, items:marketplace_order_items(*)")
+    .single();
+
+  if (error) {
+    const { updateMarketplaceOrderStatus: localUpdate } = await import("./localApi");
+    return localUpdate(orderId, status, paymentStatus);
+  }
+
+  return data as import("./types").MarketplaceOrder;
+}
+
+export async function listMarketplaceProducts(filter?: {
+  category?: string;
+  query?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  inStockOnly?: boolean;
+}): Promise<
+  Array<
+    InventoryItem & {
+      shop_name?: string;
+      shop_code?: string;
+      shop_category?: string;
+    }
+  >
+> {
+  // Query inventory items and profiles
+  const { data: items, error } = await sb()
+    .from("inventory_items")
+    .select("*, profiles:user_id(business_name, shop_code, business_category)")
+    .order("created_at", { ascending: false })
+    .limit(100);
+
+  if (error || !items) {
+    const { listMarketplaceProducts: localList } = await import("./localApi");
+    return localList(filter);
+  }
+
+  const q = (filter?.query || "").toLowerCase().trim();
+  const cat = filter?.category?.toLowerCase().trim();
+
+  return items
+    .filter((item: Record<string, unknown>) => {
+      const qty = Number(item.quantity) || 0;
+      const price = Number(item.selling_price) || 0;
+      if (filter?.inStockOnly && qty <= 0) return false;
+      if (filter?.minPrice != null && price < filter.minPrice) return false;
+      if (filter?.maxPrice != null && price > filter.maxPrice) return false;
+
+      const profile = (item.profiles as Record<string, unknown>) || {};
+      const itemCat = String(item.category || "").toLowerCase();
+      const shopCat = String(profile.business_category || "").toLowerCase();
+
+      if (cat && cat !== "all") {
+        if (itemCat !== cat && shopCat !== cat) return false;
+      }
+
+      if (q) {
+        const haystack = [
+          String(item.item_name || ""),
+          itemCat,
+          String(item.brand || ""),
+          String(item.description || ""),
+        ]
+          .join(" ")
+          .toLowerCase();
+        if (!haystack.includes(q)) return false;
+      }
+      return true;
+    })
+    .map((item: Record<string, unknown>) => {
+      const profile = (item.profiles as Record<string, unknown>) || {};
+      return {
+        ...mapInventoryRow(item),
+        shop_name: String(profile.business_name || "Iduka"),
+        shop_code: String(profile.shop_code || "SEL-XXXX"),
+        shop_category: String(profile.business_category || "general_merchandise"),
+      };
+    });
+}
+
+export async function listMarketplaceStores(
+  query?: string,
+  category?: string
+): Promise<Array<import("./types").Profile & { product_count?: number }>> {
+  const { data: profiles, error } = await sb()
+    .from("profiles")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error || !profiles) {
+    const { listMarketplaceStores: localList } = await import("./localApi");
+    return localList(query, category);
+  }
+
+  const q = (query || "").toLowerCase().trim();
+  const cat = category?.toLowerCase().trim();
+
+  return (profiles as import("./types").Profile[]).filter((p) => {
+    if (cat && cat !== "all") {
+      if ((p.business_category || "").toLowerCase() !== cat) return false;
+    }
+    if (q) {
+      const haystack = [
+        p.business_name || "",
+        p.owner_name || "",
+        p.shop_code || "",
+        p.business_category || "",
+        p.store_address || "",
+      ]
+        .join(" ")
+        .toLowerCase();
+      if (!haystack.includes(q)) return false;
+    }
+    return true;
+  });
 }

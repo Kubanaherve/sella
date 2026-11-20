@@ -8,6 +8,7 @@ import { deleteAccountRemote } from "@/services/billing";
 import { CustomerPlanCard } from "@/components/account/CustomerPlanCard";
 import { BillingHistory } from "@/components/account/BillingHistory";
 import { DeviceManager } from "@/components/account/DeviceManager";
+import { StoreProfileCard } from "@/components/account/StoreProfileCard";
 import { ChangePinCard } from "@/components/ChangePinCard";
 import { PageHeader } from "@/components/PageHeader";
 import {
@@ -133,6 +134,8 @@ const AccountPage = () => {
           {email && <p className="text-muted-foreground break-all">{email}</p>}
           {phone && <p className="text-muted-foreground">{phone}</p>}
         </div>
+
+        {!isCashierMode && <StoreProfileCard />}
 
         <CustomerPlanCard />
         <BillingHistory />

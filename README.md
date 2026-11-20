@@ -1,58 +1,123 @@
-# Sella
+# Sella — Universal Digital Marketplace & Retail Operating System for Rwanda
 
-Multi-tenant shop system for Rwanda: sales, credit, inventory, and staff. A clothing shop, grocery, quincaillerie, supermarket, wholesaler, or any other legitimate business uses the same register. The shop chooses a business type at registration. Products keep their own unit (piece, kg, litre, bag, packet, pair, carton), an optional size or color, and an optional wholesale minimum.
+Multi-tenant digital marketplace, POS register, and retail management platform built for Rwandan commercial businesses: clothing shops, shoe boutiques, hardware stores (quincailleries), electronics and gadget suppliers, supermarkets, mini-markets, pharmacies, beauty & cosmetics, restaurants & food businesses, construction materials, agricultural produce, furniture, wholesale warehouses, and informal market traders.
 
-**Brand assets:** `src/assets/brand/` + `public/brand/` via `BrandMark`.
+---
 
-## Auth (daily use)
+## 🌟 Core Platform Features
 
-1. **Register** — shop name (unique), your name, email, phone, 4-digit PIN  
-2. **Thank-you** — shows email, phone, shop code (also emailed when Resend is set)  
-3. **Every return** — app remembers the shop and opens the **PIN dial pad only**
+1. **Universal Rwandan Trader Support (20 Commercial Sectors)**:
+   - Full bilingual support (Kinyarwanda & English).
+   - Category-specific variation handling (Clothing & shoe sizes/colors, hardware dimensions & materials, electronics specifications & warranty, food portions & packaging).
+   - Rich units: `pcs`, `kg`, `g`, `tonne`, `litre`, `ml`, `metre`, `sqm`, `box`, `bag`, `roll`, `pair`, `portion`, `pack`, `can`, `bundle`, `set`.
 
-## Modes
+2. **Digital Marketplace & Store Discovery**:
+   - Customer-facing digital marketplace (`/marketplace`) with real-time search across products and shops.
+   - Filter by all 20 business categories, price ranges in RWF, and stock availability.
+   - Dedicated merchant storefronts (`/store/:shopCode`) with custom banners, logo, business information, and direct WhatsApp / call order actions.
+   - Interactive shopping cart with variation selection and real-time total in RWF.
+   - Streamlined Rwandan checkout supporting Store Pickup (*Kwidurira mu iduka*) and Home/Stall Delivery (*Kukugezaho*).
+   - Order tracking portal (`/orders` & `/orders/:orderId`) with real-time fulfillment timeline.
 
-| `VITE_DATA_MODE` | Behaviour |
-|---|---|
-| `local` | Dexie IndexedDB — full register + PIN remember (works offline today) |
-| `cloud` | Supabase — `register-shop` / `pin-login` / `check-shop-name` + RLS + Paypack |
+3. **Merchant POS & Store Management**:
+   - Fast cash, MoMo, Airtel Money, and credit/debt (*Ideni*) checkout.
+   - Barcode scanning & receipt generation.
+   - Seller order management dashboard (`/orders-manage`) with one-tap status updates (`pending` → `confirmed` → `preparing` → `ready` → `completed` / `cancelled`).
+   - Automatic stock reservation and inventory concurrency control.
+   - Multi-user staff accounts (Owner, Manager, Cashier) with fast 4-digit PIN authentication.
 
-Copy `.env.example` → `.env`. Put real `VITE_SUPABASE_*` keys, set `VITE_DATA_MODE=cloud`.
+4. **Multi-Platform Support**:
+   - **Web Progressive Web App (PWA)**: Offline-first with IndexedDB (Dexie), background outbox sync, and service worker precaching.
+   - **Desktop (macOS & Windows)**: Electron application (`npm run desktop`) with hardware keyboard shortcuts, command palette, and thermal printing.
+   - **Mobile (Android & iOS)**: Capacitor native builds with Gradle and Xcode toolchains.
 
-## Run
+5. **Rwandan Payment Integration**:
+   - MTN Mobile Money (`*182*8*1#`) & Airtel Money (`*500*1#`).
+   - Integrated STK push collections via Paypack, MTN MoMo Collection API, and Airtel Africa Open API.
+   - Verification flow, webhook event logging, idempotency key protection, and anti-duplicate guards.
 
-```sh
-npm i
+---
+
+## 🚀 Quick Start & Verification
+
+### Prerequisites
+- Node.js 18+ (tested on Node v20/v26)
+- npm or yarn
+
+### Installation & Local Run
+```bash
+# 1. Install dependencies
+npm install
+
+# 2. Run local development server
 npm run dev
+
+# 3. Run full verification suite (Typecheck + Lint + 206 Unit & Integration Tests + Production Build)
+npm run verify
+```
+
+### Individual Check Commands
+```bash
+# TypeScript compiler check
+npm run typecheck
+
+# Code formatting and linting
+npm run lint
+
+# Automated test suite (Vitest)
 npm test
-npx tsc --noEmit
+
+# Production Vite PWA build
 npm run build
-npx cap sync
 ```
 
-## Cloud activate
+---
 
-```sh
-supabase login
-npm run backend:activate
-# then set Edge secrets: RESEND_API_KEY, PAYPACK_*, WHATSAPP_*
-```
+## 🛠 Multi-Platform Build Commands
 
-Migrations include unique shop names + shop codes. See [docs/STORE_LAUNCH.md](docs/STORE_LAUNCH.md).
+- **Desktop (Electron)**:
+  ```bash
+  npm run desktop
+  ```
+- **Android (Capacitor / Gradle)**:
+  ```bash
+  npm run android:sync
+  npm run android:apk
+  ```
+- **iOS (Capacitor / Xcode)**:
+  ```bash
+  npm run ios:sync
+  ```
 
-## Demo & Testing Credentials (Dev)
+---
 
-- Demo shop phone: `+250788123456` (or `0788123456`)
-- Demo PIN: **`1111`** *(Note: default demo PIN is 1111, not 1234)*
-- Reviewer sandbox bypass: `+250780000000` / OTP `123456` (controlled by `ENABLE_REVIEWER_BYPASS`, disabled in production by default)
-- Auth rate limit: 8 attempts / 15 minutes window (`auth_rate_limits`); returns 429 with countdown. Superadmins can clear phone lockouts from `/admin/dashboard`.
+## 🔐 Authentication & Security
 
-## Billing
+- **PIN Authentication**: 4-digit PIN hashed via PBKDF2 with unique salts.
+- **Shop Code Identity**: Deterministic collision-proof shop code format (`SEL-XXXXXX`).
+- **Row-Level Security (RLS)**: Enforced across all Supabase tables (`profiles`, `inventory_items`, `debts`, `sales`, `marketplace_orders`, `marketplace_order_items`, `shop_staff`).
+- **Rate Limiting**: Brute-force lockout protection (8 attempts per 15-minute window).
 
-- Trial: **7 days**
-- Monthly: **RWF 5,000** · Annual: **RWF 50,000**
-- Paypack MTN/Airtel · Manual MoMo · BK bank + receipt
+---
 
-## Key routes
+## 📋 Key Routes
 
-`/`, `/dashboard`, `/subscribe`, `/account`, `/admin/payments`, `/terms`, `/privacy`
+| Route | Purpose | Target Audience |
+|---|---|---|
+| `/` | Landing page, platform showcase, download center | Public visitors |
+| `/marketplace` | Universal digital marketplace & product discovery | Shoppers & Customers |
+| `/store/:shopCode` | Merchant storefront, catalog, and contact buttons | Store Customers |
+| `/orders` | Order tracking and fulfillment timeline | Customers |
+| `/dashboard` | Daily sales, debt alerts, and quick POS actions | Store Owners & Cashiers |
+| `/new-sale` | Fast register checkout (Cash, MoMo, Split, Debt) | Cashiers & Owners |
+| `/inventory` | Multi-unit stock, pricing, and variation editor | Store Owners |
+| `/orders-manage` | Seller marketplace order lifecycle manager | Store Owners |
+| `/staff` | Cashier management, PIN reset, and session control | Store Owners |
+| `/subscribe` | Subscription billing & MoMo renewal (5,000 RWF/mo) | Store Owners |
+| `/account` | Store profile, category, TIN, and security settings | Store Owners |
+| `/admin` | Superadmin controls, rate-limit clears, audit logs | Platform Admins |
+
+---
+
+## 📄 License & Ownership
+Copyright © 2026 KUBANA Friend TECHNOLOGIES. All rights reserved.
