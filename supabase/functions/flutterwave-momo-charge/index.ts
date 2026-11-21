@@ -33,7 +33,10 @@ Deno.serve(async (req) => {
 
     const body = await req.json();
     const workspaceId = body.workspace_id as string;
-    const amount = Number(body.amount);
+    const { planAmountRwf } = await import("../_shared/subscriptionActivate.ts");
+    const { asProductPlan } = await import("../_shared/planCatalog.ts");
+    const planTier = String(body.plan_tier || "monthly") === "annual" ? "annual" : "monthly";
+    const amount = planAmountRwf(planTier, asProductPlan(body.product_plan));
     const currency = (body.currency || "RWF") as string;
     const phone = String(body.phone || "").replace(/\s/g, "");
 

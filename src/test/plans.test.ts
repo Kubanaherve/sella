@@ -15,16 +15,19 @@ const trial: SubscriptionSnapshot = {
 describe("commercial plans", () => {
   it("uses the same prices as checkout", () => {
     const plans = commercialPlans();
-    const monthly = plans.find((plan) => plan.id === "pro_monthly");
-    const annual = plans.find((plan) => plan.id === "pro_annual");
-    expect(monthly?.priceRwf).toBe(getMonthlyPriceRwf());
-    expect(annual?.priceRwf).toBe(getAnnualPriceRwf());
-    expect(monthly?.priceLabel).toBe(formatRwf(getMonthlyPriceRwf()));
-    expect(annualSavingsRwf()).toBe(Math.max(0, getMonthlyPriceRwf() * 12 - getAnnualPriceRwf()));
+    const normal = plans.find((plan) => plan.id === "normal");
+    const pro = plans.find((plan) => plan.id === "pro");
+    expect(normal?.priceRwf).toBe(getMonthlyPriceRwf("normal"));
+    expect(pro?.priceRwf).toBe(getMonthlyPriceRwf("pro"));
+    expect(normal?.priceLabel).toBe(formatRwf(getMonthlyPriceRwf("normal")));
+    expect(getAnnualPriceRwf("normal")).toBe(270000);
+    expect(getAnnualPriceRwf("pro")).toBe(485000);
+    expect(annualSavingsRwf("normal")).toBe(54000);
+    expect(annualSavingsRwf("pro")).toBe(97000);
   });
 
-  it("keeps a free trial and two prepaid Pro options", () => {
-    expect(commercialPlans().map((plan) => plan.id)).toEqual(["trial", "pro_monthly", "pro_annual"]);
+  it("keeps a free trial plus Normal and Pro", () => {
+    expect(commercialPlans().map((plan) => plan.id)).toEqual(["trial", "normal", "pro"]);
     expect(commercialPlans()[0].priceRwf).toBe(0);
   });
 

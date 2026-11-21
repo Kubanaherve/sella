@@ -214,8 +214,8 @@ export default function DocumentationPage() {
           <div className="p-4 rounded-2xl border border-[#E5E7EB] bg-white space-y-2 text-sm text-[#111827]">
             <p className="font-semibold">Prices</p>
             <ul className="list-disc pl-5 space-y-1">
-              <li>Monthly: 5,000 RWF</li>
-              <li>Annual: 50,000 RWF</li>
+              <li>Normal: 27,000 RWF / month, or 270,000 RWF / year</li>
+              <li>Pro: 48,500 RWF / month, or 485,000 RWF / year</li>
             </ul>
             <p className="pt-1 text-[#6B7280]">
               Pay with MTN MoMo or Airtel Money from the website. The account updates when the payment is confirmed.

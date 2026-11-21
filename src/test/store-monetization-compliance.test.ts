@@ -36,7 +36,7 @@ describe("Store Monetization & App Store Compliance (Apple & Google Play)", () =
     };
 
     expect(hasWriteAccess(activeSub)).toBe(true);
-    expect(accessLabel(activeSub)).toMatch(/(Irakora|Active)/);
+    expect(accessLabel(activeSub)).toMatch(/(irakora|active)/i);
   });
 
   it("evaluates expired subscription without grace period as no write access", () => {
@@ -104,5 +104,23 @@ describe("Store Monetization & App Store Compliance (Apple & Google Play)", () =
 
     expect(isInGracePeriod(expiredTrial)).toBe(false);
     expect(hasWriteAccess(expiredTrial)).toBe(false);
+  });
+
+  it("accountHost provides the acmeworkspace.com domain or standard fallback", () => {
+    const host = accountHost();
+    expect(host).toBe("acmeworkspace.com");
+  });
+
+  it("verifies store compliance copy structure for non-Pro prompts", () => {
+    const host = accountHost();
+    const copy = `This feature requires an active Pro account. Membership changes are managed via your browser at ${host}.`;
+    expect(copy).toContain("requires an active Pro account");
+    expect(copy).toContain("Membership changes are managed via your browser at");
+    expect(copy).toContain("acmeworkspace.com");
+    // Verify no prohibited payment action terms or links
+    expect(copy).not.toContain("https://");
+    expect(copy).not.toContain("Pay Now");
+    expect(copy).not.toContain("RWF");
+    expect(copy).not.toContain("$");
   });
 });

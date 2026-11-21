@@ -5,6 +5,18 @@ import { isNativeApp } from "@/lib/platform";
 import { accountHost } from "@/lib/site";
 
 export function PricingCards({ includeTrial = true }: { includeTrial?: boolean }) {
+  if (isNativeApp()) {
+    return (
+      <div className="max-w-md mx-auto p-6 rounded-2xl border border-[#E5E7EB] bg-white text-left space-y-3">
+        <h3 className="text-base font-semibold tracking-tight text-[#111827]">Pro account</h3>
+        <p className="text-sm leading-relaxed text-[#6B7280]">
+          This feature requires an active Pro account. Membership changes are managed via your browser at{" "}
+          <span className="font-medium text-[#111827]">{accountHost()}</span>.
+        </p>
+      </div>
+    );
+  }
+
   const plans = commercialPlans().filter((plan) => includeTrial || plan.id !== "trial");
   return (
     <div className={`grid gap-6 items-stretch ${plans.length > 2 ? "lg:grid-cols-3" : "md:grid-cols-2 max-w-3xl mx-auto"}`}>

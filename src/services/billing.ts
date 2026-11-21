@@ -1,8 +1,10 @@
 import { Capacitor } from "@capacitor/core";
 import { getSupabase } from "@/integrations/supabase/client";
 import { getAnnualPriceRwf, getMonthlyPriceRwf } from "@/lib/entitlements";
+import type { ProductPlan } from "@/lib/planCatalog";
 
 export type BillingPlan = "monthly" | "annual";
+export type { ProductPlan };
 export type BillingChannel =
   | "paypack_mtn"
   | "paypack_airtel"
@@ -33,8 +35,8 @@ export function preferredBillingChannels(): BillingChannel[] {
   ];
 }
 
-export function planAmount(plan: BillingPlan): number {
-  return plan === "annual" ? getAnnualPriceRwf() : getMonthlyPriceRwf();
+export function planAmount(plan: BillingPlan, product: ProductPlan = "normal"): number {
+  return plan === "annual" ? getAnnualPriceRwf(product) : getMonthlyPriceRwf(product);
 }
 
 export type PaymentStatusResult = {
@@ -54,6 +56,7 @@ export type PaymentStatusResult = {
 export async function startPaypackCashin(input: {
   phone: string;
   plan: BillingPlan;
+  product?: ProductPlan;
   network?: "mtn" | "airtel";
 }) {
   const sb = getSupabase();
@@ -61,6 +64,7 @@ export async function startPaypackCashin(input: {
     body: {
       phone: input.phone,
       plan_tier: input.plan,
+      product_plan: input.product || "normal",
       network: input.network || "mtn",
     },
   });
@@ -237,6 +241,7 @@ export async function waitForPaymentConfirmation(
 
 export async function startCardCharge(input: {
   plan: BillingPlan;
+  product?: ProductPlan;
   card_number: string;
   cvv: string;
   expiry_month: string;
@@ -249,6 +254,7 @@ export async function startCardCharge(input: {
   const { data, error } = await sb.functions.invoke("flutterwave-card-charge", {
     body: {
       plan_tier: input.plan,
+      product_plan: input.product || "normal",
       card_number: input.card_number,
       cvv: input.cvv,
       expiry_month: input.expiry_month,
@@ -313,6 +319,7 @@ export async function verifyFlutterwavePayment(reference: string) {
 
 export async function submitManualPayment(input: {
   plan: BillingPlan;
+  product?: ProductPlan;
   method: "momo_manual" | "bank_transfer" | "airtel_manual";
   referenceId: string;
   proofFile?: File | null;
@@ -339,9 +346,10 @@ export async function submitManualPayment(input: {
     .from("subscription_payments")
     .insert({
       user_id: userData.user.id,
-      amount: planAmount(input.plan),
+      amount: planAmount(input.plan, input.product || "normal"),
       currency: "RWF",
       plan_tier: input.plan,
+      product_plan: input.product || "normal",
       payment_method: input.method,
       reference_id: input.referenceId.trim(),
       proof_image_url: proofUrl,

@@ -10,6 +10,7 @@ import { ThemeProvider, useTheme } from "./contexts/ThemeContext";
 import { CartProvider } from "./contexts/CartContext";
 import { AccountStatusProvider } from "./contexts/AccountStatusContext";
 import { SubscriptionGuard } from "./components/SubscriptionGuard";
+import { ProFeatureGate } from "./components/ProFeatureGate";
 import { AppShell } from "./components/AppShell";
 import { DesktopLayoutProvider } from "./hooks/useDesktopLayout";
 import { SellaSplash } from "./components/SellaSplash";
@@ -202,7 +203,7 @@ const App = () => {
                   <Route path="/inventory" element={<ErrorBoundary label="inventory"><InventoryPage /></ErrorBoundary>} />
                   <Route path="/orders-manage" element={<ErrorBoundary label="orders"><OrdersPage /></ErrorBoundary>} />
                   <Route path="/more" element={<MorePage />} />
-                  <Route path="/assistant" element={<AssistantPage />} />
+                  <Route path="/assistant" element={<ProFeatureGate feature="Ask the Shop"><AssistantPage /></ProFeatureGate>} />
                   <Route path="/clients" element={<ClientsPage />} />
                   <Route path="/inbox" element={<InboxPage />} />
                   <Route path="/add-debt" element={<ErrorBoundary label="sale"><AddDebtPage /></ErrorBoundary>} />
@@ -213,8 +214,8 @@ const App = () => {
                   <Route path="/sync-conflicts" element={<ErrorBoundary label="sync-conflicts"><SyncConflictsPage /></ErrorBoundary>} />
                   <Route path="/subscribe" element={<ErrorBoundary label="subscribe"><SubscribePage /></ErrorBoundary>} />
                   <Route path="/billing" element={<BillingPage />} />
-                  <Route path="/import-customers" element={<ImportCustomersPage />} />
-                  <Route path="/import-inventory" element={<ImportInventoryPage />} />
+                  <Route path="/import-customers" element={<ProFeatureGate feature="Customer import"><ImportCustomersPage /></ProFeatureGate>} />
+                  <Route path="/import-inventory" element={<ProFeatureGate feature="Product import"><ImportInventoryPage /></ProFeatureGate>} />
                   <Route path="/admin/payments" element={<AdminPaymentsPage />} />
                   <Route path="/admin" element={<AdminDashboardPage />} />
                   <Route path="/notifications" element={<NotificationsPage />} />

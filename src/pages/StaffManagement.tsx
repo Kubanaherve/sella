@@ -24,6 +24,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useCashierMode } from "@/hooks/useCashierMode";
 import { useOwnerPin } from "@/hooks/useOwnerPin";
 import { formatCurrency } from "@/lib/kinyarwanda";
+import { cashierLimit, hasWriteAccess } from "@/lib/entitlements";
+import { getAppLanguage } from "@/lib/appLanguage";
 import {
   listShopStaff,
   addShopStaff,
@@ -36,7 +38,7 @@ import { toast } from "sonner";
 
 export const StaffManagementPage: React.FC = () => {
   const navigate = useNavigate();
-  const { profile } = useAuth();
+  const { profile, subscription } = useAuth();
   const { isCashierMode } = useCashierMode();
   const { askOwnerPin, ownerPinDialog } = useOwnerPin();
 
@@ -94,7 +96,23 @@ export const StaffManagementPage: React.FC = () => {
   const handleAddStaff = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newName.trim() || !newPhone.trim()) {
-      toast.error("Uzuza izina na telefone by'umukozi");
+      toast.error(
+        getAppLanguage() === "rw"
+          ? "Uzuza izina na telefone by'umukozi"
+          : "Enter the cashier name and phone"
+      );
+      return;
+    }
+    const onTrial = subscription?.status === "trialing" && hasWriteAccess(subscription);
+    const product = subscription?.productPlan === "pro" ? "pro" : "normal";
+    const maxCashiers = cashierLimit(product, onTrial);
+    const activeCashiers = staffList.filter((s) => s.status === "active").length;
+    if (activeCashiers >= maxCashiers) {
+      toast.error(
+        getAppLanguage() === "rw"
+          ? `Iyi gahunda yemera abakozi ${maxCashiers} gusa.`
+          : `This plan allows ${maxCashiers} cashier${maxCashiers === 1 ? "" : "s"}.`
+      );
       return;
     }
     setSubmitting(true);

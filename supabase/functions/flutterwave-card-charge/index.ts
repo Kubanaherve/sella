@@ -5,6 +5,7 @@
 import { corsHeaders, json } from "../_shared/cors.ts";
 import { adminClient } from "../_shared/supabaseAdmin.ts";
 import { encryptFlwPayload, activateSubscription, planAmountRwf } from "../_shared/flwEncrypt.ts";
+import { asProductPlan } from "../_shared/planCatalog.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 Deno.serve(async (req) => {
@@ -36,7 +37,8 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const planTier =
       String(body.plan_tier || "monthly") === "annual" ? "annual" : "monthly";
-    const amount = planAmountRwf(planTier);
+    const productPlan = asProductPlan(body.product_plan);
+    const amount = planAmountRwf(planTier, productPlan);
     const cardNumber = String(body.card_number || "").replace(/\D/g, "");
     const cvv = String(body.cvv || "").replace(/\D/g, "");
     const expiryMonth = String(body.expiry_month || "").padStart(2, "0");
@@ -67,6 +69,7 @@ Deno.serve(async (req) => {
         amount,
         currency: "RWF",
         plan_tier: planTier,
+        product_plan: productPlan,
         payment_method: "card_flutterwave",
         reference_id: reference,
         status: "pending",

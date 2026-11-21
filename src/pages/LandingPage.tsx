@@ -33,7 +33,7 @@ import { Seo } from "@/components/marketing/Seo";
 import { useTheme } from "@/contexts/ThemeContext";
 import { COMPANY } from "@/lib/company";
 import { getAnnualPriceRwf, getMonthlyPriceRwf } from "@/lib/entitlements";
-import { annualSavingsRwf, formatRwf } from "@/lib/plans";
+import { formatRwf } from "@/lib/plans";
 import { isNativeApp } from "@/lib/platform";
 import { ProMembershipNotice } from "@/components/ProMembershipNotice";
 
@@ -41,9 +41,10 @@ export default function LandingPage() {
   const [activeScreen, setActiveScreen] = useState<ScreenId>("pos");
   const [menuOpen, setMenuOpen] = useState(false);
   const { toggleAppearance, isDark } = useTheme();
-  const monthlyLabel = formatRwf(getMonthlyPriceRwf());
-  const annualLabel = formatRwf(getAnnualPriceRwf());
-  const savingsLabel = formatRwf(annualSavingsRwf());
+  const normalMonthly = formatRwf(getMonthlyPriceRwf("normal"));
+  const normalAnnual = formatRwf(getAnnualPriceRwf("normal"));
+  const proMonthly = formatRwf(getMonthlyPriceRwf("pro"));
+  const proAnnual = formatRwf(getAnnualPriceRwf("pro"));
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#030712] text-slate-900 dark:text-slate-100 relative overflow-x-hidden selection:bg-[#1A6FFF] selection:text-white transition-colors duration-300">
@@ -396,11 +397,11 @@ export default function LandingPage() {
             <div className="p-8 rounded-3xl text-left flex flex-col justify-between space-y-6 bg-white dark:bg-white/[0.03] border border-slate-200/80 dark:border-white/10 shadow-lg shadow-slate-200/40 dark:shadow-2xl">
               <div className="space-y-4">
                 <span className="text-xs font-bold px-3 py-1 rounded-full bg-blue-500/10 text-[#1A6FFF] border border-blue-500/20">
-                  Monthly Plan
+                  Normal
                 </span>
                 <div>
-                  <p className="text-4xl font-black text-slate-900 dark:text-white">{monthlyLabel}</p>
-                  <p className="text-xs text-slate-500 dark:text-white/60 mt-1">Billed every 30 days via Mobile Money</p>
+                  <p className="text-4xl font-black text-slate-900 dark:text-white">{normalMonthly}</p>
+                  <p className="text-xs text-slate-500 dark:text-white/60 mt-1">per month · {normalAnnual} per year</p>
                 </div>
                 <ul className="space-y-2.5 text-xs text-slate-700 dark:text-white/80 pt-2">
                   <li className="flex items-center gap-2">
@@ -421,9 +422,9 @@ export default function LandingPage() {
                 </ul>
               </div>
 
-              <Link to="/subscribe" className="block pt-4">
+              <Link to="/subscribe?product=normal" className="block pt-4">
                 <Button className="w-full bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/20 text-slate-800 dark:text-white font-bold h-12 rounded-2xl text-xs transition-colors">
-                  Subscribe Monthly ({monthlyLabel})
+                  Choose Normal ({normalMonthly})
                 </Button>
               </Link>
             </div>
@@ -431,23 +432,23 @@ export default function LandingPage() {
             {/* Annual Plan */}
             <div className="p-8 rounded-2xl text-left flex flex-col justify-between space-y-6 border border-[#1D4ED8] relative overflow-hidden bg-white">
               <div className="absolute top-0 right-0 bg-[#1A6FFF] text-white text-[10px] font-black uppercase px-4 py-1 rounded-bl-xl tracking-wider">
-                Best Value (Save {savingsLabel})
+                Pro
               </div>
 
               <div className="space-y-4">
                 <span className="text-xs font-bold px-3 py-1 rounded-full bg-[#1A6FFF] text-white">
-                  Annual Plan
+                  Pro
                 </span>
                 <div>
-                  <p className="text-4xl font-black text-slate-900 dark:text-white">{annualLabel}</p>
-                  <p className="text-xs text-slate-500 dark:text-white/60 mt-1">Billed annually · save {savingsLabel}</p>
+                  <p className="text-4xl font-black text-slate-900 dark:text-white">{proMonthly}</p>
+                  <p className="text-xs text-slate-500 dark:text-white/60 mt-1">per month · {proAnnual} per year</p>
                 </div>
                 <ul className="space-y-2.5 text-xs text-slate-700 dark:text-white/80 pt-2">
                   <li className="flex items-center gap-2">
                     <CheckCircle2 size={16} className="text-[#1A6FFF]" /> Everything in Monthly plan
                   </li>
                   <li className="flex items-center gap-2">
-                    <CheckCircle2 size={16} className="text-[#1A6FFF]" /> Save {savingsLabel} versus twelve monthly payments
+                    <CheckCircle2 size={16} className="text-[#1A6FFF]" /> Annual price includes 2 months free
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 size={16} className="text-[#1A6FFF]" /> Priority WhatsApp & phone onboarding
@@ -458,9 +459,9 @@ export default function LandingPage() {
                 </ul>
               </div>
 
-              <Link to="/subscribe" className="block pt-4">
+              <Link to="/subscribe?product=pro" className="block pt-4">
                 <Button className="w-full btn-gold font-bold h-12 rounded-2xl text-xs">
-                  Subscribe Annual ({annualLabel})
+                  Choose Pro ({proMonthly})
                 </Button>
               </Link>
             </div>

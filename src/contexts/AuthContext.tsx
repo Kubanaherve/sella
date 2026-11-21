@@ -104,6 +104,7 @@ function mapUserSub(row: Record<string, unknown> | null, userId: string): Subscr
     userId,
     status: row.status as SubscriptionSnapshot["status"],
     planTier: row.plan_tier as SubscriptionSnapshot["planTier"],
+    productPlan: row.product_plan === "pro" ? "pro" : row.product_plan === "normal" ? "normal" : undefined,
     provider: mapProvider(row),
     priceRwf: getMonthlyPriceRwf(),
     trialEndsAt: (row.trial_ends_at as string) || null,

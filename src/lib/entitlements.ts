@@ -1,3 +1,10 @@
+import { getAppLanguage } from "@/lib/appLanguage";
+import {
+  PLAN_AMOUNT_RWF,
+  PLAN_LIMITS,
+  type ProductPlan,
+} from "@/lib/planCatalog";
+
 export type SubscriptionStatus =
   | "trialing"
   | "active"
@@ -6,6 +13,7 @@ export type SubscriptionStatus =
   | "expired";
 
 export type PlanTier = "trial" | "monthly" | "annual" | "lifetime";
+export type { ProductPlan };
 
 export type PaymentProvider =
   | "trial"
@@ -20,6 +28,7 @@ export interface SubscriptionSnapshot {
   userId?: string;
   status: SubscriptionStatus;
   planTier?: PlanTier;
+  productPlan?: ProductPlan;
   provider: PaymentProvider;
   priceRwf: number;
   trialEndsAt: string | null;
@@ -27,14 +36,17 @@ export interface SubscriptionSnapshot {
   cancelAtPeriodEnd: boolean;
 }
 
-export function getMonthlyPriceRwf(): number {
-  const n = Number(import.meta.env.VITE_PLAN_PRICE_MONTHLY_RWF || import.meta.env.VITE_PLAN_PRICE_RWF || 5000);
-  return Number.isFinite(n) && n > 0 ? n : 5000;
+export function getMonthlyPriceRwf(product: ProductPlan = "normal"): number {
+  return PLAN_AMOUNT_RWF[product].monthly;
 }
 
-export function getAnnualPriceRwf(): number {
-  const n = Number(import.meta.env.VITE_PLAN_PRICE_ANNUAL_RWF || 50000);
-  return Number.isFinite(n) && n > 0 ? n : 50000;
+export function getAnnualPriceRwf(product: ProductPlan = "normal"): number {
+  return PLAN_AMOUNT_RWF[product].annual;
+}
+
+export function cashierLimit(product: ProductPlan, trial = false): number {
+  if (trial) return PLAN_LIMITS.pro.cashiers;
+  return PLAN_LIMITS[product].cashiers;
 }
 
 /** @deprecated use getMonthlyPriceRwf */
@@ -103,20 +115,44 @@ export function isSubscriptionExpired(sub: SubscriptionSnapshot | null, now = ne
   return !hasWriteAccess(sub, now);
 }
 
+function planName(sub: SubscriptionSnapshot): string {
+  const rw = getAppLanguage() === "rw";
+  if (sub.status === "trialing") return rw ? "Igerageza" : "Trial";
+  if (sub.productPlan === "pro") return "Pro";
+  return rw ? "Isanzwe" : "Normal";
+}
+
+export function hasProFeatures(sub: SubscriptionSnapshot | null, now = new Date()): boolean {
+  if (!hasWriteAccess(sub, now) || !sub) return false;
+  if (sub.status === "trialing") return true;
+  if (!sub.productPlan) return true;
+  return sub.productPlan === "pro";
+}
+
 export function accessLabel(sub: SubscriptionSnapshot | null, now = new Date()): string {
-  if (!sub) return "Nta subscription";
+  const rw = getAppLanguage() === "rw";
+  if (!sub) return rw ? "Nta gahunda" : "No plan";
   if (isInGracePeriod(sub, now)) {
     const days = graceDaysRemaining(sub, now);
-    return `Subscription yarangiye — hasigaye iminsi ${days} y'imbabazi (Grace Period). Ongera wishyure!`;
+    return rw
+      ? `Igihe cyarangiye. Hasigaye iminsi ${days} yo kwishyura.`
+      : `The plan ended. ${days} days left to pay.`;
   }
   if (hasWriteAccess(sub, now)) {
     if (sub.status === "trialing") {
       const days = trialDaysRemaining(sub, now);
-      return `Igihe cy'ubuntu — hasigaye iminsi ${days} (kugeza ${formatDate(sub.trialEndsAt)})`;
+      return rw
+        ? `Igerageza — hasigaye iminsi ${days} (kugeza ${formatDate(sub.trialEndsAt)})`
+        : `Trial — ${days} days left (until ${formatDate(sub.trialEndsAt)})`;
     }
-    return `Irakora kugeza ${formatDate(sub.currentPeriodEnd)} (${sub.planTier || sub.provider})`;
+    const when = formatDate(sub.currentPeriodEnd);
+    return rw
+      ? `${planName(sub)} irakora kugeza ${when}`
+      : `${planName(sub)} is active until ${when}`;
   }
-  return `Yarangiye — ongera wishyure kuva RWF ${getMonthlyPriceRwf().toLocaleString()}/ukwezi`;
+  return rw
+    ? `Yarangiye. Ongera wishyure kuva RWF ${getMonthlyPriceRwf("normal").toLocaleString("en-RW")}/ukwezi`
+    : `Ended. Renew from RWF ${getMonthlyPriceRwf("normal").toLocaleString("en-RW")}/month`;
 }
 
 function formatDate(iso: string | null): string {
@@ -146,11 +182,11 @@ export function computeNextPeriodEnd(params: {
 export const MERCHANT = {
   bankName: import.meta.env.VITE_BANK_NAME || "Zigama",
   accountName: import.meta.env.VITE_BANK_ACCOUNT_NAME || "Sella",
-  accountNumber: import.meta.env.VITE_BANK_ACCOUNT_NUMBER || "7081032",
+  accountNumber: import.meta.env.VITE_BANK_ACCOUNT_NUMBER || "",
   swift: import.meta.env.VITE_BANK_SWIFT || "",
   /** MTN MoMo Pay / merchant code shown for manual transfers */
-  momoCode: import.meta.env.VITE_MOMO_MERCHANT_CODE || "*182*8*1#",
-  momoPhone: import.meta.env.VITE_MOMO_MERCHANT_PHONE || "+250796580545",
+  momoCode: import.meta.env.VITE_MOMO_MERCHANT_CODE || "",
+  momoPhone: import.meta.env.VITE_MOMO_MERCHANT_PHONE || "",
   momoName: import.meta.env.VITE_MOMO_MERCHANT_NAME || "Sella",
   /** Airtel Money merchant (manual) — replace placeholders when you have the account */
   airtelCode: import.meta.env.VITE_AIRTEL_MERCHANT_CODE || "*500*1#",

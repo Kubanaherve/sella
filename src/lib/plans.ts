@@ -1,6 +1,13 @@
-import { getAnnualPriceRwf, getMonthlyPriceRwf, hasWriteAccess, type SubscriptionSnapshot } from "@/lib/entitlements";
+import {
+  getAnnualPriceRwf,
+  getMonthlyPriceRwf,
+  hasProFeatures,
+  hasWriteAccess,
+  type SubscriptionSnapshot,
+} from "@/lib/entitlements";
+import { TRIAL_DAYS, type ProductPlan } from "@/lib/planCatalog";
 
-export type CommercialPlanId = "trial" | "pro_monthly" | "pro_annual";
+export type CommercialPlanId = "trial" | "normal" | "pro";
 
 export type CommercialPlan = {
   id: CommercialPlanId;
@@ -14,79 +21,81 @@ export type CommercialPlan = {
   features: string[];
 };
 
+const NORMAL_FEATURES = [
+  "1 shop",
+  "1 owner and 1 cashier",
+  "Offline sales, then sync when the internet returns",
+  "Cash, MTN MoMo, and Airtel Money, including split payment",
+  "Duplicate MoMo reference check",
+  "Customer credit (Ideni) and WhatsApp reminders",
+  "Stock and low-stock alerts",
+  "Thermal and PDF receipts",
+] as const;
+
 const PRO_FEATURES = [
-  "Unlimited sales and credit orders",
-  "Customer ledger and WhatsApp reminders",
-  "Inventory tracking",
-  "Receipts and PDF invoices",
-  "Offline selling, with cloud sync when you are connected",
-  "One account on the web app and on released phone and desktop apps",
+  "Everything in Normal",
+  "Up to 5 cashiers",
+  "Up to 3 shops on one owner account",
+  "Desktop app, keyboard shortcuts, and command search",
+  "Excel and CSV import for products and customers",
+  "PDF debt reports with the shop pay number",
+  "Ask the Shop assistant",
+  "Online marketplace storefront",
+  "Priority support",
 ] as const;
 
 export function formatRwf(amount: number): string {
   return `${new Intl.NumberFormat("en-RW").format(Math.round(amount))} RWF`;
 }
 
-export function annualSavingsRwf(): number {
-  return Math.max(0, getMonthlyPriceRwf() * 12 - getAnnualPriceRwf());
+export function annualSavingsRwf(product: ProductPlan = "normal"): number {
+  return Math.max(0, getMonthlyPriceRwf(product) * 12 - getAnnualPriceRwf(product));
 }
 
 export function trialLengthDays(): number {
-  const n = Number(import.meta.env.VITE_TRIAL_DAYS || 7);
-  return Number.isFinite(n) && n > 0 ? Math.round(n) : 7;
+  return TRIAL_DAYS;
 }
 
-/**
- * Commercial catalog. Trial is the free start. Pro is the paid shop plan.
- * Prices come from the same helpers the checkout uses.
- */
 export function commercialPlans(): CommercialPlan[] {
   const days = trialLengthDays();
-  const monthly = getMonthlyPriceRwf();
-  const annual = getAnnualPriceRwf();
-  const savings = annualSavingsRwf();
   return [
     {
       id: "trial",
       name: "Free trial",
       priceRwf: 0,
       priceLabel: "Free",
-      cadence: `${days} days, then Pro`,
+      cadence: `${days} days of full access`,
       highlight: false,
-      cta: "Create an account",
+      cta: "Create a shop",
       href: "/login",
       features: [
-        `Full shop tools for ${days} days`,
+        `Full access for ${days} days`,
         "No payment to start",
-        "PIN unlock for the counter",
-        "Upgrade only if you want to keep writing sales",
+        "PIN unlock at the counter",
+        "Choose Normal or Pro before the trial ends",
       ],
     },
     {
-      id: "pro_monthly",
-      name: "Pro",
-      priceRwf: monthly,
-      priceLabel: formatRwf(monthly),
-      cadence: "Prepaid each month",
+      id: "normal",
+      name: "Normal",
+      priceRwf: getMonthlyPriceRwf("normal"),
+      priceLabel: formatRwf(getMonthlyPriceRwf("normal")),
+      cadence: `${formatRwf(getMonthlyPriceRwf("normal"))} / month · ${formatRwf(getAnnualPriceRwf("normal"))} / year (2 months free)`,
       highlight: false,
-      cta: `Subscribe monthly (${formatRwf(monthly)})`,
-      href: "/subscribe",
-      features: [...PRO_FEATURES],
+      cta: "Choose Normal",
+      href: "/subscribe?product=normal",
+      features: [...NORMAL_FEATURES],
     },
     {
-      id: "pro_annual",
-      name: "Pro Annual",
-      priceRwf: annual,
-      priceLabel: formatRwf(annual),
-      cadence: savings > 0 ? `Prepaid each year · save ${formatRwf(savings)}` : "Prepaid each year",
+      id: "pro",
+      name: "Pro",
+      priceRwf: getMonthlyPriceRwf("pro"),
+      priceLabel: formatRwf(getMonthlyPriceRwf("pro")),
+      cadence: `${formatRwf(getMonthlyPriceRwf("pro"))} / month · ${formatRwf(getAnnualPriceRwf("pro"))} / year (2 months free)`,
       highlight: true,
-      cta: `Subscribe annual (${formatRwf(annual)})`,
-      href: "/subscribe",
-      features: [
-        "Everything in Pro",
-        savings > 0 ? `Save ${formatRwf(savings)} versus twelve monthly payments` : "One payment for the year",
-        "Same account on every released Sella app",
-      ],
+      cta: "Choose Pro",
+      href: "/subscribe?product=pro",
+      features: [...PRO_FEATURES],
     },
   ];
 }
@@ -95,8 +104,10 @@ export function proFeatureList(): readonly string[] {
   return PRO_FEATURES;
 }
 
-/** What this subscription can use. The backend remains the source of write access. */
 export function entitledFeatures(sub: SubscriptionSnapshot | null, now = new Date()): string[] {
-  if (hasWriteAccess(sub, now)) return [...PRO_FEATURES];
-  return ["Read existing records while the plan is inactive", "Renew Pro to record new sales"];
+  if (!hasWriteAccess(sub, now)) {
+    return ["Read existing records while the plan is inactive", "Pay to record new sales"];
+  }
+  if (hasProFeatures(sub, now)) return [...NORMAL_FEATURES, ...PRO_FEATURES];
+  return [...NORMAL_FEATURES];
 }

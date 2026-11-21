@@ -40,7 +40,7 @@ Customer payment ≠ merchant payout. Access is granted when Flutterwave verifie
 
 ## D. Website billing behaviour
 
-- Price: `VITE_PLAN_PRICE_RWF=50000`
+- Prices are fixed in `src/lib/planCatalog.ts`: Normal 27,000/270,000 RWF, Pro 48,500/485,000 RWF
 - Trial: one calendar month, stored in `trial_grants` (reinstall cannot restart)
 - Early pay: unused days preserved (`computeNextPeriodEnd`)
 - Expired: sign-in + view + PDF export OK; create/edit blocked by RLS `workspace_has_write_access`

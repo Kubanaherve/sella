@@ -6,7 +6,7 @@
  * only completes when a signed test webhook / admin approve arrives.
  */
 
-import { toPaypackLocalPhone } from "./phone.ts";
+import { paypackCashinNumber } from "./phone.ts";
 
 export type ProviderId = "paypack" | "airtel_open_api" | "mtn_momo" | "test";
 
@@ -95,6 +95,17 @@ async function collectTest(input: CollectInput): Promise<CollectResult> {
 }
 
 async function collectPaypack(input: CollectInput): Promise<CollectResult> {
+  const number = paypackCashinNumber(input.phoneE164);
+  if (!number) {
+    return {
+      provider: "paypack",
+      accepted: false,
+      externalRef: null,
+      alreadyPaid: false,
+      message: "Phone must be 078, 079, 072, or 073",
+      raw: {},
+    };
+  }
   const clientId = Deno.env.get("PAYPACK_CLIENT_ID") || "";
   const clientSecret = Deno.env.get("PAYPACK_CLIENT_SECRET") || "";
   const authRes = await fetch("https://payments.paypack.rw/api/auth/agents/authorize", {
@@ -122,7 +133,7 @@ async function collectPaypack(input: CollectInput): Promise<CollectResult> {
       Accept: "application/json",
     },
     body: JSON.stringify({
-      number: toPaypackLocalPhone(input.phoneE164),
+      number,
       amount: Math.round(input.amountRwf),
       environment: Deno.env.get("PAYPACK_ENV") || "production",
     }),

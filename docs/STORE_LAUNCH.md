@@ -17,9 +17,9 @@
 
 ## Pricing
 
-- Trial: **7 days**
-- Monthly: **RWF 5,000**
-- Annual: **RWF 50,000**
+- Trial: **7 days**, full access
+- Normal: **27,000 RWF / month** or **270,000 RWF / year**
+- Pro: **48,500 RWF / month** or **485,000 RWF / year**
 
 ## Your checklist (accounts only you can click)
 

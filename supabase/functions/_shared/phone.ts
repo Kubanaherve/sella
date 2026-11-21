@@ -21,6 +21,12 @@ export function phoneDigitsOnly(e164: string): string {
  * Convert to Paypack required local format (e.g. "078xxxxxxx").
  * Paypack API expects 10 digits starting with 0.
  */
+/** 10-digit Paypack number, only MTN 078/079 and Airtel 072/073. */
+export function paypackCashinNumber(input: string): string | null {
+  const local = toPaypackLocalPhone(input);
+  return /^07(?:2|3|8|9)\d{7}$/.test(local) ? local : null;
+}
+
 export function toPaypackLocalPhone(input: string): string {
   let digits = (input || "").replace(/\D/g, "");
   if (digits.startsWith("00")) digits = digits.slice(2);

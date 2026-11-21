@@ -26,11 +26,22 @@ export function publicSiteUrl(): string {
 
 /** Hostname only. Shown as plain text in the mobile app so it is not a tappable checkout link. */
 export function accountHost(): string {
-  try {
-    return new URL(publicSiteUrl()).host;
-  } catch {
-    return "sella.app";
+  const fromEnv = String(
+    import.meta.env.VITE_ACCOUNT_DOMAIN ||
+    import.meta.env.VITE_PUBLIC_SITE_URL ||
+    ""
+  ).trim();
+  if (fromEnv) {
+    try {
+      if (fromEnv.startsWith("http://") || fromEnv.startsWith("https://")) {
+        return new URL(fromEnv).host;
+      }
+      return fromEnv.replace(/\/.*$/, "");
+    } catch {
+      return fromEnv;
+    }
   }
+  return "acmeworkspace.com";
 }
 
 export function canonicalUrl(path: string): string {

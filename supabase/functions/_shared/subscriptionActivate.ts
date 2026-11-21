@@ -1,18 +1,22 @@
 /** Shared SaaS subscription activation — payments stay on subscription_payments. */
 
+import {
+  asBillingInterval,
+  asProductPlan,
+  planAmountRwf as catalogAmount,
+  type ProductPlan,
+} from "./planCatalog.ts";
+
 export type PlanTier = "monthly" | "annual" | "lifetime" | string;
 
 export function planDurationDays(planTier: PlanTier): number {
   if (planTier === "lifetime") return 36500;
   if (planTier === "annual") return 365;
-  return 30; // exactly 30 days for monthly
+  return 30;
 }
 
-export function planAmountRwf(planTier: PlanTier): number {
-  const monthly = Number(Deno.env.get("PLAN_PRICE_MONTHLY_RWF") || 5000);
-  const annual = Number(Deno.env.get("PLAN_PRICE_ANNUAL_RWF") || 50000);
-  if (planTier === "annual") return Number.isFinite(annual) && annual > 0 ? annual : 50000;
-  return Number.isFinite(monthly) && monthly > 0 ? monthly : 5000;
+export function planAmountRwf(planTier: PlanTier, productPlan: ProductPlan | string = "normal"): number {
+  return catalogAmount(asProductPlan(productPlan), asBillingInterval(planTier));
 }
 
 /** Extend from remaining period when renewing; otherwise from now. */
@@ -37,6 +41,7 @@ export async function activateFromPayment(
     id: string;
     user_id: string;
     plan_tier?: string;
+    product_plan?: string | null;
     amount?: number;
   },
   opts: {
@@ -48,7 +53,7 @@ export async function activateFromPayment(
   // Idempotent: if already completed, return existing sub end
   const { data: fresh } = await sb
     .from("subscription_payments")
-    .select("id, status, user_id, plan_tier")
+    .select("id, status, user_id, plan_tier, product_plan, amount, external_transaction_id")
     .eq("id", payment.id)
     .maybeSingle();
   if (fresh?.status === "completed") {
@@ -69,8 +74,37 @@ export async function activateFromPayment(
     .eq("user_id", payment.user_id)
     .maybeSingle();
 
+  const productPlan = asProductPlan(fresh?.product_plan || payment.product_plan);
+  const interval = asBillingInterval(fresh?.plan_tier || payment.plan_tier);
+  const expected = catalogAmount(productPlan, interval);
+  const paidAmount = Number(fresh?.amount ?? payment.amount);
+  if (!Number.isFinite(paidAmount) || paidAmount !== expected) {
+    throw new Error("Payment amount does not match the selected plan");
+  }
+
+  if (opts.externalId) {
+    const { data: prior } = await sb
+      .from("subscription_payments")
+      .select("id")
+      .eq("external_transaction_id", opts.externalId)
+      .eq("status", "completed")
+      .neq("id", payment.id)
+      .maybeSingle();
+    if (prior?.id) {
+      const { data: sub } = await sb
+        .from("user_subscriptions")
+        .select("current_period_end")
+        .eq("user_id", payment.user_id)
+        .maybeSingle();
+      return {
+        current_period_end: sub?.current_period_end || new Date().toISOString(),
+        already: true,
+      };
+    }
+  }
+
   const { start, end } = computePeriodEndIso(
-    payment.plan_tier || "monthly",
+    interval,
     existingSub?.current_period_end
   );
 
@@ -110,7 +144,8 @@ export async function activateFromPayment(
   await sb.from("user_subscriptions").upsert(
     {
       user_id: payment.user_id,
-      plan_tier: payment.plan_tier || "monthly",
+      plan_tier: interval,
+      product_plan: productPlan,
       status: "active",
       current_period_start: start,
       current_period_end: end,

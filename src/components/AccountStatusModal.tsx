@@ -92,11 +92,8 @@ export function AccountStatusModal({
           {/* Compliant Microcopy (Plain text, no external checkout links, no in-app pricing) */}
           <div className="space-y-2 text-sm leading-relaxed text-[#6B7280]">
             <p>
-              {featureName ? `${featureName} is part of the Pro plan.` : "This feature is part of the Pro plan."}{" "}
-              Membership is not managed in the mobile app.
-            </p>
-            <p className="text-[#111827]">
-              You can manage your account at {host}
+              {featureName ? `${featureName} requires an active Pro account.` : "This feature requires an active Pro account."}{" "}
+              Membership changes are managed via your browser at <span className="font-medium text-[#111827]">{host}</span>.
             </p>
           </div>
         </div>

@@ -113,11 +113,22 @@ npm run build
 | `/inventory` | Multi-unit stock, pricing, and variation editor | Store Owners |
 | `/orders-manage` | Seller marketplace order lifecycle manager | Store Owners |
 | `/staff` | Cashier management, PIN reset, and session control | Store Owners |
-| `/subscribe` | Subscription billing & MoMo renewal (5,000 RWF/mo) | Store Owners |
+| `/subscribe` | Normal (27,000 RWF/month or 270,000 RWF/year) and Pro (48,500 RWF/month or 485,000 RWF/year) | Store Owners |
 | `/account` | Store profile, category, TIN, and security settings | Store Owners |
 | `/admin` | Superadmin controls, rate-limit clears, audit logs | Platform Admins |
 
 ---
+
+## Plans
+
+A new shop gets 7 days of full access. After that:
+
+| Plan | Month | Year (2 months free) | Limits |
+| --- | --- | --- | --- |
+| Normal | 27,000 RWF | 270,000 RWF | 1 shop, 1 cashier |
+| Pro | 48,500 RWF | 485,000 RWF | 3 shops, 5 cashiers, import, assistant, marketplace tools |
+
+Paypack charges those exact amounts. Apply `supabase/migrations/20261121120000_normal_pro_plans.sql` before taking live payments. Set Paypack, Supabase, and merchant payout values in the host environment. Names are listed in `.env.example`. Do not commit `.env`.
 
 ## 📄 License & Ownership
 Copyright © 2026 KUBANA Friend TECHNOLOGIES. All rights reserved.

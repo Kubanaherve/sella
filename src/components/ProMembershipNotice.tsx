@@ -79,10 +79,7 @@ export function ProMembershipNotice({ status, onDismiss }: NoticeProps) {
 
       <div className="space-y-2 text-xs leading-relaxed text-neutral-600 dark:text-neutral-300">
         <p>
-          This feature is part of the Pro plan. Organization subscriptions and billing are not managed inside this mobile app.
-        </p>
-        <p className="text-neutral-500 dark:text-neutral-400">
-          You can review or manage your account from your browser at{" "}
+          This feature requires an active Pro account. Membership changes are managed via your browser at{" "}
           <strong className="font-semibold text-neutral-900 dark:text-neutral-100 font-mono tracking-tight select-all">
             {host}
           </strong>

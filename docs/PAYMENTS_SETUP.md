@@ -35,12 +35,13 @@ Payments (`subscription_payments`) are stored separately from subscriptions (`us
 
 ## 1. Merchant details (manual screens)
 
-Already in `.env` for your shop:
+Set these in the host environment, not in git:
 
-- MTN: `+250796580545`
-- Zigama account: `7081032`
+- `VITE_MOMO_MERCHANT_PHONE`
+- `VITE_BANK_ACCOUNT_NUMBER`
+- `VITE_BANK_NAME`
 
-Change anytime in `.env`, restart Vite.
+Restart the app after changing them.
 
 ---
 
@@ -56,8 +57,7 @@ PAYPACK_WEBHOOK_SECRET=long-random-string
 PAYPACK_ENV=production
 # optional:
 PAYPACK_REVERIFY=true
-PLAN_PRICE_MONTHLY_RWF=5000
-PLAN_PRICE_ANNUAL_RWF=50000
+# Amounts are fixed in code: Normal 27000/270000, Pro 48500/485000.
 ```
 
 3. Webhook URL:

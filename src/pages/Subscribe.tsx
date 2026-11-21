@@ -22,6 +22,7 @@ import {
   getAnnualPriceRwf,
   getMonthlyPriceRwf,
 } from "@/lib/entitlements";
+import type { ProductPlan } from "@/lib/planCatalog";
 import {
   type BillingChannel,
   type BillingPlan,
@@ -49,6 +50,7 @@ import CardCheckoutModal, {
 } from "@/components/payment/CardCheckoutModal";
 import { detectRwandaNetwork } from "@/lib/phone";
 import { toast } from "sonner";
+import { useAppLanguage } from "@/i18n/useAppLanguage";
 
 function channelLabel(c: BillingChannel): string {
   switch (c) {
@@ -73,10 +75,15 @@ function channelLabel(c: BillingChannel): string {
 
 const SubscribePage = () => {
   const navigate = useNavigate();
+  const lang = useAppLanguage();
+  const rw = lang === "rw";
   const [searchParams, setSearchParams] = useSearchParams();
   const { subscription, refreshSubscription, mode, profile, user } = useAuth();
   const channels = useMemo(() => preferredBillingChannels(), []);
   const [plan, setPlan] = useState<BillingPlan>("monthly");
+  const [product, setProduct] = useState<ProductPlan>(
+    searchParams.get("product") === "pro" ? "pro" : "normal"
+  );
   const [phone, setPhone] = useState(() => {
     const raw = (profile && "phone" in profile && profile.phone) || "";
     return raw.replace(/^\+?250/, "0");
@@ -106,7 +113,7 @@ const SubscribePage = () => {
   const [pendingPaymentId, setPendingPaymentId] = useState<string | null>(null);
   const [testModeHint, setTestModeHint] = useState(false);
 
-  const amount = plan === "annual" ? getAnnualPriceRwf() : getMonthlyPriceRwf();
+  const amount = plan === "annual" ? getAnnualPriceRwf(product) : getMonthlyPriceRwf(product);
 
   useEffect(() => {
     document.title = "Sella checkout";
@@ -219,6 +226,7 @@ const SubscribePage = () => {
         const data = await startPaypackCashin({
           phone,
           plan,
+          product,
           network: channel === "paypack_airtel" ? "airtel" : "mtn",
         });
         // Request sent — NOT paid yet
@@ -282,6 +290,7 @@ const SubscribePage = () => {
 
         const data = await startCardCharge({
           plan,
+          product,
           card_number: card.number,
           cvv: card.cvv,
           expiry_month: card.expiryMonth,
@@ -358,6 +367,7 @@ const SubscribePage = () => {
             : "momo_manual";
       await submitManualPayment({
         plan,
+        product,
         method,
         referenceId,
         proofFile: proof,
@@ -475,12 +485,30 @@ const SubscribePage = () => {
         <div className="grid grid-cols-2 gap-3">
           <button
             type="button"
+            onClick={() => setProduct("normal")}
+            className={`sella-pay-method ${product === "normal" ? "is-active" : ""}`}
+          >
+            <p className="text-xs text-muted-foreground">{rw ? "Isanzwe · iduka 1, umukozi 1" : "Normal · 1 shop, 1 cashier"}</p>
+            <p className="text-sm font-semibold">{rw ? "Isanzwe" : "Normal"}</p>
+          </button>
+          <button
+            type="button"
+            onClick={() => setProduct("pro")}
+            className={`sella-pay-method ${product === "pro" ? "is-active" : ""}`}
+          >
+            <p className="text-xs text-muted-foreground">{rw ? "Pro · amaduka 3, abakozi 5" : "Pro · 3 shops, 5 cashiers"}</p>
+            <p className="text-sm font-semibold">Pro</p>
+          </button>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            type="button"
             onClick={() => setPlan("monthly")}
             className={`sella-pay-method ${plan === "monthly" ? "is-active" : ""}`}
           >
-            <p className="text-xs text-muted-foreground">Monthly · 30 days</p>
+            <p className="text-xs text-muted-foreground">{rw ? "Ukwezi · iminsi 30" : "Monthly · 30 days"}</p>
             <p className="text-xl font-bold">
-              RWF {getMonthlyPriceRwf().toLocaleString()}
+              RWF {getMonthlyPriceRwf(product).toLocaleString("en-RW")}
             </p>
           </button>
           <button
@@ -488,9 +516,9 @@ const SubscribePage = () => {
             onClick={() => setPlan("annual")}
             className={`sella-pay-method ${plan === "annual" ? "is-active" : ""}`}
           >
-            <p className="text-xs text-muted-foreground">Annual · 365 days</p>
+            <p className="text-xs text-muted-foreground">{rw ? "Umwaka · amezi 2 ubuntu" : "Annual · 2 months free"}</p>
             <p className="text-xl font-bold">
-              RWF {getAnnualPriceRwf().toLocaleString()}
+              RWF {getAnnualPriceRwf(product).toLocaleString("en-RW")}
             </p>
           </button>
         </div>

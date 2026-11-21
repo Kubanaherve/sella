@@ -2,6 +2,8 @@ import { corsHeaders, json } from "../_shared/cors.ts";
 import { normalizePhoneE164 } from "../_shared/phone.ts";
 import { adminClient } from "../_shared/supabaseAdmin.ts";
 import { planAmountRwf } from "../_shared/subscriptionActivate.ts";
+import { asProductPlan } from "../_shared/planCatalog.ts";
+import { paypackCashinNumber } from "../_shared/phone.ts";
 import { collectPayment, logWebhook } from "../_shared/paymentProviders.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
@@ -21,13 +23,17 @@ Deno.serve(async (req) => {
 
     const body = await req.json();
     const phone = normalizePhoneE164(String(body.phone || ""));
+    const paypackNumber = paypackCashinNumber(String(body.phone || ""));
     const planTier = String(body.plan_tier || "monthly") === "annual" ? "annual" : "monthly";
-    const amount = planAmountRwf(planTier);
+    const productPlan = asProductPlan(body.product_plan);
+    const amount = planAmountRwf(planTier, productPlan);
     const network =
       String(body.network || "mtn").toLowerCase() === "airtel" ? "airtel" : "mtn";
     const method = network === "airtel" ? "airtel_paypack" : "momo_paypack";
 
-    if (!phone) return json({ error: "Valid MoMo / Airtel phone required" }, 400);
+    if (!phone || !paypackNumber) {
+      return json({ error: "Use a Rwandan MoMo or Airtel number: 078, 079, 072, or 073" }, 400);
+    }
 
     const reference = `sella_${userData.user.id.slice(0, 8)}_${Date.now()}`;
     const sb = adminClient();
@@ -39,6 +45,7 @@ Deno.serve(async (req) => {
         amount,
         currency: "RWF",
         plan_tier: planTier,
+        product_plan: productPlan,
         payment_method: method,
         reference_id: reference,
         status: "pending",
@@ -118,6 +125,7 @@ Deno.serve(async (req) => {
       external_transaction_id: collected.externalRef,
       amount,
       plan_tier: planTier,
+      product_plan: productPlan,
       network,
       provider: collected.provider,
       test_mode: collected.provider === "test",
