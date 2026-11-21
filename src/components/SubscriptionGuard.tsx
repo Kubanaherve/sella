@@ -22,6 +22,8 @@ const OPEN_PATHS = new Set([
   "/forgot-password",
   "/reset-password",
   "/install",
+  "/marketplace",
+  "/orders",
 ]);
 
 /** Routes that never require an authenticated+unlocked session. */
@@ -37,6 +39,8 @@ const PUBLIC_PATHS = new Set([
   "/forgot-password",
   "/reset-password",
   "/install",
+  "/marketplace",
+  "/orders",
 ]);
 
 export function SubscriptionGuard({ children }: { children: ReactNode }) {
@@ -45,8 +49,9 @@ export function SubscriptionGuard({ children }: { children: ReactNode }) {
 
   const path = location.pathname;
   const marketing = isMarketingPath(path);
-  const isPublic = PUBLIC_PATHS.has(path) || marketing;
-  const isOpen = OPEN_PATHS.has(path) || marketing;
+  const isMarketplace = path === "/marketplace" || path.startsWith("/store/") || path.startsWith("/orders");
+  const isPublic = PUBLIC_PATHS.has(path) || marketing || isMarketplace;
+  const isOpen = OPEN_PATHS.has(path) || marketing || isMarketplace;
 
   if (isLoading && !isPublic) {
     return (

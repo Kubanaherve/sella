@@ -8,7 +8,6 @@ import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { AccountStatusProvider } from "./contexts/AccountStatusContext";
 import { ThemeProvider, useTheme } from "./contexts/ThemeContext";
 import { CartProvider } from "./contexts/CartContext";
-import { AccountStatusProvider } from "./contexts/AccountStatusContext";
 import { SubscriptionGuard } from "./components/SubscriptionGuard";
 import { ProFeatureGate } from "./components/ProFeatureGate";
 import { AppShell } from "./components/AppShell";

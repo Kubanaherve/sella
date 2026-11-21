@@ -15,6 +15,14 @@ function nativeAppFlag(): boolean {
   return flag === "true" || flag === "1";
 }
 
+function embeddedWebView(): boolean {
+  if (typeof window === "undefined" || typeof navigator === "undefined") return false;
+  const ua = navigator.userAgent || "";
+  const isIosWebview = /(iPhone|iPod|iPad).*AppleWebKit(?!.*Safari)/i.test(ua);
+  const isAndroidWebview = /Android.*Version\/[0-9.]+\s+(?:Mobile\s+)?Safari\//i.test(ua) || /wv/.test(ua);
+  return isIosWebview || isAndroidWebview;
+}
+
 /**
  * Detect the mobile app environment using Capacitor.isNativePlatform()
  * with fallback IS_NATIVE_APP flags (env or window globals) and WebView UA detection.
