@@ -1,10 +1,7 @@
-@import '@fontsource/outfit/400.css';
-@import '@fontsource/outfit/500.css';
-@import '@fontsource/outfit/600.css';
-@import '@fontsource/outfit/700.css';
-@import '@fontsource/outfit/800.css';
-@import '@fontsource/sora/600.css';
-@import '@fontsource/sora/700.css';
+@import '@fontsource/inter/400.css';
+@import '@fontsource/inter/500.css';
+@import '@fontsource/inter/600.css';
+@import '@fontsource/inter/700.css';
 @import './styles/web-showcase.css';
 
 @tailwind base;
@@ -13,9 +10,9 @@
 
 @layer base {
   :root {
-    /* Sella — electric blue glass (matches logo) */
-    --background: 214 60% 98%;
-    --foreground: 222 47% 12%;
+    /* Neutral surfaces. One accent: #1D4ED8 */
+    --background: 0 0% 98%;
+    --foreground: 221 39% 11%;
 
     --card: 0 0% 100%;
     --card-foreground: 222 47% 12%;
@@ -23,14 +20,14 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 12%;
 
-    --primary: 217 100% 55%;
+    --primary: 221 83% 53%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 214 45% 94%;
     --secondary-foreground: 222 47% 18%;
 
-    --muted: 214 35% 95%;
-    --muted-foreground: 215 16% 42%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
 
     --accent: 217 91% 60%;
     --accent-foreground: 0 0% 100%;
@@ -38,9 +35,9 @@
     --destructive: 0 72% 48%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 214 30% 88%;
-    --input: 214 30% 88%;
-    --ring: 217 100% 55%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 221 83% 53%;
 
     --radius: 1rem;
 
@@ -57,21 +54,13 @@
     --glass-highlight: 0 0% 100% / 0.55;
     --glass-blue-wash: 217 100% 55% / 0.08;
 
-    --gradient-gold: linear-gradient(135deg, #0b3fcc, #1a6fff);
-    --gradient-navy: linear-gradient(135deg, #0b3fcc, #1a6fff);
-    --gradient-luxury: linear-gradient(135deg, #0b3fcc, #3b82f6 70%, #5ac8fa);
-    --gradient-brand: linear-gradient(145deg, #0b3fcc 0%, #1a6fff 52%, #5ac8fa 100%);
-    --gradient-glass-blue: linear-gradient(
-      145deg,
-      rgba(11, 63, 204, 0.92) 0%,
-      rgba(26, 111, 255, 0.88) 48%,
-      rgba(90, 200, 250, 0.82) 100%
-    );
-    /* Soft periwinkle glass field (brand ambient) */
-    --gradient-hero: radial-gradient(ellipse 90% 70% at 15% 10%, #cfe0ff 0%, transparent 55%),
-      radial-gradient(ellipse 80% 60% at 95% 85%, #b7c9f5 0%, transparent 50%),
-      linear-gradient(165deg, #f7f9ff 0%, #e8eefc 48%, #d9e4fa 100%);
-    --sella-ambient-image: url("/brand/sella-glass-ambient.jpg");
+    --gradient-gold: #1D4ED8;
+    --gradient-navy: #1D4ED8;
+    --gradient-luxury: #1D4ED8;
+    --gradient-brand: #1D4ED8;
+    --gradient-glass-blue: #1D4ED8;
+    --gradient-hero: #FAFAFA;
+    --sella-ambient-image: none;
 
     /* Motion system (see src/lib/motion.ts) */
     --sella-ease: cubic-bezier(0.22, 1, 0.36, 1);
@@ -158,36 +147,37 @@
   }
 
   html {
-    font-family: Outfit, "Sora", system-ui, sans-serif;
-    font-feature-settings: "ss01" on, "cv11" on;
+    font-family: Inter, system-ui, sans-serif;
   }
 
   body {
     @apply text-foreground antialiased;
-    font-family: Outfit, "Sora", system-ui, sans-serif;
-    letter-spacing: -0.011em;
-    background-color: #eef2fb;
-    background-image:
-      var(--sella-ambient-image),
-      radial-gradient(ellipse 80% 50% at 100% -10%, hsl(217 90% 90% / 0.55), transparent),
-      radial-gradient(ellipse 60% 40% at -10% 20%, hsl(214 80% 92% / 0.45), transparent);
-    background-size: cover, auto, auto;
-    background-position: center, center, center;
-    background-attachment: fixed, fixed, fixed;
-    background-repeat: no-repeat;
+    font-family: Inter, system-ui, sans-serif;
+    line-height: 1.6;
+    background-color: #FAFAFA;
+    background-image: none;
     /* Keep layout inside the visible viewport on notched phones */
     min-height: 100dvh;
   }
 
   html.dark body {
-    background-color: #040817;
-    background-image:
-      radial-gradient(ellipse 90% 60% at 100% -10%, hsl(217 90% 50% / 0.28), transparent 60%),
-      radial-gradient(ellipse 70% 50% at -10% 25%, hsl(199 95% 45% / 0.2), transparent 55%),
-      radial-gradient(ellipse 60% 50% at 50% 110%, hsl(222 90% 30% / 0.35), transparent 65%),
-      linear-gradient(170deg, #030713 0%, #060e24 45%, #08163e 100%);
-    background-size: auto, auto, auto, auto;
-    background-attachment: fixed, fixed, fixed, fixed;
+    background-color: #111827;
+    background-image: none;
+  }
+
+  h1, h2, h3, h4 {
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+  }
+
+  @media (max-width: 767px) {
+    button,
+    [role="button"],
+    input,
+    select,
+    textarea {
+      min-height: 44px;
+    }
   }
 
   :root {
@@ -268,23 +258,17 @@
   }
 
   h1, h2, h3, .font-display {
-    font-family: Sora, Outfit, system-ui, sans-serif;
-    letter-spacing: -0.025em;
+    font-family: Inter, system-ui, sans-serif;
+    letter-spacing: -0.02em;
   }
 
   .sella-app-header {
     @apply sticky top-0 z-40 flex items-center justify-between gap-3 px-3 sm:px-4;
     @apply backdrop-blur-2xl;
-    background: linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.82) 0%,
-      rgba(247, 250, 255, 0.64) 100%
-    );
-    border-bottom: 1px solid rgba(255, 255, 255, 0.5);
-    border-radius: 0 0 1.25rem 1.25rem;
-    box-shadow:
-      0 1px 0 rgba(255, 255, 255, 0.7) inset,
-      0 10px 28px rgba(11, 63, 204, 0.07);
+    background: #FFFFFF;
+    border-bottom: 1px solid #E5E7EB;
+    border-radius: 0;
+    box-shadow: none;
     /*
       Clear Dynamic Island / notch / status icons on every phone.
       env() first (Safari), then floor from JS (Capacitor WebView fallback).
@@ -300,74 +284,45 @@
   }
 
   .dark .sella-app-header {
-    background: linear-gradient(
-      180deg,
-      rgba(8, 16, 36, 0.86) 0%,
-      rgba(4, 8, 22, 0.78) 100%
-    );
-    border-bottom-color: rgba(255, 255, 255, 0.08);
-    box-shadow:
-      0 1px 0 rgba(255, 255, 255, 0.12) inset,
-      0 12px 30px rgba(0, 0, 0, 0.45);
-    backdrop-filter: blur(24px) saturate(190%);
-    -webkit-backdrop-filter: blur(24px) saturate(190%);
+    background: #121214;
+    border-bottom: 1px solid #27272A;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
   }
 
-  /* Floating rounded dock — professional iOS / visionOS style */
+  /* Minimalist bottom navigation bar (Linear & Stripe inspired) */
   .sella-tabbar {
     @apply fixed z-50 grid grid-cols-5 items-stretch;
     left: 50%;
     transform: translateX(-50%);
-    width: min(calc(100% - 1.5rem), 30rem);
-    bottom: calc(0.85rem + var(--sella-safe-bottom));
-    min-height: var(--sella-tabbar-height);
-    padding: 0.35rem;
-    gap: 0.2rem;
-    border-radius: 1.85rem;
-    border: 1px solid rgba(255, 255, 255, 0.65);
-    background: linear-gradient(
-      165deg,
-      rgba(255, 255, 255, 0.82) 0%,
-      rgba(247, 250, 255, 0.72) 100%
-    );
-    box-shadow:
-      0 1px 0 rgba(255, 255, 255, 0.85) inset,
-      0 12px 36px rgba(11, 63, 204, 0.14),
-      0 2px 8px rgba(11, 63, 204, 0.06);
-    backdrop-filter: blur(28px) saturate(180%);
-    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    width: min(calc(100% - 1.5rem), 32rem);
+    bottom: calc(0.75rem + var(--sella-safe-bottom));
+    min-height: 3.5rem;
+    padding: 0.25rem;
+    gap: 0.25rem;
+    border-radius: 1rem;
+    border: 1px solid #E5E7EB;
+    background: #FFFFFF;
+    box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.08), 0 2px 6px -1px rgba(0, 0, 0, 0.04);
   }
 
   .dark .sella-tabbar {
-    border-color: rgba(255, 255, 255, 0.12);
-    background: linear-gradient(
-      165deg,
-      rgba(18, 30, 58, 0.88) 0%,
-      rgba(6, 12, 28, 0.92) 100%
-    );
-    box-shadow:
-      0 1px 0 rgba(255, 255, 255, 0.14) inset,
-      0 16px 40px rgba(0, 0, 0, 0.55),
-      0 0 0 1px rgba(90, 200, 250, 0.06);
-    backdrop-filter: blur(28px) saturate(200%);
-    -webkit-backdrop-filter: blur(28px) saturate(200%);
+    border-color: #27272A;
+    background: #121214;
+    box-shadow: 0 4px 14px 0 rgba(0, 0, 0, 0.4);
   }
 
   .sella-tab {
-    @apply relative flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold tracking-wide;
-    @apply text-muted-foreground;
-    border-radius: 1.45rem;
-    min-height: 3.15rem;
-    padding: 0.35rem 0.15rem;
-    transition:
-      color 220ms ease,
-      transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
-      background-color 220ms ease,
-      box-shadow 220ms ease;
+    @apply relative flex flex-col items-center justify-center gap-1 text-[11px] font-medium tracking-tight text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100;
+    min-height: 44px; /* Accessible 44px touch target */
+    border-radius: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    transition: all 150ms ease;
   }
 
   .sella-tab:active {
-    transform: scale(0.94);
+    transform: scale(0.96);
   }
 
   .dark .sella-tab {
@@ -375,27 +330,17 @@
   }
 
   .sella-tab-active {
-    @apply text-primary;
-    background: rgba(26, 111, 255, 0.12);
-    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.55) inset;
+    @apply text-primary font-semibold;
+    background: #F4F4F5;
   }
 
   .dark .sella-tab-active {
-    color: #5ac8fa;
-    background: rgba(90, 200, 250, 0.14);
-    box-shadow:
-      0 1px 0 rgba(255, 255, 255, 0.1) inset,
-      0 0 16px rgba(90, 200, 250, 0.12);
-    text-shadow: 0 0 14px rgba(90, 200, 250, 0.35);
-  }
-
-  /* Soft glow pill under icon — no hard edge indicator */
-  .sella-tab-active::before {
-    content: none;
+    color: #FFFFFF;
+    background: #1E1E22;
   }
 
   .sella-tab-active svg {
-    stroke-width: 2.45;
+    stroke-width: 2.2;
   }
 
   .sella-fab-wrap {
@@ -531,31 +476,15 @@
 
   .sella-list-card {
     @apply relative overflow-hidden rounded-2xl;
-    background: linear-gradient(
-      165deg,
-      rgba(255, 255, 255, 0.8) 0%,
-      rgba(244, 248, 255, 0.58) 100%
-    );
-    border: 1px solid rgba(255, 255, 255, 0.72);
-    box-shadow:
-      0 1px 0 rgba(255, 255, 255, 0.7) inset,
-      0 12px 30px rgba(11, 63, 204, 0.07);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    background: #FFFFFF;
+    border: 1px solid #E5E7EB;
+    box-shadow: none;
   }
 
   .dark .sella-list-card {
-    background: linear-gradient(
-      165deg,
-      rgba(16, 28, 58, 0.7) 0%,
-      rgba(7, 14, 32, 0.8) 100%
-    );
-    border: 1px solid rgba(255, 255, 255, 0.09);
-    box-shadow:
-      0 1px 0 rgba(255, 255, 255, 0.12) inset,
-      0 14px 34px rgba(0, 0, 0, 0.45);
-    backdrop-filter: blur(20px) saturate(190%);
-    -webkit-backdrop-filter: blur(20px) saturate(190%);
+    background: #1F2937;
+    border: 1px solid #374151;
+    box-shadow: none;
   }
 
   .sella-chip {
@@ -746,35 +675,21 @@
   .sella-btn-glass-solid {
     @apply inline-flex items-center justify-center gap-1.5 font-bold text-white active:scale-[0.98];
     transition: transform var(--sella-motion-button) var(--sella-ease);
-    background: var(--gradient-glass-blue);
-    border: 1px solid rgba(255, 255, 255, 0.28);
-    box-shadow:
-      0 1px 0 rgba(255, 255, 255, 0.35) inset,
-      0 10px 24px rgba(26, 111, 255, 0.32);
+    background: #1D4ED8;
+    border: 1px solid #1D4ED8;
+    box-shadow: none;
   }
 }
 
 @layer components {
   .sella-hero-bg {
-    background-color: #eef2fb;
-    background-image:
-      linear-gradient(180deg, rgba(247, 249, 255, 0.55), rgba(238, 242, 251, 0.72)),
-      var(--sella-ambient-image),
-      var(--gradient-hero);
-    background-size: auto, cover, auto;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
+    background-color: #FAFAFA;
+    background-image: none;
   }
 
   html.dark .sella-hero-bg {
-    background-color: #040816;
-    background-image:
-      linear-gradient(180deg, rgba(4, 8, 22, 0.55), rgba(10, 26, 68, 0.72)),
-      radial-gradient(ellipse 90% 70% at 15% 10%, rgba(26, 111, 255, 0.35), transparent 55%),
-      radial-gradient(ellipse 80% 60% at 95% 85%, rgba(11, 63, 204, 0.45), transparent 50%),
-      linear-gradient(165deg, #040816 0%, #0a1a44 48%, #0b3fcc 100%);
-    background-size: auto, auto, auto, auto;
+    background-color: #111827;
+    background-image: none;
   }
 
   .sella-glass-ambient-veil {
@@ -811,45 +726,19 @@
 
   .glass-card {
     @apply relative overflow-hidden rounded-2xl p-5;
-    background: linear-gradient(
-      160deg,
-      rgba(255, 255, 255, 0.78) 0%,
-      rgba(236, 244, 255, 0.52) 100%
-    );
-    border: 1px solid rgba(255, 255, 255, 0.72);
-    box-shadow:
-      0 1px 0 rgba(255, 255, 255, 0.75) inset,
-      0 14px 36px rgba(11, 63, 204, 0.1);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
+    background: #FFFFFF;
+    border: 1px solid #E5E7EB;
+    box-shadow: none;
   }
 
   .dark .glass-card {
-    background: linear-gradient(
-      160deg,
-      rgba(17, 30, 60, 0.72) 0%,
-      rgba(8, 15, 34, 0.8) 100%
-    );
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow:
-      0 1px 0 rgba(255, 255, 255, 0.15) inset,
-      0 16px 40px rgba(0, 0, 0, 0.5),
-      0 0 24px rgba(26, 111, 255, 0.08);
-    backdrop-filter: blur(24px) saturate(190%);
-    -webkit-backdrop-filter: blur(24px) saturate(190%);
+    background: #1F2937;
+    border: 1px solid #374151;
+    box-shadow: none;
   }
 
   .glass-card::before {
-    content: "";
-    pointer-events: none;
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      145deg,
-      rgba(255, 255, 255, 0.35) 0%,
-      transparent 42%,
-      rgba(26, 111, 255, 0.04) 100%
-    );
+    content: none;
   }
 
   .dark .glass-card::before {
@@ -862,40 +751,19 @@
   }
 
   .glass-card-dark {
-    @apply relative overflow-hidden rounded-2xl border border-white/25 p-5 shadow-lg text-white;
-    background: var(--gradient-glass-blue);
-    box-shadow:
-      0 1px 0 rgba(255, 255, 255, 0.28) inset,
-      0 16px 40px rgba(11, 63, 204, 0.28);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    @apply relative overflow-hidden rounded-xl border border-neutral-800 p-5 text-white;
+    background: #18181B;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.35);
   }
 
   .dark .glass-card-dark {
-    background: linear-gradient(
-      145deg,
-      rgba(8, 42, 142, 0.88) 0%,
-      rgba(20, 85, 210, 0.82) 55%,
-      rgba(56, 189, 248, 0.65) 100%
-    );
-    border-color: rgba(255, 255, 255, 0.22);
-    box-shadow:
-      0 1px 0 rgba(255, 255, 255, 0.28) inset,
-      0 20px 48px rgba(0, 0, 0, 0.55),
-      0 0 20px rgba(26, 111, 255, 0.2);
+    background: #121214;
+    border-color: #27272A;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.45);
   }
 
   .glass-card-dark::before {
-    content: "";
-    pointer-events: none;
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      160deg,
-      rgba(255, 255, 255, 0.22) 0%,
-      transparent 45%,
-      rgba(90, 200, 250, 0.12) 100%
-    );
+    content: none;
   }
 
   .glass-sub-card {
@@ -931,35 +799,22 @@
     filter: blur(3px);
   }
 
-  .btn-navy {
-    @apply font-medium text-white transition-all duration-300;
-    background: var(--gradient-glass-blue);
-    border: 1px solid rgba(255, 255, 255, 0.28);
-    box-shadow:
-      0 1px 0 rgba(255, 255, 255, 0.3) inset,
-      0 10px 26px rgba(26, 111, 255, 0.28);
-  }
-
-  .btn-navy:hover {
-    transform: translateY(-1px);
-    box-shadow:
-      0 1px 0 rgba(255, 255, 255, 0.35) inset,
-      0 14px 32px rgba(26, 111, 255, 0.36);
-  }
-
+  .btn-navy,
   .btn-gold {
-    @apply font-medium text-white transition-all duration-300;
-    background: var(--gradient-glass-blue);
-    border: 1px solid rgba(255, 255, 255, 0.28);
+    @apply font-medium text-white;
+    background: #1D4ED8;
+    border: 1px solid #1D4ED8;
+    box-shadow: none;
   }
 
+  .btn-navy:hover,
   .btn-gold:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 12px 28px rgba(26, 111, 255, 0.32);
+    background: #1E40AF;
+    box-shadow: none;
   }
 
   .input-glow:focus {
-    box-shadow: 0 0 0 3px rgba(26, 111, 255, 0.18);
+    box-shadow: 0 0 0 1px #1D4ED8;
   }
 
   .table-premium {
@@ -1030,18 +885,13 @@
 }
 
 .glass-card-neon {
-  @apply relative overflow-hidden rounded-2xl border border-white/20 bg-black/70 shadow-lg backdrop-blur-lg flex items-center justify-center;
-  box-shadow:
-    0 0 4px hsl(175 66% 30% / 0.2),
-    0 0 8px hsl(24 90% 48% / 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  @apply relative overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-sm flex items-center justify-center;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .glass-card-neon:hover {
-  transform: translateY(-1px);
-  box-shadow:
-    0 0 8px hsl(175 66% 30% / 0.28),
-    0 0 16px hsl(24 90% 48% / 0.14);
+  border-color: #D1D5DB;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.08);
 }
 
 .neon-text-dark {

@@ -462,7 +462,7 @@ const NewSalePage: React.FC = () => {
             }}
             className="w-full rounded-2xl border-2 border-dashed border-primary/35 bg-primary/5 px-4 py-5 flex items-center gap-3 text-left sella-press"
           >
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#0b4fd9] to-[#1a6fff] text-white flex items-center justify-center shadow-navy">
+            <div className="w-12 h-12 rounded-2xl bg-[#1D4ED8] text-white flex items-center justify-center">
               <Package size={22} />
             </div>
             <div className="min-w-0 flex-1">

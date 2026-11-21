@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Capacitor } from "@capacitor/core";
+import { isNativeApp } from "@/lib/platform";
+import { ProMembershipNotice } from "@/components/ProMembershipNotice";
 import {
   ArrowLeft,
   Building2,
@@ -129,7 +130,7 @@ const SubscribePage = () => {
       searchParams.get("tx_ref") ||
       searchParams.get("txRef") ||
       searchParams.get("reference");
-    if (!txRef || mode !== "cloud") return;
+    if (!txRef || mode !== "cloud" || isNativeApp()) return;
     let cancelled = false;
     (async () => {
       setBusy(true);
@@ -440,26 +441,13 @@ const SubscribePage = () => {
     ? `${card.brand === "mastercard" ? "Mastercard" : card.brand === "amex" ? "Amex" : "Visa"} ·••• ${card.number.replace(/\D/g, "").slice(-4)}`
     : null;
 
-  if (Capacitor.isNativePlatform() && Capacitor.getPlatform() === "ios") {
+  if (isNativeApp()) {
     return (
-      <div className="min-h-screen sella-hero-bg flex items-center justify-center p-6">
-        <div className="w-full max-w-md glass-card p-6 space-y-4 text-center">
-          <BrandMark variant="icon" size="md" />
-          <h1 className="text-xl font-bold">Sella Enterprise Subscription</h1>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            Sella for iOS is a multi-platform retail terminal companion for registered business accounts.
-          </p>
-          <div className="p-4 rounded-2xl bg-white/50 dark:bg-white/[0.03] border border-border/60 text-left space-y-2 text-xs">
-            <p className="font-semibold text-foreground">Account Status</p>
-            <p className="text-muted-foreground">{accessLabel(subscription)}</p>
-          </div>
-          <p className="text-xs text-muted-foreground leading-relaxed">
-            To manage, renew, or upgrade your shop subscription, visit your business account at <strong>https://sella.app</strong> from any desktop or mobile browser.
-          </p>
-          <Button variant="outline" className="w-full" onClick={() => navigate("/dashboard")}>
-            Back to Dashboard
-          </Button>
-        </div>
+      <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#09090B] flex items-center justify-center p-6">
+        <ProMembershipNotice
+          status={accessLabel(subscription)}
+          onDismiss={() => navigate("/dashboard")}
+        />
       </div>
     );
   }
@@ -801,7 +789,7 @@ const SubscribePage = () => {
           </div>
         )}
 
-        <div className="rounded-2xl bg-gradient-to-br from-[#0b3fcc] to-[#1a6fff] text-white p-4 flex items-center justify-between shadow-lg shadow-primary/25">
+        <div className="rounded-2xl bg-[#1D4ED8] text-white p-4 flex items-center justify-between border border-[#1D4ED8]">
           <div>
             <p className="text-xs text-white/70">
               Total · {plan === "annual" ? "365" : "30"} days access

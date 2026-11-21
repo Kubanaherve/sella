@@ -81,6 +81,10 @@ export default {
         "2xl": "calc(var(--radius) + 8px)",
         "3xl": "calc(var(--radius) + 16px)",
       },
+      boxShadow: {
+        xs: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
+        "2xs": "0 1px 1px 0 rgba(0, 0, 0, 0.03)",
+      },
       keyframes: {
         "accordion-down": {
           from: { height: "0" },

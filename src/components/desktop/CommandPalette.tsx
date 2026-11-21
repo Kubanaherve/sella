@@ -14,6 +14,8 @@ import {
   DESKTOP_GROUPS,
   type DesktopNavItem,
 } from "@/components/desktop/desktopNav";
+import { isNativeApp } from "@/lib/platform";
+import { useAccountStatus } from "@/contexts/AccountStatusContext";
 
 type Action = {
   id: string;
@@ -34,6 +36,7 @@ type Props = {
 
 export function CommandPalette({ open, onOpenChange, items, canWrite }: Props) {
   const navigate = useNavigate();
+  const { openAccountStatusModal } = useAccountStatus();
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -47,7 +50,13 @@ export function CommandPalette({ open, onOpenChange, items, canWrite }: Props) {
       keys: item.keys,
       keywords: `${item.keywords ?? ""} ${item.label}`,
       icon: item.icon,
-      run: () => navigate(item.to),
+      run: () => {
+        if (item.id === "billing" && isNativeApp()) {
+          openAccountStatusModal("Billing");
+          return;
+        }
+        navigate(item.to);
+      },
     }));
     const extra: Action[] = canWrite
       ? [
@@ -63,7 +72,7 @@ export function CommandPalette({ open, onOpenChange, items, canWrite }: Props) {
         ]
       : [];
     return [...extra, ...jump];
-  }, [items, canWrite, navigate]);
+  }, [items, canWrite, navigate, openAccountStatusModal]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();

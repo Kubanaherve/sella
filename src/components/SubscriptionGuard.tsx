@@ -4,6 +4,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { isSubscriptionExpired } from "@/lib/entitlements";
 import { isAppUnlocked } from "@/lib/appUnlock";
 import { isMarketingPath } from "@/lib/site";
+import { isNativeApp } from "@/lib/platform";
+import { ProMembershipNotice } from "@/components/ProMembershipNotice";
 
 const OPEN_PATHS = new Set([
   "/",
@@ -78,6 +80,13 @@ export function SubscriptionGuard({ children }: { children: ReactNode }) {
       "/sales",
     ];
     if (mutationPaths.some((p) => path.startsWith(p))) {
+      if (isNativeApp()) {
+        return (
+          <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#09090B] flex items-center justify-center p-6">
+            <ProMembershipNotice />
+          </div>
+        );
+      }
       return <Navigate to="/subscribe" replace state={{ from: path }} />;
     }
   }

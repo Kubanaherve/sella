@@ -25,6 +25,8 @@ import {
 import { toast } from "sonner";
 import { BRAND } from "@/lib/brand";
 import { accessLabel } from "@/lib/entitlements";
+import { isNativeApp } from "@/lib/platform";
+import { useAccountStatus } from "@/contexts/AccountStatusContext";
 import { WriteGate } from "@/components/WriteGate";
 import { hapticLight } from "@/lib/haptics";
 import { hourInKigali } from "@/lib/dates";
@@ -80,6 +82,7 @@ function formatMoneyParts(amount: number): { main: string; suffix: string } {
 
 const DashboardPage = () => {
   const navigate = useNavigate();
+  const { openAccountStatusModal } = useAccountStatus();
   const location = useLocation();
   const {
     profile,
@@ -232,36 +235,36 @@ const DashboardPage = () => {
       icon: Plus,
       label: labels.newSale,
       path: "/new-sale",
-      tone: "bg-blue-50/80 text-blue-900 border border-blue-100/60 dark:bg-blue-500/15 dark:text-blue-200 dark:border-blue-400/20 backdrop-blur-md",
-      iconTone: "bg-blue-100 text-blue-700 dark:bg-blue-500/25 dark:text-blue-200",
+      tone: "bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-neutral-100 hover:border-neutral-300 dark:hover:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 shadow-xs",
+      iconTone: "bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200",
     },
     {
       icon: List,
       label: labels.debtList,
       path: "/debts",
-      tone: "bg-sky-50/80 text-sky-900 border border-sky-100/60 dark:bg-sky-500/15 dark:text-sky-200 dark:border-sky-400/20 backdrop-blur-md",
-      iconTone: "bg-sky-100 text-sky-700 dark:bg-sky-500/25 dark:text-sky-200",
+      tone: "bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-neutral-100 hover:border-neutral-300 dark:hover:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 shadow-xs",
+      iconTone: "bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200",
     },
     {
       icon: TrendingUp,
       label: labels.salesTab,
       path: "/sales",
-      tone: "bg-indigo-50/80 text-indigo-900 border border-indigo-100/60 dark:bg-indigo-500/15 dark:text-indigo-200 dark:border-indigo-400/20 backdrop-blur-md",
-      iconTone: "bg-indigo-100 text-indigo-700 dark:bg-indigo-500/25 dark:text-indigo-200",
+      tone: "bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-neutral-100 hover:border-neutral-300 dark:hover:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 shadow-xs",
+      iconTone: "bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200",
     },
     {
       icon: Package,
       label: labels.inventoryTitle,
       path: "/inventory",
-      tone: "bg-slate-50/80 text-slate-800 border border-slate-200/60 dark:bg-slate-700/25 dark:text-slate-200 dark:border-slate-500/20 backdrop-blur-md",
-      iconTone: "bg-slate-100 text-slate-700 dark:bg-slate-700/50 dark:text-slate-200",
+      tone: "bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-neutral-100 hover:border-neutral-300 dark:hover:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 shadow-xs",
+      iconTone: "bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200",
     },
     {
       icon: ShoppingBag,
       label: "Komande",
       path: "/orders-manage",
-      tone: "bg-emerald-50/80 text-emerald-900 border border-emerald-100/60 dark:bg-emerald-500/15 dark:text-emerald-200 dark:border-emerald-400/20 backdrop-blur-md",
-      iconTone: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/25 dark:text-emerald-200",
+      tone: "bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-neutral-100 hover:border-neutral-300 dark:hover:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 shadow-xs",
+      iconTone: "bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200",
     },
   ];
 
@@ -269,7 +272,7 @@ const DashboardPage = () => {
     <div className="sella-page">
       <header className="sella-app-header">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#0b4fd9] to-[#1a6fff] flex items-center justify-center text-white text-sm font-bold shrink-0">
+          <div className="w-10 h-10 rounded-full bg-[#1D4ED8] flex items-center justify-center text-white text-sm font-bold shrink-0">
             {String(displayName).charAt(0).toUpperCase()}
           </div>
           <div className="min-w-0">
@@ -299,15 +302,40 @@ const DashboardPage = () => {
         {mode === "cloud" && (
           <button
             type="button"
-            onClick={() => navigate("/subscribe")}
-            className={`w-full rounded-xl border p-3 text-left text-xs ${
-              canWrite
-                ? "bg-emerald-50 border-emerald-200 text-emerald-900"
-                : "bg-amber-50 border-amber-200 text-amber-950"
-            }`}
+            onClick={() => {
+              if (isNativeApp()) {
+                openAccountStatusModal("POS & Sales");
+                return;
+              }
+              navigate("/subscribe");
+            }}
+            className="w-full rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-3.5 text-left text-xs transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/60 shadow-xs flex items-center justify-between gap-3"
           >
-            <p className="font-semibold">{accessLabel(subscription)}</p>
-            {!canWrite && <p className="mt-0.5 underline">{labels.renewWithMomo}</p>}
+            <div className="space-y-0.5 min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-neutral-900 dark:text-neutral-100 tracking-tight">
+                  Subscription Status
+                </span>
+                <span
+                  className={cn(
+                    "text-[10px] font-semibold px-2 py-0.5 rounded-full border",
+                    canWrite
+                      ? "bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 border-emerald-500/20"
+                      : "bg-amber-500/10 text-amber-900 dark:text-amber-300 border-amber-500/20"
+                  )}
+                >
+                  {accessLabel(subscription)}
+                </span>
+              </div>
+              <p className="text-neutral-500 dark:text-neutral-400">
+                {!canWrite
+                  ? isNativeApp()
+                    ? "Tap to view account status"
+                    : labels.renewWithMomo
+                  : "All register features active"}
+              </p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-neutral-400 shrink-0" />
           </button>
         )}
 

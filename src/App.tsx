@@ -5,14 +5,16 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { AccountStatusProvider } from "./contexts/AccountStatusContext";
 import { ThemeProvider, useTheme } from "./contexts/ThemeContext";
 import { CartProvider } from "./contexts/CartContext";
+import { AccountStatusProvider } from "./contexts/AccountStatusContext";
 import { SubscriptionGuard } from "./components/SubscriptionGuard";
 import { AppShell } from "./components/AppShell";
 import { DesktopLayoutProvider } from "./hooks/useDesktopLayout";
 import { SellaSplash } from "./components/SellaSplash";
 import { DesktopSplash } from "./components/DesktopSplash";
-import { isDesktopApp } from "./lib/platform";
+import { isDesktopApp, isNativeApp } from "./lib/platform";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { ConfigGate } from "./components/ConfigGate";
 import { Analytics } from "./components/marketing/Analytics";
@@ -154,6 +156,7 @@ const App = () => {
         <DesktopBoot>
         <DesktopLayoutProvider>
         <CartProvider>
+        <AccountStatusProvider>
         <BrowserRouter>
           <Analytics />
           <SubscriptionGuard>
@@ -162,7 +165,7 @@ const App = () => {
                 <Route
                   path="/"
                   element={
-                    Capacitor.isNativePlatform() || isDesktopApp() ? (
+                    isNativeApp() || isDesktopApp() ? (
                       <AuthPage />
                     ) : (
                       <LandingPage />
@@ -222,6 +225,7 @@ const App = () => {
             </Suspense>
           </SubscriptionGuard>
         </BrowserRouter>
+        </AccountStatusProvider>
         </CartProvider>
         </DesktopLayoutProvider>
         </DesktopBoot>

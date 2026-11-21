@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 import { CheckCircle2 } from "lucide-react";
 import { commercialPlans } from "@/lib/plans";
+import { isNativeApp } from "@/lib/platform";
+import { accountHost } from "@/lib/site";
 
 export function PricingCards({ includeTrial = true }: { includeTrial?: boolean }) {
   const plans = commercialPlans().filter((plan) => includeTrial || plan.id !== "trial");
@@ -9,10 +11,8 @@ export function PricingCards({ includeTrial = true }: { includeTrial?: boolean }
       {plans.map((plan) => (
         <article
           key={plan.id}
-          className={`rounded-3xl p-7 flex flex-col gap-5 text-left relative ${
-            plan.highlight
-              ? "border-2 border-[#1A6FFF] bg-gradient-to-b from-blue-50/80 to-white dark:from-[#1A6FFF]/10 dark:to-transparent shadow-xl shadow-blue-500/10"
-              : "border border-slate-200/80 dark:border-white/10 bg-white dark:bg-white/[0.03] shadow-lg shadow-slate-200/40 dark:shadow-none"
+          className={`rounded-2xl p-7 flex flex-col gap-5 text-left relative border bg-white ${
+            plan.highlight ? "border-[#1D4ED8]" : "border-[#E5E7EB]"
           }`}
         >
           {plan.highlight && (
@@ -37,14 +37,20 @@ export function PricingCards({ includeTrial = true }: { includeTrial?: boolean }
               ))}
             </ul>
           </div>
-          <Link
-            to={plan.href}
-            className={`mt-auto h-12 rounded-2xl text-xs font-bold inline-flex items-center justify-center ${
-              plan.highlight ? "bg-[#1A6FFF] text-white shadow-lg shadow-blue-500/25" : "bg-slate-100 dark:bg-white/10"
-            }`}
-          >
-            {plan.cta}
-          </Link>
+          {isNativeApp() ? (
+            <p className="mt-auto text-sm leading-relaxed text-[#6B7280]">
+              Membership is not managed in the mobile app. You can manage your account at {accountHost()}
+            </p>
+          ) : (
+            <Link
+              to={plan.href}
+              className={`mt-auto min-h-11 rounded-xl text-sm font-semibold inline-flex items-center justify-center ${
+                plan.highlight ? "bg-[#1D4ED8] text-white" : "bg-[#F3F4F6] text-[#111827]"
+              }`}
+            >
+              {plan.cta}
+            </Link>
+          )}
         </article>
       ))}
     </div>

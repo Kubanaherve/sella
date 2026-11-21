@@ -34,6 +34,8 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { COMPANY } from "@/lib/company";
 import { getAnnualPriceRwf, getMonthlyPriceRwf } from "@/lib/entitlements";
 import { annualSavingsRwf, formatRwf } from "@/lib/plans";
+import { isNativeApp } from "@/lib/platform";
+import { ProMembershipNotice } from "@/components/ProMembershipNotice";
 
 export default function LandingPage() {
   const [activeScreen, setActiveScreen] = useState<ScreenId>("pos");
@@ -122,11 +124,13 @@ export default function LandingPage() {
             >
               Sign In
             </Link>
-            <Link to="/subscribe" className="hidden sm:block">
-              <Button size="sm" className="btn-gold h-9 px-4 text-xs font-bold rounded-xl shadow-lg shadow-blue-500/20">
-                Pay with MoMo
-              </Button>
-            </Link>
+            {!isNativeApp() && (
+              <Link to="/subscribe" className="hidden sm:block">
+                <Button size="sm" className="btn-gold h-11 px-4 text-xs font-semibold rounded-xl">
+                  Pay with MoMo
+                </Button>
+              </Link>
+            )}
             <button
               type="button"
               className="md:hidden w-9 h-9 rounded-full border border-slate-200 dark:border-white/10 inline-flex items-center justify-center"
@@ -165,7 +169,7 @@ export default function LandingPage() {
           {/* Hero Title */}
           <h1 className="text-4xl sm:text-6xl md:text-7xl font-black text-slate-900 dark:text-white tracking-tight leading-[1.08] max-w-4xl mx-auto">
             Your Entire Shop in Your Pocket.{" "}
-            <span className="bg-gradient-to-r from-blue-600 via-sky-500 to-indigo-600 dark:from-blue-400 dark:via-sky-300 dark:to-indigo-300 bg-clip-text text-transparent">
+            <span className="text-[#1D4ED8]">
               Zero Stress.
             </span>
           </h1>
@@ -177,12 +181,14 @@ export default function LandingPage() {
 
           {/* Hero Actions */}
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3.5 max-w-md mx-auto">
-            <Link to="/subscribe" className="w-full sm:w-auto">
-              <Button size="lg" className="btn-gold w-full sm:w-auto h-12 px-7 text-sm font-bold rounded-2xl shadow-xl shadow-blue-500/25 flex items-center justify-center gap-2">
-                <span>Start free trial</span>
-                <ArrowRight size={16} />
-              </Button>
-            </Link>
+            {!isNativeApp() && (
+              <Link to="/subscribe" className="w-full sm:w-auto">
+                <Button size="lg" className="btn-gold w-full sm:w-auto min-h-11 h-12 px-7 text-sm font-semibold rounded-xl flex items-center justify-center gap-2">
+                  <span>Start free trial</span>
+                  <ArrowRight size={16} />
+                </Button>
+              </Link>
+            )}
             <Link
               to="/download"
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 h-12 px-6 rounded-2xl bg-white dark:bg-slate-900/80 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-800 dark:text-white font-semibold text-sm border border-slate-200 dark:border-white/15 backdrop-blur-md transition-all shadow-sm"
@@ -366,7 +372,13 @@ export default function LandingPage() {
         </section>
 
         {/* ── Pricing Section ── */}
-        <section id="pricing" className="py-20 px-4 sm:px-6 max-w-7xl mx-auto border-t border-slate-200/80 dark:border-white/10 relative z-10 scroll-mt-20">
+        <section id="pricing" className="py-20 px-4 sm:px-6 max-w-7xl mx-auto border-t border-[#E5E7EB] relative z-10 scroll-mt-20">
+          {isNativeApp() ? (
+            <div className="flex justify-center">
+              <ProMembershipNotice />
+            </div>
+          ) : (
+          <>
           <div className="text-center max-w-2xl mx-auto mb-14 space-y-3">
             <span className="text-xs font-bold uppercase tracking-widest text-[#1A6FFF]">
               Honest Rwanda Pricing
@@ -417,7 +429,7 @@ export default function LandingPage() {
             </div>
 
             {/* Annual Plan */}
-            <div className="p-8 rounded-3xl text-left flex flex-col justify-between space-y-6 border-2 border-[#1A6FFF] relative overflow-hidden bg-gradient-to-b from-blue-50/70 to-white dark:from-[#1A6FFF]/10 dark:to-transparent shadow-xl shadow-blue-500/10">
+            <div className="p-8 rounded-2xl text-left flex flex-col justify-between space-y-6 border border-[#1D4ED8] relative overflow-hidden bg-white">
               <div className="absolute top-0 right-0 bg-[#1A6FFF] text-white text-[10px] font-black uppercase px-4 py-1 rounded-bl-xl tracking-wider">
                 Best Value (Save {savingsLabel})
               </div>
@@ -447,12 +459,14 @@ export default function LandingPage() {
               </div>
 
               <Link to="/subscribe" className="block pt-4">
-                <Button className="w-full btn-gold font-bold h-12 rounded-2xl text-xs shadow-lg shadow-blue-500/30">
+                <Button className="w-full btn-gold font-bold h-12 rounded-2xl text-xs">
                   Subscribe Annual ({annualLabel})
                 </Button>
               </Link>
             </div>
           </div>
+          </>
+          )}
         </section>
 
         {/* ── App Store & Download Section ── */}

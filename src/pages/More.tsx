@@ -17,7 +17,8 @@ import {
 } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { useAuth } from "@/contexts/AuthContext";
-import { showWebOnlyTools } from "@/lib/platform";
+import { isNativeApp, showWebOnlyTools } from "@/lib/platform";
+import { useAccountStatus } from "@/contexts/AccountStatusContext";
 import { hapticLight } from "@/lib/haptics";
 import { accessLabel } from "@/lib/entitlements";
 import { BrandMark } from "@/components/BrandMark";
@@ -30,6 +31,8 @@ import { useAppLanguage } from "@/i18n/useAppLanguage";
 const MorePage = () => {
   useAppLanguage();
   const navigate = useNavigate();
+  const { openAccountStatusModal } = useAccountStatus();
+  const native = isNativeApp();
   const { profile, logout, subscription, mode, isSuperAdmin, canWrite } = useAuth();
 
   const shopName =
@@ -95,7 +98,8 @@ const MorePage = () => {
       icon: CreditCard,
       label: labels.billingRow,
       hint: accessLabel(subscription),
-      path: "/subscribe",
+      path: native ? undefined : "/subscribe",
+      onClick: native ? () => openAccountStatusModal("Billing") : undefined,
     },
     {
       icon: UserCircle,

@@ -12,7 +12,8 @@ import { BrandMark } from "@/components/BrandMark";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { labels } from "@/lib/kinyarwanda";
 import { useAppLanguage } from "@/i18n/useAppLanguage";
-import { showWebOnlyTools } from "@/lib/platform";
+import { isNativeApp, showWebOnlyTools } from "@/lib/platform";
+import { useAccountStatus } from "@/contexts/AccountStatusContext";
 import { startOutboxSyncListener } from "@/services/outboxSync";
 import {
   DESKTOP_GROUPS,
@@ -41,6 +42,7 @@ export function DesktopShell() {
   useAppLanguage();
   const location = useLocation();
   const navigate = useNavigate();
+  const { openAccountStatusModal } = useAccountStatus();
   const { profile, logout, canWrite, isSuperAdmin } = useAuth();
   const [collapsed, setCollapsed] = useState(() => {
     try {
@@ -179,6 +181,22 @@ export function DesktopShell() {
                 {items.map((item) => {
                   const Icon = item.icon;
                   const active = isNavActive(location.pathname, item);
+                  if (item.id === "billing" && isNativeApp()) {
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        title={collapsed ? item.label : undefined}
+                        className="sella-desktop-link"
+                        onClick={() => openAccountStatusModal("Billing")}
+                      >
+                        <Icon size={18} strokeWidth={2} />
+                        {!collapsed && (
+                          <span className="truncate">{item.label}</span>
+                        )}
+                      </button>
+                    );
+                  }
                   return (
                     <NavLink
                       key={item.id}

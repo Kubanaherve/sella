@@ -3,9 +3,12 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { accessLabel, hasWriteAccess } from "@/lib/entitlements";
 import { entitledFeatures } from "@/lib/plans";
+import { isNativeApp } from "@/lib/platform";
+import { useAccountStatus } from "@/contexts/AccountStatusContext";
 
 export function CustomerPlanCard() {
   const navigate = useNavigate();
+  const { openAccountStatusModal } = useAccountStatus();
   const { subscription, canWrite } = useAuth();
   const features = entitledFeatures(subscription);
   const writing = hasWriteAccess(subscription) && canWrite;
@@ -24,15 +27,27 @@ export function CustomerPlanCard() {
           <li key={feature}>{feature}</li>
         ))}
       </ul>
-      <p className="text-[11px] text-muted-foreground leading-relaxed">
-        Pro is prepaid. It stays active until the date above, then you pay again. A website payment and a future App Store or Google Play purchase both update this same account after the server verifies them. Buying on the website does not replace store billing inside those apps.
-      </p>
+      {isNativeApp() ? (
+        <p className="text-sm leading-relaxed text-[#6B7280]">
+          Membership is not managed in the mobile app.
+        </p>
+      ) : (
+        <p className="text-[11px] text-muted-foreground leading-relaxed">
+          Pro is prepaid. It stays active until the date above, then you pay again.
+        </p>
+      )}
       {subscription?.cancelAtPeriodEnd ? (
         <p className="text-[11px]">Renewal is turned off. Access lasts until the current period ends.</p>
       ) : null}
-      <Button className="w-full" onClick={() => navigate("/subscribe")}>
-        Upgrade, renew, or compare plans
-      </Button>
+      {isNativeApp() ? (
+        <Button className="w-full min-h-11" onClick={() => openAccountStatusModal("Billing")}>
+          Account status
+        </Button>
+      ) : (
+        <Button className="w-full min-h-11" onClick={() => navigate("/subscribe")}>
+          Upgrade, renew, or compare plans
+        </Button>
+      )}
     </div>
   );
 }

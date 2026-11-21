@@ -135,7 +135,7 @@ export default function StoreProfilePage() {
       </header>
 
       {/* Banner / Store Header */}
-      <div className="relative bg-gradient-to-br from-primary/15 via-primary/5 to-transparent border-b border-border/40 py-10">
+      <div className="relative bg-white border-b border-[#E5E7EB] py-10">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
             <div className="w-20 h-20 rounded-2xl bg-white dark:bg-slate-800 shadow-md border border-slate-200 dark:border-white/10 flex items-center justify-center text-primary text-2xl font-black shrink-0 overflow-hidden">

@@ -304,7 +304,7 @@ const ReportsPage = () => {
         </div>
 
         <div className="sella-sales-kpis">
-        <div className="rounded-3xl border border-primary/15 bg-gradient-to-br from-[#0b4fd9] to-[#1a6fff] p-4 shadow-md text-white">
+        <div className="rounded-2xl border border-[#1D4ED8] bg-[#1D4ED8] p-4 text-white">
           <div className="flex items-center gap-2 mb-1">
             <TrendingUp size={16} className="text-white/80" />
             <span className="text-xs text-white/75 font-semibold">

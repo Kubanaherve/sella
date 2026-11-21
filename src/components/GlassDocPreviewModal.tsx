@@ -223,7 +223,7 @@ export function GlassDocPreviewModal({
             type="button"
             disabled={!canAct}
             onClick={() => onPrint?.()}
-            className="flex h-10 items-center justify-center gap-1.5 rounded-xl bg-gradient-to-br from-[#0B3FCC] to-[#1A6FFF] text-[13px] font-bold text-white shadow-[0_6px_16px_rgba(11,63,204,0.3)] active:scale-[0.98] disabled:opacity-40"
+            className="flex min-h-11 items-center justify-center gap-1.5 rounded-xl bg-[#1D4ED8] text-[13px] font-semibold text-white disabled:opacity-40"
           >
             {busy ? (
               <Loader2 size={14} className="animate-spin" />

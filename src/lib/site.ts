@@ -24,6 +24,15 @@ export function publicSiteUrl(): string {
   return "https://sella.app";
 }
 
+/** Hostname only. Shown as plain text in the mobile app so it is not a tappable checkout link. */
+export function accountHost(): string {
+  try {
+    return new URL(publicSiteUrl()).host;
+  } catch {
+    return "sella.app";
+  }
+}
+
 export function canonicalUrl(path: string): string {
   const normalized = path.startsWith("/") ? path : `/${path}`;
   if (normalized === "/") return `${publicSiteUrl()}/`;

@@ -25,6 +25,8 @@ import { BrandMark } from "@/components/BrandMark";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useTheme } from "@/contexts/ThemeContext";
+import { isNativeApp } from "@/lib/platform";
+import { ProMembershipNotice } from "@/components/ProMembershipNotice";
 
 type DocSectionId =
   | "getting-started"
@@ -199,23 +201,24 @@ export default function DocumentationPage() {
     },
     {
       id: "billing",
-      title: "6. Subscriptions & MoMo Checkout",
+      title: isNativeApp() ? "6. Pro plan" : "6. Subscriptions & MoMo Checkout",
       icon: <Smartphone size={18} />,
-      content: (
+      content: isNativeApp() ? (
+        <ProMembershipNotice />
+      ) : (
         <div className="space-y-4">
-          <h2 className="text-2xl font-black text-slate-900 dark:text-white">Sella Pro Subscriptions via MTN & Airtel MoMo</h2>
-          <p className="text-sm text-slate-600 dark:text-white/75 leading-relaxed">
-            Sella offers a straightforward, transparent subscription model with zero hidden fees. Every shop starts with a <strong>7-day free trial</strong> with full unlimited access.
+          <h2 className="text-2xl font-semibold tracking-tight text-[#111827]">Pro plan</h2>
+          <p className="text-sm text-[#6B7280] leading-relaxed">
+            Every shop starts with a 7-day trial. After that, Pro is prepaid monthly or yearly.
           </p>
-
-          <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/40 space-y-2 text-xs text-slate-700 dark:text-white/75">
-            <p className="font-bold text-emerald-600 dark:text-emerald-400">Pricing Tiers (Rwanda)</p>
+          <div className="p-4 rounded-2xl border border-[#E5E7EB] bg-white space-y-2 text-sm text-[#111827]">
+            <p className="font-semibold">Prices</p>
             <ul className="list-disc pl-5 space-y-1">
-              <li><strong>Monthly:</strong> 5,000 RWF / month</li>
-              <li><strong>Annual:</strong> 50,000 RWF / year (Save 10,000 RWF — 2 months free!)</li>
+              <li>Monthly: 5,000 RWF</li>
+              <li>Annual: 50,000 RWF</li>
             </ul>
-            <p className="pt-1">
-              Payment is made directly via <strong>MTN Mobile Money (*182#)</strong> or <strong>Airtel Money</strong>. When you confirm the payment prompt on your phone, your subscription row unlocks immediately via Supabase Realtime without restarting the app.
+            <p className="pt-1 text-[#6B7280]">
+              Pay with MTN MoMo or Airtel Money from the website. The account updates when the payment is confirmed.
             </p>
           </div>
         </div>
@@ -281,11 +284,13 @@ export default function DocumentationPage() {
               {isDark ? <Sun size={16} className="text-amber-400" /> : <Moon size={16} className="text-slate-700" />}
             </button>
 
-            <Link to="/subscribe" className="hidden sm:inline-block">
-              <Button size="sm" className="btn-gold h-9 text-xs">
-                Subscribe with MoMo
-              </Button>
-            </Link>
+            {!isNativeApp() && (
+              <Link to="/subscribe" className="hidden sm:inline-block">
+                <Button size="sm" className="btn-gold min-h-11 text-xs">
+                  Subscribe with MoMo
+                </Button>
+              </Link>
+            )}
             <Link to="/" className="text-xs text-slate-600 dark:text-white/70 hover:text-slate-900 dark:hover:text-white flex items-center gap-1 transition-colors">
               <ArrowLeft size={14} /> <span className="hidden sm:inline">Back to Home</span>
             </Link>

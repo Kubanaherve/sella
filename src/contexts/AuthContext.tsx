@@ -348,17 +348,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => unsub?.();
   }, [mode, loadCloudSession, refreshProfile, clearAuthState]);
 
-  // Resume / tab focus: re-read entitlement (covers missed websocket)
+  // Resume / tab focus / native foreground: re-read entitlement (covers missed websocket or browser checkout)
   useEffect(() => {
     if (mode !== "cloud" || !user?.id) return;
     const refresh = () => {
-      if (document.visibilityState === "visible") void refreshSubscription();
+      if (typeof document !== "undefined" && document.visibilityState === "visible") {
+        void refreshSubscription();
+      }
     };
     document.addEventListener("visibilitychange", refresh);
     window.addEventListener("focus", refresh);
+
+    let removeNativeListener: (() => void) | undefined;
+    if (Capacitor.isNativePlatform()) {
+      import("@capacitor/app")
+        .then(({ App }) => {
+          const handle = App.addListener("appStateChange", ({ isActive }) => {
+            if (isActive) {
+              void refreshSubscription();
+            }
+          });
+          removeNativeListener = () => {
+            handle.then((h) => h.remove()).catch(() => {});
+          };
+        })
+        .catch(() => {});
+    }
+
     return () => {
       document.removeEventListener("visibilitychange", refresh);
       window.removeEventListener("focus", refresh);
+      if (removeNativeListener) removeNativeListener();
     };
   }, [mode, user?.id, refreshSubscription]);
 
@@ -443,11 +463,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (!wasBackground) return;
           wasBackground = false;
 
-          // If a payment or USSD prompt is in-flight, keep user in-session and refresh
-          if (isPaymentInProgress()) {
-            void refreshSubscription();
-            return;
-          }
+          void refreshSubscription();
+
+          // If a payment or USSD prompt is in-flight, keep user in-session
+          if (isPaymentInProgress()) return;
 
           void lockToPin();
         });

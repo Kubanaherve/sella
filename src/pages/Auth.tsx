@@ -1027,7 +1027,7 @@ const AuthPage = () => {
                 }}
                 className="w-full glass-card p-4 flex items-center gap-4 text-left"
               >
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#0B3FCC] to-[#5AC8FA] flex items-center justify-center text-lg font-bold text-white">
+                <div className="w-12 h-12 rounded-full bg-[#1D4ED8] flex items-center justify-center text-lg font-bold text-white">
                   {(account.shopName || account.displayName).charAt(0).toUpperCase()}
                 </div>
                 <div>

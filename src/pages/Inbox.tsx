@@ -134,7 +134,7 @@ const InboxPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted to-background">
+    <div className="min-h-screen bg-[#FAFAFA]">
       <header className="sella-app-header">
         <button
           onClick={() => navigate("/dashboard")}
