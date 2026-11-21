@@ -1,3 +1,4 @@
+import { t } from "@/i18n";
 import { getAppLanguage, type AppLanguage } from "@/lib/appLanguage";
 import { BRAND } from "@/lib/brand";
 
@@ -165,6 +166,44 @@ const EN: PdfCopy = {
   preparedFor: "Prepared for",
 };
 
+const PAGE_OF: Record<AppLanguage, { page: string; of: string }> = {
+  rw: { page: "Urupapuro", of: "muri" },
+  en: { page: "Page", of: "of" },
+  fr: { page: "Page", of: "sur" },
+  sw: { page: "Ukurasa", of: "kati ya" },
+  rn: { page: "Urupapuro", of: "muri" },
+  lg: { page: "Omuko", of: "ku" },
+  es: { page: "Página", of: "de" },
+  pt: { page: "Página", of: "de" },
+  ar: { page: "صفحة", of: "من" },
+  zh: { page: "第", of: "共" },
+};
+
 export function getPdfCopy(lang?: AppLanguage): PdfCopy {
-  return (lang || getAppLanguage()) === "en" ? EN : RW;
+  const language = lang || getAppLanguage();
+  const base = language === "rw" ? RW : EN;
+  const pageOf = PAGE_OF[language];
+  return {
+    ...base,
+    invoice: t("PDF-001", language),
+    receipt: t("PDF-002", language),
+    debtorsStatement: t("PDF-003", language),
+    debtReport: t("PDF-004", language),
+    billTo: t("PDF-005", language),
+    from: t("PDF-006", language),
+    description: t("PDF-007", language),
+    qty: t("PDF-008", language),
+    unitPrice: t("PDF-009", language),
+    amount: t("PDF-010", language),
+    subtotal: t("PDF-011", language),
+    tax: t("PDF-012", language),
+    total: t("PDF-013", language),
+    paid: t("PDF-014", language),
+    remaining: t("PDF-015", language),
+    debtorCount: t("PDF-016", language),
+    averageBalance: t("PDF-017", language),
+    thankYou: (shop) => t("PDF-018", language, { shop }),
+    page: pageOf.page,
+    of: pageOf.of,
+  };
 }

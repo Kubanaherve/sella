@@ -1,5 +1,67 @@
-/** Kinyarwanda-first copy for shopkeeper UI. Keep short and natural for retail. */
-export const labels = {
+import { t, type CatalogueId } from "@/i18n";
+import {
+  cashAcknowledgmentMessage,
+  debtReminderMessage,
+  paymentReceiptMessage,
+} from "@/i18n/customerMessages";
+import { getAppLanguage } from "@/lib/appLanguage";
+
+/** Catalogue ids for labels that must follow the preferred language exactly. */
+const LABEL_IDS = {
+  home: "MISC-001",
+  dashboard: "MISC-001",
+  debtsTab: "MISC-002",
+  salesTab: "MISC-003",
+  stockTab: "MISC-004",
+  moreTab: "MISC-005",
+  more: "MISC-005",
+  assistantRow: "MISC-006",
+  assistantPlaceholder: "MISC-007",
+  newSale: "SALE-027",
+  addDebt: "SALE-027",
+  inventoryTitle: "INV-001",
+  searchProducts: "SALE-002",
+  allCategories: "SALE-003",
+  outOfStock: "SALE-005",
+  subtotal: "SALE-010",
+  discount: "SALE-011",
+  total: "SALE-012",
+  cash: "SALE-014",
+  momo: "SALE-015",
+  airtel: "SALE-016",
+  bank: "SALE-017",
+  payingNow: "SALE-018",
+  balanceDue: "SALE-019",
+  changeDue: "SALE-020",
+  customerName: "SALE-021",
+  dueDate: "SALE-022",
+  saleCompleted: "SALE-024",
+  print: "SALE-025",
+  clientsRow: "CLI-001",
+  remind: "DEBT-008",
+  moreTitle: "SETT-001",
+  accountRow: "SETT-002",
+  accountHint: "SETT-003",
+  receiptRow: "SETT-004",
+  receiptHint: "SETT-005",
+  installRow: "SETT-007",
+  billingRow: "SETT-008",
+  inbox: "NOTIF-001",
+  inboxRow: "NOTIF-001",
+  saleRecorded: "NOTIF-003",
+  saleSavedSuccess: "NOTIF-003",
+  debtSavedSuccess: "NOTIF-004",
+  markedAsPaid: "NOTIF-005",
+  invalidPin: "NOTIF-006",
+  notEnoughStock: "NOTIF-008",
+  paid: "PDF-014",
+  amount: "PDF-010",
+  quantity: "PDF-008",
+  receipt: "PDF-002",
+} as const satisfies Record<string, CatalogueId>;
+
+/** Kinyarwanda-first copy. Catalogue keys follow the preferred language. */
+const labelSource = {
   // Auth & Navigation
   login: "Injira",
   logout: "Sohoka",
@@ -176,25 +238,30 @@ export const labels = {
   businessTagline: "Ubucuruzi bwawe",
 } as const;
 
+export type Labels = typeof labelSource;
+
+export const labels: Labels = new Proxy(labelSource, {
+  get(target, prop, receiver) {
+    if (typeof prop === "string" && prop in LABEL_IDS) {
+      return t(LABEL_IDS[prop as keyof typeof LABEL_IDS], getAppLanguage());
+    }
+    return Reflect.get(target, prop, receiver);
+  },
+});
+
 /** @deprecated use labels.inbox */
 export const Inbox = labels.inbox;
 
-// SMS message templates
+// Customer messages follow the preferred language set in settings.
 export const smsTemplates = {
   debtConfirmation: (items: string, amount: string) =>
-    `Muraho, mwafashe ${items}. Amafaranga muzishyura ni ${amount} FRW. Murakoze cyane!`,
+    debtReminderMessage(items, amount),
 
   debtReminder: (items: string, amount: string, dueDate?: string) =>
-    [
-      "Muraho mukiliya mwiza twifuzaga kubibutsa ko mufite mwafashe ibi bintu bikurikira",
-      items.startsWith("(") ? items : `(${items} )`,
-      `Amafaranga: ${amount}${dueDate ? ` · Azishyura: ${dueDate}` : ""}`,
-      "nimubone umwanya murebe PDF twabahaye muze kuyigenderaho mwishyura.",
-      "Turabashimiye cyane!",
-    ].join("\n"),
+    debtReminderMessage(items, amount, dueDate),
 
   cashAcknowledgment: (amount: string, method: string, remaining: string) =>
-    `Murakoze cyane! Twakiriye ${amount} FRW (${method}). Asigaye: ${remaining} FRW. Sella.`,
+    cashAcknowledgmentMessage(amount, method, remaining),
 
   paymentReceipt: (
     receiptId: string,
@@ -202,8 +269,7 @@ export const smsTemplates = {
     method: string,
     clientName: string,
     remaining: string
-  ) =>
-    `Resi #${receiptId}: Twakiriye ${amount} FRW (${method}) kuva kuri ${clientName}. Asigaye: ${remaining} FRW. Murakoze gukoresha Sella!`,
+  ) => paymentReceiptMessage(receiptId, amount, method, clientName, remaining),
 };
 
 export const formatCurrency = (amount: number): string => {

@@ -1,5 +1,5 @@
 import type { jsPDF } from "jspdf";
-import { getAppLanguage } from "@/lib/appLanguage";
+import { debtWhatsAppMessage } from "@/i18n/customerMessages";
 import type {
   DebtorStatementRow,
   InvoiceData,
@@ -146,25 +146,5 @@ export function buildDebtWhatsAppMessage(opts: {
   shopName: string;
   payPhone: string;
 }): string {
-  const lang = getAppLanguage();
-  if (lang === "en") {
-    return [
-      "Hello valued customer, we wanted to remind you that you still have these items on credit:",
-      opts.itemsParen,
-      "Please review the PDF and come settle when you can.",
-      "Thank you very much!",
-      "",
-      `Thank you for shopping at ${opts.shopName}`,
-      `Pay to: ${opts.payPhone}`,
-    ].join("\n");
-  }
-  return [
-    "Muraho mukiliya mwiza twifuzaga kubibutsa ko mufite mwafashe ibi bintu bikurikira",
-    opts.itemsParen,
-    "nimubone umwanya murebe PDF twabahaye muze kuyigenderaho mwishyura.",
-    "Turabashimiye cyane!",
-    "",
-    `Murakoze kugana ${opts.shopName}`,
-    `Ishura kuri: ${opts.payPhone}`,
-  ].join("\n");
+  return debtWhatsAppMessage(opts);
 }

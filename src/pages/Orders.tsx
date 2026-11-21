@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { listMarketplaceOrders, updateMarketplaceOrderStatus } from "@/db/api";
 import type { MarketplaceOrder, MarketplaceOrderStatus } from "@/db/types";
+import { orderPreparingMessage } from "@/i18n/customerMessages";
 import { formatCurrency } from "@/lib/kinyarwanda";
 import { PageHeader } from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -228,7 +229,7 @@ export default function OrdersPage() {
                         <span>Hamagara</span>
                       </a>
                       <a
-                        href={`https://wa.me/${order.customer_phone.replace(/\D/g, "")}?text=Muraho%20${encodeURIComponent(order.customer_name)}%2C%20turabamenyesha%20ko%20komande%20yanyu%20${order.order_number}%20twatangiye%20kuyitegura.`}
+                        href={`https://wa.me/${order.customer_phone.replace(/\D/g, "")}?text=${encodeURIComponent(orderPreparingMessage(order.customer_name, order.order_number))}`}
                         target="_blank"
                         rel="noreferrer"
                         className="h-8 px-2.5 rounded-lg bg-emerald-600 text-white flex items-center gap-1 font-bold text-[11px] hover:bg-emerald-700"

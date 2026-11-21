@@ -25,7 +25,8 @@ import {
   personName,
 } from "@/lib/rememberedAccounts";
 import { clearAppUnlock, isAppUnlocked, setAppUnlocked } from "@/lib/appUnlock";
-import { getAppLanguage, setAppLanguage } from "@/lib/appLanguage";
+import { LanguagePicker } from "@/components/LanguagePicker";
+import { useAppLanguage } from "@/i18n/useAppLanguage";
 import {
   findShopByCode,
   staffRegisterOrSetPin,
@@ -93,7 +94,7 @@ const AuthPage = () => {
   const [confirmData, setConfirmData] = useState<ConfirmData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
-  const [lang, setLang] = useState<"rw" | "en">(() => getAppLanguage());
+  const lang = useAppLanguage();
   const [rememberedAccounts, setRememberedAccounts] = useState<RememberedAccount[]>([]);
   const [selectedAccount, setSelectedAccount] = useState<RememberedAccount | null>(null);
   const [pinResetToken, setPinResetToken] = useState(0);
@@ -1132,27 +1133,8 @@ const AuthPage = () => {
   if (step === "register") {
     return (
       <div className="min-h-screen sella-hero-bg flex flex-col items-center justify-center p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,calc(var(--sella-safe-top-floor)+0.75rem),env(safe-area-inset-top))]">
-        <div className="absolute right-4 flex gap-2 top-[max(1rem,calc(max(var(--sella-safe-top-floor),env(safe-area-inset-top,0px))+0.35rem))]">
-          <button
-            type="button"
-            className={`text-xs px-2 py-1 rounded ${lang === "rw" ? "bg-white text-primary" : "text-slate-600"}`}
-            onClick={() => {
-              setAppLanguage("rw");
-              setLang("rw");
-            }}
-          >
-            RW
-          </button>
-          <button
-            type="button"
-            className={`text-xs px-2 py-1 rounded ${lang === "en" ? "bg-white text-primary" : "text-slate-600"}`}
-            onClick={() => {
-              setAppLanguage("en");
-              setLang("en");
-            }}
-          >
-            EN
-          </button>
+        <div className="absolute right-4 top-[max(1rem,calc(max(var(--sella-safe-top-floor),env(safe-area-inset-top,0px))+0.35rem))]">
+          <LanguagePicker compact />
         </div>
 
         <BrandMark variant="icon" size="lg" float />
@@ -1344,27 +1326,8 @@ const AuthPage = () => {
         <p className="text-xs text-slate-500">{labels.madeForRwanda}</p>
       </aside>
       <div className="sella-auth-home-main relative flex w-full flex-1 flex-col items-center justify-center p-6">
-      <div className="absolute right-4 flex gap-2 top-[max(1rem,calc(max(var(--sella-safe-top-floor),env(safe-area-inset-top,0px))+0.35rem))]">
-        <button
-          type="button"
-          className={`text-xs px-2 py-1 rounded ${lang === "rw" ? "bg-white text-primary" : "text-slate-600"}`}
-          onClick={() => {
-            setAppLanguage("rw");
-            setLang("rw");
-          }}
-        >
-          RW
-        </button>
-        <button
-          type="button"
-          className={`text-xs px-2 py-1 rounded ${lang === "en" ? "bg-white text-primary" : "text-slate-600"}`}
-          onClick={() => {
-            setAppLanguage("en");
-            setLang("en");
-          }}
-        >
-          EN
-        </button>
+      <div className="absolute right-4 top-[max(1rem,calc(max(var(--sella-safe-top-floor),env(safe-area-inset-top,0px))+0.35rem))]">
+        <LanguagePicker compact />
       </div>
 
       <BrandMark variant="logo" size="hero" float />

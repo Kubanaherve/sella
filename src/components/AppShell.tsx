@@ -13,18 +13,11 @@ import { useAuth } from "@/contexts/AuthContext";
 import { OfflineBanner } from "@/components/OfflineBanner";
 import { PageTransition } from "@/components/PageTransition";
 import { labels } from "@/lib/kinyarwanda";
+import { useAppLanguage } from "@/i18n/useAppLanguage";
 import { useEffect, useState } from "react";
 import { startOutboxSyncListener } from "@/services/outboxSync";
 import { useDesktopLayout } from "@/hooks/useDesktopLayout";
 import { DesktopShell } from "@/components/desktop/DesktopShell";
-
-const TABS = [
-  { to: "/dashboard", label: labels.home, icon: Home },
-  { to: "/debts", label: labels.debtsTab, icon: List },
-  { to: "/sales", label: labels.salesTab, icon: TrendingUp },
-  { to: "/inventory", label: labels.stockTab, icon: Package },
-  { to: "/more", label: labels.moreTab, icon: MoreHorizontal },
-] as const;
 
 export function AppShell() {
   const desktop = useDesktopLayout();
@@ -33,6 +26,14 @@ export function AppShell() {
 }
 
 function MobileAppShell() {
+  useAppLanguage();
+  const tabs = [
+    { to: "/dashboard", label: labels.home, icon: Home },
+    { to: "/debts", label: labels.debtsTab, icon: List },
+    { to: "/sales", label: labels.salesTab, icon: TrendingUp },
+    { to: "/inventory", label: labels.stockTab, icon: Package },
+    { to: "/more", label: labels.moreTab, icon: MoreHorizontal },
+  ];
   const location = useLocation();
   const navigate = useNavigate();
   const { canWrite } = useAuth();
@@ -113,7 +114,7 @@ function MobileAppShell() {
 
       {!immersive && (
         <nav className="sella-tabbar" aria-label="Main">
-          {TABS.map(({ to, label, icon: Icon }) => (
+          {tabs.map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}
               to={to}

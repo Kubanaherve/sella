@@ -1,6 +1,7 @@
 import { jsPDF } from "jspdf";
 import { toRwf } from "@/lib/money";
 import { calendarDateKeyInKigali } from "@/lib/dates";
+import { dateLocale } from "@/i18n";
 import { getAppLanguage, type AppLanguage } from "@/lib/appLanguage";
 import { BRAND } from "@/lib/brand";
 import type {
@@ -20,7 +21,7 @@ import {
 
 function formatDocDate(iso: string, lang: AppLanguage): string {
   try {
-    return new Date(iso).toLocaleDateString(lang === "en" ? "en-GB" : "fr-RW", {
+    return new Date(iso).toLocaleDateString(dateLocale(lang), {
       day: "numeric",
       month: "short",
       year: "numeric",

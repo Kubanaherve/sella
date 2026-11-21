@@ -23,8 +23,12 @@ import { accessLabel } from "@/lib/entitlements";
 import { BrandMark } from "@/components/BrandMark";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { labels } from "@/lib/kinyarwanda";
+import { LanguagePicker } from "@/components/LanguagePicker";
+import { t } from "@/i18n";
+import { useAppLanguage } from "@/i18n/useAppLanguage";
 
 const MorePage = () => {
+  useAppLanguage();
   const navigate = useNavigate();
   const { profile, logout, subscription, mode, isSuperAdmin, canWrite } = useAuth();
 
@@ -72,8 +76,7 @@ const MorePage = () => {
     },
     {
       icon: Users,
-      label: "Abakozi bo mu Iduka",
-      hint: "Gucunga abacuruzi, PIN zabo na sales",
+      label: t("STAF-001"),
       path: "/staff",
     },
     {
@@ -161,6 +164,7 @@ const MorePage = () => {
       <PageHeader title={labels.moreTitle} subtitle={labels.moreSubtitle} hideBack />
 
       <div className="sella-page-body space-y-4">
+        <LanguagePicker />
         <div className="sella-more-top">
         <div className="sella-list-card p-4 flex items-center gap-3">
           <BrandMark variant="icon" size="md" />

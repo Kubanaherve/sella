@@ -11,6 +11,7 @@ import { PageTransition } from "@/components/PageTransition";
 import { BrandMark } from "@/components/BrandMark";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { labels } from "@/lib/kinyarwanda";
+import { useAppLanguage } from "@/i18n/useAppLanguage";
 import { showWebOnlyTools } from "@/lib/platform";
 import { startOutboxSyncListener } from "@/services/outboxSync";
 import {
@@ -37,6 +38,7 @@ function isTypingTarget(target: EventTarget | null): boolean {
 }
 
 export function DesktopShell() {
+  useAppLanguage();
   const location = useLocation();
   const navigate = useNavigate();
   const { profile, logout, canWrite, isSuperAdmin } = useAuth();

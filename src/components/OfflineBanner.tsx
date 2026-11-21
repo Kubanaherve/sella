@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { offlineBannerText } from "@/i18n/customerMessages";
+import { useAppLanguage } from "@/i18n/useAppLanguage";
 import { countOutboxAttention } from "@/db/outbox";
 import { getSupabase, isCloudMode } from "@/integrations/supabase/client";
 
 /** Connectivity banner + offline outbox pending count (cloud). */
 export function OfflineBanner() {
+  useAppLanguage();
   const [online, setOnline] = useState(
     typeof navigator === "undefined" ? true : navigator.onLine
   );
@@ -67,12 +70,12 @@ export function OfflineBanner() {
     >
       {conflicts > 0 ? (
         <Link to="/sync-conflicts" className="underline font-semibold">
-          {conflicts} sale(s) kept on this device — stock conflict, review needed
+          {offlineBannerText("conflict", conflicts)}
         </Link>
       ) : !online ? (
-        "Nta interineti — amakuru ya locale akora; sync izagaruka iyo wahuye."
+        offlineBannerText("offline")
       ) : (
-        `${pending} offline action(s) waiting to sync`
+        offlineBannerText("pending", pending)
       )}
     </div>
   );

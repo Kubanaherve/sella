@@ -39,6 +39,7 @@ import {
   type InvoiceData,
   type InvoiceLine,
 } from "@/lib/invoicePdf";
+import { dateLocale } from "@/i18n";
 import { getAppLanguage } from "@/lib/appLanguage";
 import {
   openPdfBlob,
@@ -340,7 +341,7 @@ const DebtsPage = () => {
       const list = debts.map(mapDebtToCustomer);
       const grandTotal = list.reduce((sum, c) => sum + Number(c.amount || 0), 0);
       const today = new Date().toLocaleDateString(
-        getAppLanguage() === "en" ? "en-GB" : "fr-RW",
+        dateLocale(getAppLanguage()),
         { year: "numeric", month: "long", day: "numeric" }
       );
       setPdfPreview({ list, grandTotal, today });
@@ -438,7 +439,7 @@ const DebtsPage = () => {
         list = debts.map(mapDebtToCustomer);
         grandTotal = list.reduce((sum, c) => sum + Number(c.amount || 0), 0);
         today = new Date().toLocaleDateString(
-          getAppLanguage() === "en" ? "en-GB" : "fr-RW",
+          dateLocale(getAppLanguage()),
           { year: "numeric", month: "long", day: "numeric" }
         );
       }

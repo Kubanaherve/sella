@@ -7,6 +7,8 @@ import { useCart } from "@/contexts/CartContext";
 import { CartSheet } from "@/components/marketplace/CartSheet";
 import { CheckoutModal } from "@/components/marketplace/CheckoutModal";
 import { getCategoryLabel } from "@/lib/businessCategories";
+import { shopInquiryMessage } from "@/i18n/customerMessages";
+import { useAppLanguage } from "@/i18n/useAppLanguage";
 import { formatCurrency } from "@/lib/kinyarwanda";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,6 +28,7 @@ import { toast } from "sonner";
 import { Seo } from "@/components/marketing/Seo";
 
 export default function StoreProfilePage() {
+  useAppLanguage();
   const { shopCode: rawShopCode } = useParams<{ shopCode: string }>();
   const { addItem, totalCount, setIsCartOpen } = useCart();
 
@@ -209,7 +212,7 @@ export default function StoreProfilePage() {
                   <span>Hamagara</span>
                 </a>
                 <a
-                  href={`https://wa.me/${shop.phone.replace(/\D/g, "")}?text=Muraho%20${encodeURIComponent(shop.businessName)}%2C%20nabonye%20iduka%20ryanyu%20kuri%20Sella`}
+                  href={`https://wa.me/${shop.phone.replace(/\D/g, "")}?text=${encodeURIComponent(shopInquiryMessage(shop.businessName))}`}
                   target="_blank"
                   rel="noreferrer"
                   className="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm"

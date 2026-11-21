@@ -45,7 +45,8 @@ export const DESKTOP_GROUPS: { id: DesktopNavGroup; label: string }[] = [
   { id: "shop", label: "Shop" },
 ];
 
-export const DESKTOP_NAV: DesktopNavItem[] = [
+export function desktopNavItems(): DesktopNavItem[] {
+  return [
   {
     id: "home",
     to: "/dashboard",
@@ -246,7 +247,8 @@ export const DESKTOP_NAV: DesktopNavItem[] = [
     superAdmin: true,
     keywords: "admin payments",
   },
-];
+  ];
+}
 
 export type NavFlags = {
   isSuperAdmin: boolean;
@@ -255,7 +257,7 @@ export type NavFlags = {
 };
 
 export function visibleDesktopNav(flags: NavFlags): DesktopNavItem[] {
-  return DESKTOP_NAV.filter((item) => {
+  return desktopNavItems().filter((item) => {
     if (item.superAdmin && !flags.isSuperAdmin) return false;
     if (item.webOnly && !flags.webOnly) return false;
     if (item.writeOnly && !flags.canWrite) return false;
