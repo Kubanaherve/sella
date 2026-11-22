@@ -40,7 +40,6 @@ const PRO_FEATURES = [
   "Excel and CSV import for products and customers",
   "PDF debt reports with the shop pay number",
   "Ask the Shop assistant",
-  "Online marketplace storefront",
   "Priority support",
 ] as const;
 

@@ -1,38 +1,72 @@
-import { MarketingIntro, MarketingShell } from "@/components/marketing/MarketingShell";
+import { PublicShell } from "@/components/marketing/PublicShell";
 import { PricingCards } from "@/components/marketing/PricingCards";
 import { Seo } from "@/components/marketing/Seo";
-import { formatRwf, trialLengthDays } from "@/lib/plans";
-import { getMonthlyPriceRwf } from "@/lib/entitlements";
+import { t, type CatalogueId } from "@/i18n";
+import { useAppLanguage } from "@/i18n/useAppLanguage";
+import { formatRwf } from "@/lib/plans";
+import { getMonthlyPriceRwf, SUBSCRIPTION_GRACE_DAYS } from "@/lib/entitlements";
+import { ShieldCheck, HelpCircle } from "lucide-react";
 
 export default function PricingPage() {
-  const days = trialLengthDays();
+  const lang = useAppLanguage();
+  const rw = lang === "rw";
+
   return (
-    <MarketingShell>
+    <PublicShell>
       <Seo
-        title="Sella pricing"
-        description={`Start Sella free for ${days} days. Pro is ${formatRwf(getMonthlyPriceRwf())} per month, or pay annually. Payments are verified on the server.`}
+        title={rw ? "Ibiciro bya Sella — Isanzwe na Pro" : "Sella Pricing — Normal & Pro"}
+        description={`Normal is ${formatRwf(getMonthlyPriceRwf("normal"))} per month. Pro is ${formatRwf(getMonthlyPriceRwf("pro"))} per month. Start with a 7-day free trial.`}
         path="/pricing"
       />
-      <MarketingIntro
-        kicker="Pricing"
-        title="Start free. Pay when the trial ends."
-        lede="Pro is prepaid in Rwandan francs. A payment unlocks the account only after the server confirms it. Nothing in the browser can mark a payment as successful on its own."
-      />
-      <div className="max-w-6xl mx-auto px-4 pb-10">
+
+      <div className="mx-auto max-w-5xl px-4 py-12 md:py-16 space-y-12">
+        <div className="max-w-2xl space-y-3">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-blue-200 bg-blue-50/70 text-xs font-semibold text-[#0B3FCC]">
+            <ShieldCheck size={14} />
+            <span>{rw ? "Ifatabuguzi ryizewe rya shop" : "Transparent Merchant Pricing"}</span>
+          </div>
+
+          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900">
+            {t("WEB-002" as CatalogueId)}
+          </h1>
+
+          <p className="text-base text-slate-600 leading-relaxed">
+            {rw
+              ? "Tangira ku buntu n'iminsi 7. Hitamo Isanzwe (Normal) ku iduka rimwe cyangwa Sella Pro ku bucuruzi bufite amashami n'abakozi benshi."
+              : "Start with a real 7-day free trial. Choose Normal for a single counter register, or Pro for multi-shop branches and cashier staff."}
+          </p>
+        </div>
+
+        {/* Pricing Cards */}
         <PricingCards />
+
+        {/* Billing Details & Grace Period Explanation */}
+        <div className="border-t border-slate-200 pt-10 grid grid-cols-1 md:grid-cols-2 gap-8 text-xs text-slate-600 leading-relaxed">
+          <div className="space-y-2">
+            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <HelpCircle size={16} className="text-[#0B3FCC]" />
+              <span>{rw ? "Uko ifatabuguzi rikora mu Rwanda" : "How subscription billing works"}</span>
+            </h3>
+            <p>
+              {rw
+                ? "Kwishyura ifatabuguzi rya Sella bikorerwa kuri web ukoresheje MTN Mobile Money cyangwa ikarita ya banki. Konti yawe ihita ifunguka ako kanya kuri telefone, tablet, no kuri mudasobwa."
+                : "Subscription billing stays on the website and uses MTN MoMo. A confirmed payment is what unlocks the shop."}
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <ShieldCheck size={16} className="text-emerald-600" />
+              <span>{rw ? `Iminsi ${SUBSCRIPTION_GRACE_DAYS} y'inyongera (Grace Period)` : `${SUBSCRIPTION_GRACE_DAYS}-Day Grace Period`}</span>
+            </h3>
+            <p>
+              {rw
+                ? `Iyo igihe wishyuriye kirangiye, uhabwa iminsi ${SUBSCRIPTION_GRACE_DAYS} y'inyongera yo gukomeza gukora mbere y'uko konti ihinduka gusoma gusa. Nta kigoza cyihishe.`
+                : `When a paid period ends, your account receives a ${SUBSCRIPTION_GRACE_DAYS}-day grace period before write access is restricted. Your shop records and customer debts are always preserved.`}
+            </p>
+          </div>
+        </div>
       </div>
-      <div className="max-w-3xl mx-auto px-4 pb-16 text-sm text-slate-600 dark:text-white/70 space-y-3 leading-relaxed">
-        <h2 className="text-lg font-bold text-slate-900 dark:text-white">How billing works across devices</h2>
-        <p>
-          A subscription bought on the website is stored on your Sella account. The Mac, Windows, Android, and iPhone apps read that same account when you sign in.
-        </p>
-        <p>
-          Apple requires In-App Purchase for digital subscriptions sold inside the iOS app. Google Play has its own billing rules for the Android app. Those store purchases are verified with the store, then written to the same account. Buying on the website does not skip a store’s rules inside that store’s app.
-        </p>
-        <p>
-          Sella Pro does not silently charge a card every month. You pay for a period. Access continues until that period ends, then you renew.
-        </p>
-      </div>
-    </MarketingShell>
+    </PublicShell>
   );
 }
