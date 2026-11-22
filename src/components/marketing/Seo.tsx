@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { COMPANY } from "@/lib/company";
 import { canonicalUrl, SITE } from "@/lib/site";
+import { getAppLanguage, isRTL } from "@/lib/appLanguage";
 
 type SeoProps = {
   title: string;
@@ -21,9 +22,10 @@ function upsertMeta(attr: "name" | "property", key: string, content: string) {
 export function Seo({ title, description, path }: SeoProps) {
   useEffect(() => {
     const url = canonicalUrl(path);
-    const previousLang = document.documentElement.lang;
+    const activeLang = getAppLanguage();
     document.title = title;
-    document.documentElement.lang = "en";
+    document.documentElement.lang = activeLang === "zh" ? "zh-Hans" : activeLang;
+    document.documentElement.dir = isRTL(activeLang) ? "rtl" : "ltr";
     upsertMeta("name", "description", description);
     upsertMeta("property", "og:title", title);
     upsertMeta("property", "og:description", description);

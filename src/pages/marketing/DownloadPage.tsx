@@ -1,23 +1,23 @@
+import { PublicShell } from "@/components/marketing/PublicShell";
 import { DownloadCenter } from "@/components/marketing/DownloadCenter";
-import { MarketingIntro, MarketingShell } from "@/components/marketing/MarketingShell";
 import { Seo } from "@/components/marketing/Seo";
+import { t, type CatalogueId } from "@/i18n";
 
 export default function DownloadPage() {
   return (
-    <MarketingShell>
+    <PublicShell>
       <Seo
         title="Download Sella"
-        description="Open Sella on the web today. iPhone, Android, Mac, and Windows downloads appear here only when those builds are published."
+        description="Open Sella in the browser. iPhone, Android, and Windows links appear only when those builds are published."
         path="/download"
       />
-      <MarketingIntro
-        kicker="Download"
-        title="Pick the device in front of you"
-        lede="The web application is available now. App Store, Google Play, Mac, and Windows links stay hidden until KUBANA Friend TECHNOLOGIES publishes them."
-      />
-      <div className="max-w-6xl mx-auto px-4 pb-20">
-        <DownloadCenter />
+      <div className="mx-auto max-w-5xl px-4 py-12">
+        <h1 className="text-[36px] font-semibold tracking-tight">{t("WEB-003" as CatalogueId)}</h1>
+        <p className="mt-3 max-w-xl text-sm leading-relaxed text-[#4B4B4B]">{t("WEB-047" as CatalogueId)}</p>
+        <div className="mt-8">
+          <DownloadCenter />
+        </div>
       </div>
-    </MarketingShell>
+    </PublicShell>
   );
 }
