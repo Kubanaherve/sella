@@ -21,6 +21,9 @@ qa-evidence/
 tests/qa-evidence/
 *.pdf
 *.xlsx
+*.keystore
+*.jks
+android/keystore.properties
 
 # Editor directories and files
 .vscode/*
