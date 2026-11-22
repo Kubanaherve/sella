@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Sella — Company and product dossier</title>
+<style>
+  :root {
+    --ink: #040816;
+    --blue: #0B3FCC;
+    --blue-2: #1A6FFF;
+    --accent: #3B82F6;
+    --cyan: #5AC8FA;
+    --sand: #F3F7FF;
+    --line: rgba(255,255,255,.38);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: Inter, "Segoe UI", Helvetica, Arial, sans-serif;
+    color: #0c1222;
+    background:
+      radial-gradient(900px 520px at 8% -10%, rgba(90,200,250,.45), transparent 60%),
+      radial-gradient(800px 480px at 100% 0%, rgba(11,63,204,.55), transparent 55%),
+      radial-gradient(700px 500px at 70% 110%, rgba(208,51,255,.18), transparent 50%),
+      linear-gradient(165deg, #071433 0%, #0B3FCC 42%, #07101f 100%);
+    min-height: 100vh;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 48px 24px 80px; }
+  header.hero {
+    padding: 28px 8px 12px;
+    color: white;
+  }
+  .eyebrow {
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    font-size: 12px;
+    color: rgba(255,255,255,.78);
+  }
+  h1 {
+    font-size: 64px;
+    line-height: .95;
+    margin: 10px 0 8px;
+    font-weight: 650;
+    letter-spacing: -0.04em;
+  }
+  .lede { font-size: 20px; max-width: 640px; color: rgba(255,255,255,.9); margin: 0; }
+  .meta { margin-top: 18px; font-size: 13px; color: rgba(255,255,255,.72); }
+  section { margin-top: 22px; }
+  .glass {
+    background: rgba(255,255,255,.14);
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    box-shadow: 0 20px 50px rgba(4,8,22,.28), inset 0 1px 0 rgba(255,255,255,.45);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    padding: 26px 28px 22px;
+    color: #f7f9ff;
+  }
+  h2 { margin: 0 0 8px; font-size: 22px; letter-spacing: -0.02em; }
+  h3 { margin: 18px 0 6px; font-size: 15px; }
+  p, li { font-size: 15px; line-height: 1.55; }
+  p { margin: 8px 0; }
+  ul { margin: 8px 0 0; padding-left: 18px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .step {
+    display: grid;
+    grid-template-columns: 36px 1fr;
+    gap: 12px;
+    align-items: start;
+    margin-top: 12px;
+  }
+  .n {
+    width: 36px; height: 36px; border-radius: 12px;
+    display: grid; place-items: center;
+    background: rgba(255,255,255,.18);
+    border: 1px solid rgba(255,255,255,.4);
+    font-weight: 650;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 8px; }
+  th, td { text-align: left; padding: 8px 8px 8px 0; border-bottom: 1px solid rgba(255,255,255,.2); vertical-align: top; }
+  th { font-weight: 650; color: rgba(255,255,255,.75); font-size: 12px; letter-spacing: .04em; text-transform: uppercase; }
+  .ok { color: #d7ffe8; }
+  .no { color: #ffe1c2; }
+  footer { margin-top: 28px; color: rgba(255,255,255,.65); font-size: 12px; }
+  @media (max-width: 720px) {
+    h1 { font-size: 44px; }
+    .grid { grid-template-columns: 1fr; }
+  }
+  @media print {
+    body { background: white; color: #111; }
+    .wrap { padding: 0; max-width: none; }
+    header.hero, .glass, footer { color: #111; }
+    .glass {
+      background: white;
+      color: #111;
+      border: 1px solid #d5dbe8;
+      box-shadow: none;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+    .eyebrow, .lede, .meta, footer { color: #333; }
+    th, td { border-bottom: 1px solid #ddd; }
+    th { color: #444; }
+    .ok, .no { color: #111; }
+    a { color: #111; text-decoration: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <div class="eyebrow">KUBANA Friend TECHNOLOGIES LTD · Kigali</div>
+    <h1>Sella</h1>
+    <p class="lede">The register a shop uses while the customer is still there. Record the sale. See the stock. Know who still owes.</p>
+    <p class="meta">Company dossier · 22 November 2026 · Facts taken from the Sella source tree, not from a pitch template.</p>
+  </header>
+
+  <section class="glass">
+    <h2>1. Executive overview</h2>
+    <p>Sella is shop software by KUBANA Friend TECHNOLOGIES LTD. The legal name on the RDB certificate is KUBANA Friend TECHNOLOGIES LTD. The in-app constant in <code>src/lib/company.ts</code> reads KUBANA FRIEND TECHNOLOGIES. TIN 157374984. Registration number used on filings: REG-2026-939550.</p>
+    <p>The job is the counter. A sale, the stock left, and Ideni — the credit book — have to be true before the customer leaves. The phone keeps selling if the internet drops. The sale syncs when the connection returns. If two copies disagree, the owner reviews them before anything is overwritten.</p>
+    <p>Default public language is Kinyarwanda. The app also runs in English, French, Swahili, Kirundi, and Luganda. Chinese and Arabic are not product languages.</p>
+  </section>
+
+  <section class="glass">
+    <h2>2. What the product actually does</h2>
+    <div class="grid">
+      <div>
+        <h3>At the counter</h3>
+        <ul>
+          <li>Ring a sale. Split the payment across cash, MTN MoMo, and Airtel Money.</li>
+          <li>Check a MoMo reference so the same code is not entered twice.</li>
+          <li>Cashier sign-in is a 4-digit PIN.</li>
+          <li>Receipt on a thermal printer, or a PDF. The receipt shows the shop, the lines, the cashier, and the amount.</li>
+          <li>Stock cards and low-stock alerts.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Ideni and the books</h3>
+        <ul>
+          <li>Open Ideni, see what was bought and what was paid, record a new payment, or send the balance on WhatsApp.</li>
+          <li>PDF debt reports. On Pro, the report can carry the shop pay number.</li>
+          <li>Excel and CSV import of products and customers, on Pro.</li>
+          <li>Ask the Shop, the in-app assistant named ChatSella, on Pro.</li>
+        </ul>
+      </div>
+    </div>
+    <h3>Plans, from <code>src/lib/planCatalog.ts</code></h3>
+    <table>
+      <thead><tr><th>Plan</th><th>Price</th><th>What it includes</th></tr></thead>
+      <tbody>
+        <tr><td>Trial</td><td>Free, 7 days</td><td>Pro tools included. No payment to start.</td></tr>
+        <tr><td>Normal</td><td>27,000 RWF / month or 270,000 RWF / year</td><td>1 shop. Owner and 1 cashier.</td></tr>
+        <tr><td>Pro</td><td>48,500 RWF / month or 485,000 RWF / year</td><td>Up to 3 shops and 5 cashiers. Desktop, import, PDF debt reports, Ask the Shop, priority support.</td></tr>
+      </tbody>
+    </table>
+    <p>A year is ten monthly payments, charged once. After a paid period ends, write access continues for 3 days (<code>SUBSCRIPTION_GRACE_DAYS</code>).</p>
+  </section>
+
+  <section class="glass">
+    <h2>3. How a sale and a subscription move</h2>
+    <div class="step"><div class="n">1</div><div><strong>Open the shop.</strong> The owner creates the shop. A cashier joins with the shop code and a 4-digit PIN.</div></div>
+    <div class="step"><div class="n">2</div><div><strong>Sell.</strong> The register writes the sale on the device. Local storage is Dexie (<code>sella_local</code>). Cash, MoMo, Airtel, or Ideni can share one sale.</div></div>
+    <div class="step"><div class="n">3</div><div><strong>Sync.</strong> When the network returns, the sale syncs. A conflict is shown to the owner instead of being overwritten in silence.</div></div>
+    <div class="step"><div class="n">4</div><div><strong>Subscribe, on the website only.</strong> <code>WebMomoCheckout</code> sends an MTN MoMo request-to-pay to a phone number of 8 to 15 digits. The page does not mark success by itself. <code>paymentsApi.ts</code> waits for a server SUCCESSFUL result and the amount must match 27,000, 270,000, 48,500, or 485,000 RWF.</div></div>
+    <div class="step"><div class="n">5</div><div><strong>Store apps.</strong> Android and iOS are Capacitor shells, id <code>com.sella.app</code>. They must hide checkout and purchase links. Desktop is an Electron window on the same web app. It is not a second product and it is not signed.</div></div>
+    <p>A live MoMo merchant account is not approved in this dossier. The KYC form and the MoMo Pay application are filled and filed in the legal folder. Production API credentials were empty when this file was written.</p>
+  </section>
+
+  <section class="glass">
+    <h2>4. Who it is for</h2>
+    <p>The first shop is in Kigali: one counter, an owner, and a cashier, selling in francs. Normal is that shop. Pro is the owner who runs up to three shops, wants a desktop window, and needs import plus debt PDFs.</p>
+    <p>The language set is East African on purpose: Kinyarwanda first, then English, French, Swahili, Kirundi, and Luganda. Growth means more of those shops on the same register, not a second product. Marketplace and store routes exist in the app. They are not the homepage story. The homepage leads with the register, stock, and Ideni.</p>
+  </section>
+
+  <section class="glass">
+    <h2>5. Readiness</h2>
+    <table>
+      <thead><tr><th>Item</th><th>State</th></tr></thead>
+      <tbody>
+        <tr><td>RDB certificate copies</td><td class="ok">In <code>02_LEGAL_AND_COMPLIANCE_RW/RDB_Documents/</code></td></tr>
+        <tr><td>MTN corporate SIM KYC and request letter</td><td class="ok">Filled copies in <code>MTN_MoMo_Integration/</code></td></tr>
+        <tr><td>MoMo Pay merchant form and letter</td><td class="ok">Filled copies in the same folder. Merchant approval is not in hand.</td></tr>
+        <tr><td>Privacy, Terms, deletion</td><td class="ok">Routes <code>/privacy</code>, <code>/terms</code>, <code>/delete-account</code></td></tr>
+        <tr><td>Public privacy URL</td><td class="no">Not published</td></tr>
+        <tr><td>Signed Android App Bundle</td><td class="no">Release signing is not configured</td></tr>
+        <tr><td>iOS archive</td><td class="no">Not built</td></tr>
+        <tr><td>Microsoft package</td><td class="no">Electron shell only</td></tr>
+        <tr><td>Play 1024×500 graphic and phone screenshots</td><td class="no">Missing</td></tr>
+        <tr><td>Apple 1024×1024 icon</td><td class="no">Only a 512×512 icon exists</td></tr>
+      </tbody>
+    </table>
+    <p>The full checklist, with commands, is <code>SUBMISSION_READINESS_REPORT.md</code> at the root of this workspace.</p>
+  </section>
+
+  <footer>
+    Sella · KUBANA Friend TECHNOLOGIES LTD · TIN 157374984 · This page is a local dossier. It is not a store listing and it is not a payment receipt.
+  </footer>
+</div>
+</body>
+</html>
