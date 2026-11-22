@@ -1,0 +1,59 @@
+{
+  "_meta": {
+    "description": "Sella Kinyarwanda UX Localization Standard — Prioritizes natural Rwandan app terminology (MoMo/Irembo/Android style) over rare academic translations.",
+    "rules": [
+      "Never use long 4-word academic phrases inside buttons or tabs.",
+      "Use natural Kinyarwandized verbs (kudownloadinga, kuprinta, guscaninga) where formal Kinyarwanda is rare or confusing.",
+      "Keep global hardware/protocol nouns (PIN, QR, Wi-Fi, Bluetooth, SMS, OTP, MoMo) intact.",
+      "Keep all action buttons in concise imperative form (Injira, Emeza, Ishyura, Bika, Shaka, Bireke)."
+    ]
+  },
+  "actions": {
+    "download": "Kudownloadinga",
+    "download_short": "Kuramo",
+    "upload": "Shyiraho",
+    "print": "Kuprinta",
+    "scan": "Guscaninga",
+    "refresh": "Kurefresha",
+    "login": "Injira",
+    "logout": "Sohoka",
+    "register": "Iyandikishe",
+    "save": "Bika",
+    "cancel": "Bireke",
+    "delete": "Siba",
+    "edit": "Hindura",
+    "confirm": "Emeza",
+    "submit": "Ohereza",
+    "search": "Shaka",
+    "filter": "Yungurura",
+    "share": "Sangiza",
+    "copy": "Koporora",
+    "pay_now": "Ishyura ubu",
+    "add_to_cart": "Shyira mu gatebo",
+    "checkout": "Ishyura"
+  },
+  "navigation_and_ui": {
+    "home": "Ahabanza",
+    "settings": "Igenamiterere",
+    "profile": "Konti yanjye",
+    "notifications": "Amakuru mashya",
+    "help_support": "Ubufasha",
+    "language": "Ururimi",
+    "loading": "Tegereza gato...",
+    "no_data": "Nta makuru ahari",
+    "success": "Byakunze!",
+    "error": "Habaye ikibazo"
+  },
+  "commerce_and_payments": {
+    "receipt": "Inyemezabuguzi",
+    "invoice": "Fagitire",
+    "amount": "Amafaranga",
+    "balance": "Asigaye kuri konti",
+    "pin_code": "Umubare w'ibanga (PIN)",
+    "otp_code": "Kode yoherejwe kuri SMS",
+    "phone_number": "Nimero ya telefoni",
+    "customer": "Umukiriya",
+    "merchant": "Umucuruzi",
+    "stock": "Ibicuruzwa bihari"
+  }
+}

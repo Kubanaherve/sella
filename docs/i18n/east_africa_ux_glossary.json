@@ -1,0 +1,465 @@
+{
+  "_meta": {
+    "title": "Sella East African Commerce & UX Localization Standard",
+    "description": "Standardized, everyday market terminology across Sella's 6 core East African commercial languages. Prioritizes natural cashier/shopkeeper usage (MTN MoMo, M-Pesa, Lumicash, Airtel Money, Android/WhatsApp style) over academic textbook purism.",
+    "supported_languages": {
+      "rw": "Ikinyarwanda (Rwanda - Kigali daily market standard)",
+      "sw": "Kiswahili (East African Common Market - DRC, Kenya, Tanzania, Uganda, Rwanda)",
+      "rn": "Ikirundi (Burundi - Bujumbura Lumicash/Ecocash retail standard)",
+      "lg": "Luganda (Uganda - Kampala downtown / MoMo Uganda commercial standard)",
+      "fr": "Français (Regional Commercial French - Goma, Bukavu, Bujumbura, Kigali)",
+      "en": "English (International Retail / Global Counter standard)"
+    },
+    "core_principles": [
+      "No academic or archaic purisms (e.g. never use 'gukurura dosiye', 'okutikkula', 'indebero', 'imirasire').",
+      "Action buttons must be concise, personalized 1-word imperative verbs (e.g. Injira, Ingia, Yingira, Connexion, Log in).",
+      "Adopt natural Kinyarwandized/Swahilized loanwords (Kudownloadinga, Kuprinta, Guscaninga, Kurefresha) where formal terms confuse shopkeepers.",
+      "Global technical and payment protocols stay untouched (PIN, QR, Wi-Fi, Bluetooth, SMS, OTP, MoMo, Airtel Money, M-Pesa).",
+      "Financial amounts are displayed in whole currency units with explicit local currency labels (RWF, BIF, UGX, KES, TZS, USD)."
+    ]
+  },
+  "actions": {
+    "download": {
+      "rw": "Kudownloadinga",
+      "sw": "Kupakua",
+      "rn": "Kudownloadinga",
+      "lg": "Kudownloadinga",
+      "fr": "Télécharger",
+      "en": "Download"
+    },
+    "download_short": {
+      "rw": "Kuramo",
+      "sw": "Pakua",
+      "rn": "Kura",
+      "lg": "Koppa",
+      "fr": "Obtenir",
+      "en": "Get"
+    },
+    "upload": {
+      "rw": "Shyiraho",
+      "sw": "Pakia",
+      "rn": "Shyiraho",
+      "lg": "Teekako",
+      "fr": "Uploader",
+      "en": "Upload"
+    },
+    "print": {
+      "rw": "Kuprinta",
+      "sw": "Kuchapisha",
+      "rn": "Kuprinta",
+      "lg": "Kupulinta",
+      "fr": "Imprimer",
+      "en": "Print"
+    },
+    "scan": {
+      "rw": "Guscaninga",
+      "sw": "Kuskani",
+      "rn": "Guscaninga",
+      "lg": "Guscaninga",
+      "fr": "Scanner",
+      "en": "Scan"
+    },
+    "refresh": {
+      "rw": "Kurefresha",
+      "sw": "Pakia upya",
+      "rn": "Kurefresha",
+      "lg": "Kurefresha",
+      "fr": "Actualiser",
+      "en": "Refresh"
+    },
+    "login": {
+      "rw": "Injira",
+      "sw": "Ingia",
+      "rn": "Injira",
+      "lg": "Yingira",
+      "fr": "Connexion",
+      "en": "Log In"
+    },
+    "logout": {
+      "rw": "Sohoka",
+      "sw": "Toka",
+      "rn": "Sohoka",
+      "lg": "Fuluma",
+      "fr": "Déconnexion",
+      "en": "Log Out"
+    },
+    "register": {
+      "rw": "Iyandikishe",
+      "sw": "Jisajili",
+      "rn": "Yandikishe",
+      "lg": "Weewandiise",
+      "fr": "Créer un compte",
+      "en": "Register"
+    },
+    "save": {
+      "rw": "Bika",
+      "sw": "Hifadhi",
+      "rn": "Bika",
+      "lg": "Tereka",
+      "fr": "Enregistrer",
+      "en": "Save"
+    },
+    "cancel": {
+      "rw": "Bireke",
+      "sw": "Acha",
+      "rn": "Bireke",
+      "lg": "Bireke",
+      "fr": "Annuler",
+      "en": "Cancel"
+    },
+    "delete": {
+      "rw": "Siba",
+      "sw": "Futa",
+      "rn": "Futa",
+      "lg": "Sangula",
+      "fr": "Supprimer",
+      "en": "Delete"
+    },
+    "edit": {
+      "rw": "Hindura",
+      "sw": "Badili",
+      "rn": "Hindura",
+      "lg": "Kyusa",
+      "fr": "Modifier",
+      "en": "Edit"
+    },
+    "confirm": {
+      "rw": "Emeza",
+      "sw": "Thibitisha",
+      "rn": "Emeza",
+      "lg": "Kakasa",
+      "fr": "Confirmer",
+      "en": "Confirm"
+    },
+    "submit": {
+      "rw": "Ohereza",
+      "sw": "Tuma",
+      "rn": "Rungika",
+      "lg": "Weereza",
+      "fr": "Envoyer",
+      "en": "Send"
+    },
+    "search": {
+      "rw": "Shaka",
+      "sw": "Tafuta",
+      "rn": "Rondera",
+      "lg": "Noonya",
+      "fr": "Rechercher",
+      "en": "Search"
+    },
+    "filter": {
+      "rw": "Yungurura",
+      "sw": "Chuja",
+      "rn": "Yungurura",
+      "lg": "Sunsula",
+      "fr": "Filtrer",
+      "en": "Filter"
+    },
+    "share": {
+      "rw": "Sangiza",
+      "sw": "Shiriki",
+      "rn": "Sangiza",
+      "lg": "Gabanako",
+      "fr": "Partager",
+      "en": "Share"
+    },
+    "copy": {
+      "rw": "Koporora",
+      "sw": "Nakili",
+      "rn": "Koporora",
+      "lg": "Koppa",
+      "fr": "Copier",
+      "en": "Copy"
+    },
+    "copied": {
+      "rw": "Yakoporowe",
+      "sw": "Imenakiliwa",
+      "rn": "Yakoporowe",
+      "lg": "Gikoppebwa",
+      "fr": "Copié !",
+      "en": "Copied!"
+    },
+    "pay": {
+      "rw": "Ishyura",
+      "sw": "Lipa",
+      "rn": "Rihira",
+      "lg": "Sasula",
+      "fr": "Payer",
+      "en": "Pay"
+    },
+    "pay_now": {
+      "rw": "Ishyura ubu",
+      "sw": "Lipa sasa",
+      "rn": "Rihira ubu",
+      "lg": "Sasula kati",
+      "fr": "Payer maintenant",
+      "en": "Pay Now"
+    },
+    "add_to_cart": {
+      "rw": "Shyira mu gatebo",
+      "sw": "Weka kikapuni",
+      "rn": "Shyira mu gatebo",
+      "lg": "Teeka mu kisawo",
+      "fr": "Ajouter au panier",
+      "en": "Add to Cart"
+    },
+    "checkout": {
+      "rw": "Ishyura",
+      "sw": "Lipa",
+      "rn": "Rihira",
+      "lg": "Sasula",
+      "fr": "Valider la commande",
+      "en": "Checkout"
+    }
+  },
+  "navigation_and_ui": {
+    "home": {
+      "rw": "Ahabanza",
+      "sw": "Mwanzo",
+      "rn": "Ahabanza",
+      "lg": "Awaka",
+      "fr": "Accueil",
+      "en": "Home"
+    },
+    "settings": {
+      "rw": "Igenamiterere",
+      "sw": "Mipangilio",
+      "rn": "Igenamiterere",
+      "lg": "Enteekateeka",
+      "fr": "Paramètres",
+      "en": "Settings"
+    },
+    "profile": {
+      "rw": "Konti yanjye",
+      "sw": "Akaunti yangu",
+      "rn": "Konti yanje",
+      "lg": "Akawunti yange",
+      "fr": "Mon compte",
+      "en": "My Account"
+    },
+    "notifications": {
+      "rw": "Amakuru mashya",
+      "sw": "Arifa",
+      "rn": "Amakuru mashasha",
+      "lg": "Bubaka bupya",
+      "fr": "Notifications",
+      "en": "Notifications"
+    },
+    "help_support": {
+      "rw": "Ubufasha",
+      "sw": "Msaada",
+      "rn": "Ubufasha",
+      "lg": "Obuyambi",
+      "fr": "Aide & Support",
+      "en": "Help & Support"
+    },
+    "language": {
+      "rw": "Ururimi",
+      "sw": "Lugha",
+      "rn": "Ururimi",
+      "lg": "Olulimi",
+      "fr": "Langue",
+      "en": "Language"
+    },
+    "loading": {
+      "rw": "Tegereza gato...",
+      "sw": "Subiri kidogo...",
+      "rn": "Rindira gato...",
+      "lg": "Lindako katono...",
+      "fr": "Chargement...",
+      "en": "Loading..."
+    },
+    "no_data": {
+      "rw": "Nta makuru ahari",
+      "sw": "Hakuna taarifa",
+      "rn": "Nta makuru ahari",
+      "lg": "Tewali bikwataho",
+      "fr": "Aucune donnée disponible",
+      "en": "No data available"
+    },
+    "success": {
+      "rw": "Byakunze!",
+      "sw": "Imefaulu!",
+      "rn": "Vyakunze!",
+      "lg": "Kikola!",
+      "fr": "Réussi !",
+      "en": "Success!"
+    },
+    "error": {
+      "rw": "Habaye ikibazo",
+      "sw": "Kumetokea hitilafu",
+      "rn": "Habaye ingorane",
+      "lg": "Waliwo obuzibu",
+      "fr": "Une erreur est survenue",
+      "en": "Something went wrong"
+    }
+  },
+  "commerce_and_pos": {
+    "pos_register": {
+      "rw": "POS ya Shop",
+      "sw": "Kaunta ya Mauzo",
+      "rn": "Ikese ry'iduka",
+      "lg": "Kaunta y'okutunda",
+      "fr": "Caisse enregistreuse",
+      "en": "POS Register"
+    },
+    "receipt": {
+      "rw": "Inyemezabuguzi",
+      "sw": "Risiti",
+      "rn": "Inyemezabuguzi",
+      "lg": "Lisiiti",
+      "fr": "Reçu",
+      "en": "Receipt"
+    },
+    "invoice": {
+      "rw": "Fagitire",
+      "sw": "Invoisi",
+      "rn": "Fagitire",
+      "lg": "Fakitule",
+      "fr": "Facture",
+      "en": "Invoice"
+    },
+    "amount": {
+      "rw": "Amafaranga",
+      "sw": "Kiasi cha pesa",
+      "rn": "Amahera",
+      "lg": "Omuwendo gwa ssente",
+      "fr": "Montant",
+      "en": "Amount"
+    },
+    "balance": {
+      "rw": "Asigaye",
+      "sw": "Salio lililobaki",
+      "rn": "Asigaye",
+      "lg": "Ezisigaddeyo",
+      "fr": "Solde restant",
+      "en": "Balance"
+    },
+    "pin_code": {
+      "rw": "Umubare w'ibanga (PIN)",
+      "sw": "Nambari ya siri (PIN)",
+      "rn": "Umubare w'ibanga (PIN)",
+      "lg": "PIN y'ekyama",
+      "fr": "Code PIN",
+      "en": "Security PIN"
+    },
+    "otp_code": {
+      "rw": "Kode yo kuri SMS",
+      "sw": "Nambari ya SMS (OTP)",
+      "rn": "Kode yo kuri SMS",
+      "lg": "Koodi ya SMS",
+      "fr": "Code SMS (OTP)",
+      "en": "SMS Code (OTP)"
+    },
+    "phone_number": {
+      "rw": "Nimero ya telefoni",
+      "sw": "Namba ya simu",
+      "rn": "Inomero ya telefone",
+      "lg": "Ennamba y'essimu",
+      "fr": "Numéro de téléphone",
+      "en": "Phone Number"
+    },
+    "customer": {
+      "rw": "Umukiriya",
+      "sw": "Mteja",
+      "rn": "Umukiriya",
+      "lg": "Kasitoma",
+      "fr": "Client",
+      "en": "Customer"
+    },
+    "merchant": {
+      "rw": "Umucuruzi",
+      "sw": "Muuzaji",
+      "rn": "Umudandaza",
+      "lg": "Omutunzi",
+      "fr": "Commerçant",
+      "en": "Merchant"
+    },
+    "stock": {
+      "rw": "Ububiko",
+      "sw": "Stoo",
+      "rn": "Ububiko",
+      "lg": "Sitooko",
+      "fr": "Stock",
+      "en": "Stock"
+    },
+    "debt": {
+      "rw": "Ideni",
+      "sw": "Deni",
+      "rn": "Ideni",
+      "lg": "Ebbanja",
+      "fr": "Crédit client (Dette)",
+      "en": "Customer Credit (Debt)"
+    },
+    "cart": {
+      "rw": "Agatebo",
+      "sw": "Kikapu",
+      "rn": "Agatebo",
+      "lg": "Akasawo",
+      "fr": "Panier",
+      "en": "Cart"
+    },
+    "thermal_receipt": {
+      "rw": "Resi ya Thermal (58/80mm)",
+      "sw": "Risiti ya Printa (58/80mm)",
+      "rn": "Resi ya thermal (58/80mm)",
+      "lg": "Lisiiti ya pulinta (58/80mm)",
+      "fr": "Reçu thermique (58/80mm)",
+      "en": "Thermal Receipt (58/80mm)"
+    },
+    "offline_mode": {
+      "rw": "Kugurisha idafite interineti",
+      "sw": "Kuuza bila mtandao",
+      "rn": "Gudandaza ata internet",
+      "lg": "Okutunda nga tewali mukutu",
+      "fr": "Vente hors-ligne (100% autonome)",
+      "en": "Offline Sales (100% standalone)"
+    }
+  },
+  "platforms": {
+    "google_play": {
+      "kicker": {
+        "rw": "DOWNLOADINGA KURI",
+        "sw": "IPATE KWENYE",
+        "rn": "DOWNLOADINGA KURI",
+        "lg": "DOWNLOADINGA KU",
+        "fr": "DISPONIBLE SUR",
+        "en": "GET IT ON"
+      },
+      "brand": "Google Play"
+    },
+    "app_store": {
+      "kicker": {
+        "rw": "Downloadinga kuri",
+        "sw": "Pakua kwenye",
+        "rn": "Downloadinga kuri",
+        "lg": "Downloadinga ku",
+        "fr": "Télécharger dans",
+        "en": "Download on the"
+      },
+      "brand": "App Store"
+    },
+    "windows": {
+      "kicker": {
+        "rw": "DOWNLOADINGA KURI",
+        "sw": "PAKUA KWA",
+        "rn": "DOWNLOADINGA KURI",
+        "lg": "DOWNLOADINGA KU",
+        "fr": "TÉLÉCHARGER POUR",
+        "en": "DOWNLOAD FOR"
+      },
+      "brand": "Windows PC"
+    },
+    "mac": {
+      "kicker": {
+        "rw": "Downloadinga kuri",
+        "sw": "Pakua kwa",
+        "rn": "Downloadinga kuri",
+        "lg": "Downloadinga ku",
+        "fr": "Télécharger pour",
+        "en": "Download for"
+      },
+      "brand": "macOS"
+    }
+  }
+}

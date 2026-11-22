@@ -1,1 +1,1472 @@
-{"AUTH-001":{"es":"Sella","pt":"Sella","ar":"Sella","zh":"Sella"},"AUTH-002":{"es":"Gestión simple de tiendas para Ruanda","pt":"Gestão simples de lojas para o Ruanda","ar":"إدارة بسيطة للمتاجر في رواندا","zh":"为卢旺达打造的简易店铺管理"},"AUTH-003":{"es":"Bienvenido de nuevo","pt":"Bem-vindo de volta","ar":"مرحباً بعودتك","zh":"欢迎回来"},"AUTH-004":{"es":"Elige una cuenta o entra en tu tienda","pt":"Escolha uma conta ou entre na sua loja","ar":"اختر حساباً أو ادخل إلى متجرك","zh":"选择账户或登录你的店铺"},"AUTH-005":{"es":"Entrar con PIN","pt":"Entrar com PIN","ar":"الدخول برمز PIN","zh":"用 PIN 登录"},"AUTH-006":{"es":"Entrar con otro número","pt":"Entrar com outro número","ar":"الدخول برقم آخر","zh":"用另一个号码登录"},"AUTH-007":{"es":"Registrar una tienda nueva","pt":"Registar uma loja nova","ar":"تسجيل متجر جديد","zh":"注册新店铺"},"AUTH-008":{"es":"¿Eres cajero? Únete con el código de la tienda","pt":"É caixa? Entre com o código da loja","ar":"هل أنت أمين صندوق؟ انضم برمز المتجر","zh":"你是收银员吗？用店铺码加入"},"AUTH-009":{"es":"Introduce tu número de teléfono","pt":"Introduza o seu número de telefone","ar":"أدخل رقم هاتفك","zh":"输入你的电话号码"},"AUTH-010":{"es":"078X XXX XXX","pt":"078X XXX XXX","ar":"078X XXX XXX","zh":"078X XXX XXX"},"AUTH-011":{"es":"Usaremos este número para identificar tu cuenta","pt":"Usaremos este número para identificar a sua conta","ar":"سنستخدم هذا الرقم للتعرف على حسابك","zh":"我们将用这个号码识别你的账户"},"AUTH-012":{"es":"Introduce un número de teléfono ruandés válido","pt":"Introduza um número de telefone ruandês válido","ar":"أدخل رقم هاتف رواندي صالحاً","zh":"请输入有效的卢旺达电话号码"},"AUTH-013":{"es":"Introduce tu PIN de 4 dígitos","pt":"Introduza o seu PIN de 4 dígitos","ar":"أدخل رمز PIN المكوّن من 4 أرقام","zh":"输入 4 位数 PIN"},"AUTH-014":{"es":"Mantén tu PIN en secreto","pt":"Mantenha o seu PIN em segredo","ar":"أبقِ رمز PIN سرّياً","zh":"请保管好你的 PIN"},"AUTH-015":{"es":"PIN incorrecto. Inténtalo de nuevo.","pt":"PIN incorreto. Tente novamente.","ar":"رمز PIN غير صحيح. حاول مرة أخرى.","zh":"PIN 不正确。请再试一次。"},"AUTH-016":{"es":"Demasiados intentos. Espera {seconds}s","pt":"Demasiadas tentativas. Aguarde {seconds}s","ar":"محاولات كثيرة جداً. انتظر {seconds} ث","zh":"错误次数过多。请等待 {seconds} 秒"},"AUTH-017":{"es":"¿Olvidaste tu PIN?","pt":"Esqueceu o seu PIN?","ar":"هل نسيت رمز PIN؟","zh":"忘记 PIN？"},"AUTH-018":{"es":"Crear cuenta de la tienda","pt":"Criar conta da loja","ar":"إنشاء حساب المتجر","zh":"创建店铺账户"},"AUTH-019":{"es":"Nombre del negocio / tienda *","pt":"Nome do negócio / loja *","ar":"اسم النشاط / المتجر *","zh":"店铺名称 *"},"AUTH-020":{"es":"p. ej. Kigali Fashion Boutique","pt":"ex. Kigali Fashion Boutique","ar":"مثال: Kigali Fashion Boutique","zh":"例如：Kigali Fashion Boutique"},"AUTH-021":{"es":"Nombre completo del propietario *","pt":"Nome completo do proprietário *","ar":"الاسم الكامل للمالك *","zh":"店主全名 *"},"AUTH-022":{"es":"Teléfono del propietario *","pt":"Telefone do proprietário *","ar":"هاتف المالك *","zh":"店主电话 *"},"AUTH-023":{"es":"Correo (para recuperación y facturas)","pt":"E-mail (para recuperação e faturas)","ar":"البريد (للاستعادة والفواتير)","zh":"电子邮箱（用于找回和发票）"},"AUTH-024":{"es":"Crea un PIN de seguridad de 4 dígitos *","pt":"Crie um PIN de segurança de 4 dígitos *","ar":"أنشئ رمز PIN أمنياً من 4 أرقام *","zh":"创建 4 位安全 PIN *"},"AUTH-025":{"es":"Confirma el PIN de 4 dígitos *","pt":"Confirme o PIN de 4 dígitos *","ar":"أكّد رمز PIN من 4 أرقام *","zh":"确认 4 位 PIN *"},"AUTH-026":{"es":"Los PIN no coinciden","pt":"Os PINs não coincidem","ar":"رمزا PIN غير متطابقين","zh":"两次 PIN 不一致"},"AUTH-027":{"es":"Crear cuenta","pt":"Criar conta","ar":"إنشاء الحساب","zh":"创建账户"},"AUTH-028":{"es":"Acceso de cajero · Unirse a la tienda","pt":"Acesso de caixa · Entrar na loja","ar":"دخول أمين الصندوق · الانضمام للمتجر","zh":"收银员入口 · 加入店铺"},"AUTH-029":{"es":"Introduce el código de la tienda (p. ej. SEL-XXXXXX)","pt":"Introduza o código da loja (ex. SEL-XXXXXX)","ar":"أدخل رمز المتجر (مثال: SEL-XXXXXX)","zh":"输入店铺码（例如 SEL-XXXXXX）"},"AUTH-030":{"es":"Pide al dueño el código de 6 caracteres en la página de personal.","pt":"Peça ao dono o código de 6 caracteres na página da equipa.","ar":"اطلب من صاحب المتجر الرمز المكوّن من 6 أحرف في صفحة الموظفين.","zh":"向店主索取员工管理页上的 6 位店铺码。"},"AUTH-031":{"es":"Comprobar código de la tienda","pt":"Verificar código da loja","ar":"تحقق من رمز المتجر","zh":"核对店铺码"},"AUTH-032":{"es":"Tienda verificada: {shop_name}","pt":"Loja verificada: {shop_name}","ar":"تم التحقق من المتجر: {shop_name}","zh":"店铺已确认：{shop_name}"},"AUTH-033":{"es":"Tu nombre completo *","pt":"O seu nome completo *","ar":"اسمك الكامل *","zh":"你的全名 *"},"AUTH-034":{"es":"Tu número de teléfono *","pt":"O seu número de telefone *","ar":"رقم هاتفك *","zh":"你的电话号码 *"},"AUTH-035":{"es":"Crea tu PIN personal de cajero","pt":"Crie o seu PIN pessoal de caixa","ar":"أنشئ رمز PIN الشخصي لأمين الصندوق","zh":"创建你的收银 PIN"},"AUTH-036":{"es":"Confirma tu PIN de cajero","pt":"Confirme o seu PIN de caixa","ar":"أكّد رمز PIN لأمين الصندوق","zh":"确认收银 PIN"},"AUTH-037":{"es":"Código de tienda no válido. Confírmalo con el dueño.","pt":"Código da loja inválido. Confirme com o dono.","ar":"رمز المتجر غير صالح. تأكد منه مع صاحب المتجر.","zh":"店铺码无效。请向店主核对。"},"AUTH-038":{"es":"Este teléfono de cajero aún no está autorizado en la tienda.","pt":"Este telefone de caixa ainda não está autorizado na loja.","ar":"هاتف أمين الصندوق هذا غير مسموح به بعد في قائمة المتجر.","zh":"这个收银员号码尚未加入店铺名单。"},"AUTH-039":{"es":"¡Cajero registrado! Bienvenido a {shop_name}.","pt":"Caixa registado! Bem-vindo a {shop_name}.","ar":"تم تسجيل أمين الصندوق! مرحباً بك في {shop_name}.","zh":"收银员已加入！欢迎来到 {shop_name}。"},"AUTH-040":{"es":"¿Seguro que quieres salir?","pt":"Tem a certeza de que quer sair?","ar":"هل تريد تسجيل الخروج بالتأكيد؟","zh":"确定要退出吗？"},"AUTH-041":{"es":"Salir","pt":"Sair","ar":"تسجيل الخروج","zh":"退出"},"AUTH-042":{"es":"Cancelar","pt":"Cancelar","ar":"إلغاء","zh":"取消"},"DASH-001":{"es":"Inicio","pt":"Início","ar":"الرئيسية","zh":"首页"},"DASH-002":{"es":"Buenos días, {name}","pt":"Bom dia, {name}","ar":"صباح الخير، {name}","zh":"早上好，{name}"},"DASH-003":{"es":"Buenas tardes, {name}","pt":"Boa tarde, {name}","ar":"مساء الخير، {name}","zh":"下午好，{name}"},"DASH-004":{"es":"Buenas noches, {name}","pt":"Boa noite, {name}","ar":"مساء الخير، {name}","zh":"晚上好，{name}"},"DASH-005":{"es":"Hoy","pt":"Hoje","ar":"اليوم","zh":"今天"},"DASH-006":{"es":"Esta semana","pt":"Esta semana","ar":"هذا الأسبوع","zh":"本周"},"DASH-007":{"es":"Deuda total sin pagar","pt":"Dívida total por pagar","ar":"إجمالي الدين غير المدفوع","zh":"未付欠款总额"},"DASH-008":{"es":"En todos los clientes activos","pt":"Em todos os clientes ativos","ar":"لدى كل العملاء النشطين","zh":"所有未结清客户"},"DASH-009":{"es":"Dinero cobrado hoy","pt":"Dinheiro recebido hoje","ar":"المال المحصّل اليوم","zh":"今日收款"},"DASH-010":{"es":"Dinero cobrado esta semana","pt":"Dinheiro recebido esta semana","ar":"المال المحصّل هذا الأسبوع","zh":"本周收款"},"DASH-011":{"es":"Volumen / valor de ventas","pt":"Volume / valor de vendas","ar":"حجم / قيمة المبيعات","zh":"销售额"},"DASH-012":{"es":"Crédito dado hoy","pt":"Crédito dado hoje","ar":"الائتمان الممنوح اليوم","zh":"今日赊账"},"DASH-013":{"es":"Acciones rápidas","pt":"Ações rápidas","ar":"إجراءات سريعة","zh":"快捷操作"},"DASH-014":{"es":"Nueva venta","pt":"Nova venda","ar":"بيع جديد","zh":"新销售"},"DASH-015":{"es":"Ver ventas e informes","pt":"Ver vendas e relatórios","ar":"عرض المبيعات والتقارير","zh":"查看销售和报表"},"DASH-016":{"es":"Deudas / libro de clientes","pt":"Dívidas / livro de clientes","ar":"الديون / سجل العملاء","zh":"欠款 / 客户账本"},"DASH-017":{"es":"Inventario y stock","pt":"Inventário e stock","ar":"المخزون","zh":"库存"},"DASH-018":{"es":"Alerta de deudas vencidas","pt":"Alerta de dívidas em atraso","ar":"تنبيه الديون المتأخرة","zh":"逾期欠款提醒"},"DASH-019":{"es":"Enviar recordatorios","pt":"Enviar lembretes","ar":"إرسال تذكيرات","zh":"发送提醒"},"DASH-020":{"es":"Sin conexión · Guardado en el teléfono","pt":"Sem ligação · Guardado no telefone","ar":"دون اتصال · محفوظ على الهاتف","zh":"离线 · 已保存在本机"},"SALE-001":{"es":"Nueva venta y caja","pt":"Nova venda e caixa","ar":"بيع جديد والصندوق","zh":"新销售与收银台"},"SALE-002":{"es":"Busca productos por nombre o código de barras...","pt":"Pesquise produtos por nome ou código de barras...","ar":"ابحث عن المنتجات بالاسم أو الرمز الشريطي...","zh":"按名称或条码搜索商品..."},"SALE-003":{"es":"Todas las categorías","pt":"Todas as categorias","ar":"كل الفئات","zh":"全部分类"},"SALE-004":{"es":"{count} en stock","pt":"{count} em stock","ar":"{count} في المخزون","zh":"库存 {count}"},"SALE-005":{"es":"Agotado","pt":"Esgotado","ar":"نفد من المخزون","zh":"缺货"},"SALE-006":{"es":"Elige la cantidad","pt":"Escolha a quantidade","ar":"اختر الكمية","zh":"选择数量"},"SALE-007":{"es":"Añadir al carrito","pt":"Adicionar ao cesto","ar":"أضف إلى السلة","zh":"加入购物车"},"SALE-008":{"es":"Carrito ({count})","pt":"Cesto ({count})","ar":"السلة ({count})","zh":"购物车（{count}）"},"SALE-009":{"es":"Aún no hay artículos en el carrito","pt":"Ainda não há artigos no cesto","ar":"لا توجد أصناف في السلة بعد","zh":"购物车还是空的"},"SALE-010":{"es":"Subtotal","pt":"Subtotal","ar":"المجموع الفرعي","zh":"小计"},"SALE-011":{"es":"Descuento","pt":"Desconto","ar":"خصم","zh":"折扣"},"SALE-012":{"es":"Importe total a pagar","pt":"Valor total a pagar","ar":"المبلغ الإجمالي المستحق","zh":"应付总额"},"SALE-013":{"es":"Detalles del pago","pt":"Detalhes do pagamento","ar":"تفاصيل الدفع","zh":"付款详情"},"SALE-014":{"es":"Efectivo","pt":"Dinheiro","ar":"نقداً","zh":"现金"},"SALE-015":{"es":"MTN MoMo","pt":"MTN MoMo","ar":"MTN MoMo","zh":"MTN MoMo"},"SALE-016":{"es":"Airtel Money","pt":"Airtel Money","ar":"Airtel Money","zh":"Airtel Money"},"SALE-017":{"es":"Transferencia bancaria","pt":"Transferência bancária","ar":"تحويل بنكي","zh":"银行转账"},"SALE-018":{"es":"Paga ahora","pt":"A pagar agora","ar":"يدفع الآن","zh":"现在支付"},"SALE-019":{"es":"Saldo / crédito","pt":"Saldo / crédito","ar":"الرصيد / الآجل","zh":"余额 / 赊账"},"SALE-020":{"es":"Cambio a devolver","pt":"Troco a devolver","ar":"الباقي للعميل","zh":"应找零"},"SALE-021":{"es":"Nombre del cliente (obligatorio si hay crédito)","pt":"Nome do cliente (obrigatório se houver crédito)","ar":"اسم العميل (إلزامي عند البيع الآجل)","zh":"客户姓名（赊账时必填）"},"SALE-022":{"es":"Fecha de vencimiento del pago","pt":"Data de vencimento do pagamento","ar":"تاريخ استحقاق الدفع","zh":"付款到期日"},"SALE-023":{"es":"Completar venta","pt":"Concluir venda","ar":"إتمام البيع","zh":"完成销售"},"SALE-024":{"es":"¡Venta completada!","pt":"Venda concluída!","ar":"اكتمل البيع!","zh":"销售完成！"},"SALE-025":{"es":"Imprimir recibo","pt":"Imprimir recibo","ar":"طباعة الإيصال","zh":"打印收据"},"SALE-026":{"es":"Enviar recibo por SMS","pt":"Enviar recibo por SMS","ar":"إرسال الإيصال برسالة SMS","zh":"短信发送收据"},"SALE-027":{"es":"Nueva venta","pt":"Nova venda","ar":"بيع جديد","zh":"新销售"},"INV-001":{"es":"Inventario y stock","pt":"Inventário e stock","ar":"المخزون","zh":"库存"},"INV-002":{"es":"Gestiona productos, existencias y precios","pt":"Gira produtos, stock e preços","ar":"أدِر المنتجات والكميات والأسعار","zh":"管理商品、库存和价格"},"INV-003":{"es":"Añadir producto","pt":"Adicionar produto","ar":"إضافة منتج","zh":"添加商品"},"INV-004":{"es":"Buscar productos en stock...","pt":"Pesquisar produtos em stock...","ar":"ابحث في المخزون...","zh":"搜索库存商品..."},"INV-005":{"es":"Alerta de stock bajo","pt":"Alerta de stock baixo","ar":"تنبيه انخفاض المخزون","zh":"低库存提醒"},"INV-006":{"es":"Agotado","pt":"Esgotado","ar":"نفد من المخزون","zh":"缺货"},"INV-007":{"es":"Añadir producto nuevo","pt":"Adicionar produto novo","ar":"إضافة منتج جديد","zh":"添加新商品"},"INV-008":{"es":"Nombre del producto *","pt":"Nome do produto *","ar":"اسم المنتج *","zh":"商品名称 *"},"INV-009":{"es":"Precio de coste (compra)","pt":"Preço de custo (compra)","ar":"سعر التكلفة (الشراء)","zh":"成本价（进价）"},"INV-010":{"es":"Precio de venta *","pt":"Preço de venda *","ar":"سعر البيع *","zh":"售价 *"},"INV-011":{"es":"Cantidad inicial en stock *","pt":"Quantidade inicial em stock *","ar":"كمية المخزون الأولية *","zh":"初始库存数量 *"},"INV-012":{"es":"Umbral de alerta de stock bajo","pt":"Limite de alerta de stock baixo","ar":"حد تنبيه انخفاض المخزون","zh":"低库存预警数量"},"INV-013":{"es":"Guardar producto","pt":"Guardar produto","ar":"حفظ المنتج","zh":"保存商品"},"INV-014":{"es":"Ajustar stock (+ / -)","pt":"Ajustar stock (+ / -)","ar":"تعديل المخزون (+ / -)","zh":"调整库存（+ / -）"},"INV-015":{"es":"¿Seguro que quieres eliminar este producto?","pt":"Tem a certeza de que quer eliminar este produto?","ar":"هل تريد حذف هذا المنتج بالتأكيد؟","zh":"确定删除这个商品吗？"},"INV-016":{"es":"Importar inventario (CSV / Excel)","pt":"Importar inventário (CSV / Excel)","ar":"استيراد المخزون (CSV / Excel)","zh":"导入库存（CSV / Excel）"},"CLI-001":{"es":"Directorio de clientes","pt":"Diretório de clientes","ar":"دليل العملاء","zh":"客户名录"},"CLI-002":{"es":"Gestiona contactos y créditos de clientes","pt":"Gira contactos e crédito dos clientes","ar":"أدِر جهات الاتصال وسجلات الائتمان","zh":"管理客户联系方式和赊账"},"CLI-003":{"es":"Añadir cliente nuevo","pt":"Adicionar cliente novo","ar":"إضافة عميل جديد","zh":"添加新客户"},"CLI-004":{"es":"Nombre del cliente *","pt":"Nome do cliente *","ar":"اسم العميل *","zh":"客户姓名 *"},"CLI-005":{"es":"Introduce el nombre completo...","pt":"Introduza o nome completo...","ar":"أدخل الاسم الكامل...","zh":"输入全名..."},"CLI-006":{"es":"Número de teléfono","pt":"Número de telefone","ar":"رقم الهاتف","zh":"电话号码"},"CLI-007":{"es":"07X XXX XXXX","pt":"07X XXX XXXX","ar":"07X XXX XXXX","zh":"07X XXX XXXX"},"CLI-008":{"es":"Confirmar y guardar","pt":"Confirmar e guardar","ar":"تأكيد وحفظ","zh":"确认并保存"},"CLI-009":{"es":"Cliente añadido","pt":"Cliente adicionado","ar":"تمت إضافة العميل","zh":"客户已添加"},"CLI-010":{"es":"Suscripción vencida — ve a Facturación para editar clientes","pt":"Subscrição expirada — vá a Faturação para editar clientes","ar":"انتهى الاشتراك — اذهب إلى الفوترة لتعديل العملاء","zh":"订阅已过期 — 请到账单页修改客户"},"CLI-011":{"es":"Cliente eliminado","pt":"Cliente eliminado","ar":"تم حذف العميل","zh":"客户已删除"},"CLI-012":{"es":"Aún no hay clientes","pt":"Ainda não há clientes","ar":"لا يوجد عملاء بعد","zh":"还没有客户"},"CLI-013":{"es":"Añade tu primer cliente arriba para empezar.","pt":"Adicione o primeiro cliente acima para começar.","ar":"أضف أول عميل أعلاه للبدء.","zh":"在上方添加第一位客户即可开始。"},"DEBT-001":{"es":"Deudas y libro de crédito","pt":"Dívidas e livro de crédito","ar":"الديون ودفتر الائتمان","zh":"客户欠款账本"},"DEBT-002":{"es":"Todas las deudas","pt":"Todas as dívidas","ar":"كل الديون","zh":"全部欠款"},"DEBT-003":{"es":"Vencidas","pt":"Em atraso","ar":"متأخرة","zh":"已逾期"},"DEBT-004":{"es":"Vencen hoy","pt":"Vencem hoje","ar":"مستحقة اليوم","zh":"今日到期"},"DEBT-005":{"es":"Deuda original","pt":"Dívida original","ar":"الدين الأصلي","zh":"原始欠款"},"DEBT-006":{"es":"Saldo restante","pt":"Saldo restante","ar":"الرصيد المتبقي","zh":"剩余余额"},"DEBT-007":{"es":"Registrar pago","pt":"Registar pagamento","ar":"تسجيل دفعة","zh":"登记付款"},"DEBT-008":{"es":"Recordar por WhatsApp / SMS","pt":"Lembrar por WhatsApp / SMS","ar":"تذكير عبر WhatsApp / SMS","zh":"用 WhatsApp / 短信提醒"},"DEBT-009":{"es":"Descargar estado del deudor","pt":"Descarregar extrato do devedor","ar":"تنزيل كشف المدين","zh":"下载欠款明细"},"DEBT-010":{"es":"Descargar resumen de todas las deudas (PDF)","pt":"Descarregar resumo de todas as dívidas (PDF)","ar":"تنزيل ملخص كل الديون (PDF)","zh":"下载全部欠款汇总（PDF）"},"DEBT-011":{"es":"Registrar pago de la deuda del cliente","pt":"Registar pagamento da dívida do cliente","ar":"تسجيل دفعة دين العميل","zh":"登记客户还款"},"DEBT-012":{"es":"Importe pagado (FRW) *","pt":"Valor pago (FRW) *","ar":"المبلغ المدفوع (FRW) *","zh":"已付金额（FRW）*"},"DEBT-013":{"es":"Método de pago","pt":"Método de pagamento","ar":"طريقة الدفع","zh":"付款方式"},"DEBT-014":{"es":"Confirmar y generar recibo","pt":"Confirmar e gerar recibo","ar":"تأكيد وإنشاء الإيصال","zh":"确认并生成收据"},"PAY-001":{"es":"Historial de pagos y transacciones","pt":"Histórico de pagamentos e transações","ar":"سجل المدفوعات والمعاملات","zh":"付款与交易记录"},"PAY-002":{"es":"Buscar por nº de recibo o nombre del cliente...","pt":"Pesquisar por nº do recibo ou nome do cliente...","ar":"ابحث برقم الإيصال أو اسم العميل...","zh":"按收据号或客户姓名搜索..."},"PAY-003":{"es":"Efectivo","pt":"Dinheiro","ar":"نقداً","zh":"现金"},"PAY-004":{"es":"MTN MoMo","pt":"MTN MoMo","ar":"MTN MoMo","zh":"MTN MoMo"},"PAY-005":{"es":"Ver / reimprimir recibo","pt":"Ver / reimprimir recibo","ar":"عرض / إعادة طباعة الإيصال","zh":"查看 / 重新打印收据"},"REP-001":{"es":"Informes y análisis de ventas","pt":"Relatórios e análise de vendas","ar":"تقارير وتحليل المبيعات","zh":"销售报表与分析"},"REP-002":{"es":"Hoy","pt":"Hoje","ar":"اليوم","zh":"今天"},"REP-003":{"es":"Semana","pt":"Semana","ar":"أسبوع","zh":"周"},"REP-004":{"es":"Mes","pt":"Mês","ar":"شهر","zh":"月"},"REP-005":{"es":"Dinero total cobrado","pt":"Dinheiro total recebido","ar":"إجمالي المال المحصّل","zh":"收款总额"},"REP-006":{"es":"Deudas impagas ampliadas","pt":"Dívidas por pagar alargadas","ar":"الديون غير المدفوعة الموسّعة","zh":"未付欠款明细"},"REP-007":{"es":"Reiniciar historial de ventas (solo el dueño)","pt":"Repor histórico de vendas (apenas o dono)","ar":"إعادة ضبط سجل المبيعات (المالك فقط)","zh":"重置销售记录（仅店主）"},"REP-008":{"es":"¿Seguro que quieres poner todos los registros de ventas en 0?","pt":"Tem a certeza de que quer repor todos os registos de vendas para 0?","ar":"هل تريد إعادة كل سجلات المبيعات إلى 0 بالتأكيد؟","zh":"确定把所有销售记录清零吗？"},"STAF-001":{"es":"Personal y cajeros","pt":"Pessoal e caixas","ar":"الموظفون وأمناء الصندوق","zh":"员工与收银员"},"STAF-002":{"es":"Código de tu tienda","pt":"Código da sua loja","ar":"رمز متجرك","zh":"你的店铺码"},"STAF-003":{"es":"Copiar código","pt":"Copiar código","ar":"نسخ الرمز","zh":"复制代码"},"STAF-004":{"es":"¡Código de tienda copiado!","pt":"Código da loja copiado!","ar":"تم نسخ رمز المتجر!","zh":"店铺码已复制！"},"STAF-005":{"es":"Añadir cajero / personal","pt":"Adicionar caixa / pessoal","ar":"إضافة أمين صندوق / موظف","zh":"添加收银员 / 员工"},"STAF-006":{"es":"Nombre del empleado *","pt":"Nome do funcionário *","ar":"اسم الموظف *","zh":"员工姓名 *"},"STAF-007":{"es":"Número de teléfono *","pt":"Número de telefone *","ar":"رقم الهاتف *","zh":"电话号码 *"},"STAF-008":{"es":"Rol","pt":"Função","ar":"الدور","zh":"角色"},"STAF-009":{"es":"Cajero (solo caja y ventas)","pt":"Caixa (apenas POS e vendas)","ar":"أمين صندوق (الصندوق والمبيعات فقط)","zh":"收银员（仅收银台和销售）"},"STAF-010":{"es":"Gerente (acceso total salvo la suscripción)","pt":"Gerente (acesso total exceto a subscrição)","ar":"مدير (وصول كامل ما عدا الاشتراك)","zh":"经理（除订阅外全部权限）"},"STAF-011":{"es":"Activo","pt":"Ativo","ar":"نشط","zh":"在职"},"STAF-012":{"es":"Desactivado","pt":"Desativado","ar":"معطّل","zh":"已停用"},"STAF-013":{"es":"Última actividad","pt":"Última atividade","ar":"آخر نشاط","zh":"最近活跃"},"STAF-014":{"es":"Activo ahora","pt":"Ativo agora","ar":"نشط الآن","zh":"当前在线"},"STAF-015":{"es":"Nunca ha entrado","pt":"Nunca entrou","ar":"لم يسجّل الدخول أبداً","zh":"从未登录"},"STAF-016":{"es":"Restablecer PIN","pt":"Repor PIN","ar":"إعادة تعيين PIN","zh":"重置 PIN"},"STAF-017":{"es":"Restablecer PIN del cajero {name}","pt":"Repor PIN do caixa {name}","ar":"إعادة تعيين PIN لأمين الصندوق {name}","zh":"重置收银员 {name} 的 PIN"},"STAF-018":{"es":"Nuevo PIN de seguridad de 4 dígitos *","pt":"Novo PIN de segurança de 4 dígitos *","ar":"رمز PIN أمني جديد من 4 أرقام *","zh":"新的 4 位安全 PIN *"},"STAF-019":{"es":"Las sesiones activas en el teléfono del cajero se cerrarán de inmediato.","pt":"As sessões ativas no telefone do caixa serão encerradas de imediato.","ar":"ستُنهى الجلسات النشطة على هاتف أمين الصندوق فوراً.","zh":"收银员手机上的登录会立即失效。"},"STAF-020":{"es":"Cerrar sesión de inmediato","pt":"Encerrar sessão de imediato","ar":"إنهاء الجلسة فوراً","zh":"立即撤销登录"},"STAF-021":{"es":"Desactivar cajero","pt":"Desativar caixa","ar":"إيقاف أمين الصندوق","zh":"停用收银员"},"SETT-001":{"es":"Ajustes y herramientas","pt":"Definições e ferramentas","ar":"الإعدادات والأدوات","zh":"设置与工具"},"SETT-002":{"es":"Cuenta y PIN de seguridad","pt":"Conta e PIN de segurança","ar":"الحساب ورمز PIN","zh":"账户与安全 PIN"},"SETT-003":{"es":"Perfil, cambiar PIN, eliminar cuenta","pt":"Perfil, alterar PIN, eliminar conta","ar":"الملف، تغيير PIN، حذف الحساب","zh":"资料、修改 PIN、删除账户"},"SETT-004":{"es":"Ajustes de recibo e impresión","pt":"Definições de recibo e impressão","ar":"إعدادات الإيصال والطباعة","zh":"收据与打印设置"},"SETT-005":{"es":"Impresora térmica (80 mm/58 mm), PDF, WhatsApp","pt":"Impressora térmica (80 mm/58 mm), PDF, WhatsApp","ar":"طابعة حرارية (80 مم/58 مم)، PDF، WhatsApp","zh":"热敏打印机（80mm/58mm）、PDF、WhatsApp"},"SETT-006":{"es":"Idioma","pt":"Idioma","ar":"اللغة","zh":"语言"},"SETT-007":{"es":"Instalar la app en el teléfono","pt":"Instalar a aplicação no telefone","ar":"تثبيت التطبيق على الهاتف","zh":"把应用安装到手机"},"SETT-008":{"es":"Facturación y suscripción","pt":"Faturação e subscrição","ar":"الفوترة والاشتراك","zh":"账单与订阅"},"SETT-009":{"es":"Mostrar el logo de la tienda en el recibo","pt":"Mostrar o logótipo da loja no recibo","ar":"إظهار شعار المتجر على الإيصال","zh":"在收据上显示店铺标志"},"SETT-010":{"es":"Mensaje personalizado del encabezado","pt":"Mensagem personalizada do cabeçalho","ar":"رسالة مخصصة في أعلى الإيصال","zh":"自定义收据页眉"},"SETT-011":{"es":"Pie del recibo / nota de agradecimiento","pt":"Rodapé do recibo / nota de agradecimento","ar":"تذييل الإيصال / كلمة شكر","zh":"收据页脚 / 感谢语"},"SETT-012":{"es":"Impresora térmica (58 mm)","pt":"Impressora térmica (58 mm)","ar":"طابعة حرارية (58 مم)","zh":"热敏打印机（58mm）"},"SETT-013":{"es":"Impresora térmica (80 mm)","pt":"Impressora térmica (80 mm)","ar":"طابعة حرارية (80 مم)","zh":"热敏打印机（80mm）"},"SUBS-001":{"es":"Suscripción y planes","pt":"Subscrição e planos","ar":"الاشتراك والخطط","zh":"订阅与方案"},"SUBS-002":{"es":"Suscripción activa","pt":"Subscrição ativa","ar":"اشتراك نشط","zh":"订阅有效"},"SUBS-003":{"es":"Suscripción vencida","pt":"Subscrição expirada","ar":"انتهى الاشتراك","zh":"订阅已过期"},"SUBS-004":{"es":"La suscripción venció — renuévala para seguir creando ventas, editando stock y gestionando deudas.","pt":"A subscrição expirou — renove para continuar a criar vendas, editar stock e gerir dívidas.","ar":"انتهى الاشتراك — جدّده لمواصلة المبيعات والمخزون والديون.","zh":"订阅已过期 — 请续费后才能继续开单、改库存和管理欠款。"},"SUBS-005":{"es":"Plan Pro de la tienda","pt":"Plano Pro da loja","ar":"خطة المتجر Pro","zh":"店铺 Pro 方案"},"SUBS-006":{"es":"Mensual (5.000 RWF / mes)","pt":"Mensal (5.000 RWF / mês)","ar":"شهري (5,000 RWF / شهر)","zh":"按月（5,000 RWF / 月）"},"SUBS-007":{"es":"Anual (ahorra 20 % · 48.000 RWF / año)","pt":"Anual (poupe 20% · 48.000 RWF / ano)","ar":"سنوي (وفّر 20% · 48,000 RWF / سنة)","zh":"按年（省 20% · 48,000 RWF / 年）"},"SUBS-008":{"es":"Pagar con MTN Mobile Money","pt":"Pagar com MTN Mobile Money","ar":"ادفع عبر MTN Mobile Money","zh":"用 MTN Mobile Money 支付"},"SUBS-009":{"es":"Pagar con Airtel Money","pt":"Pagar com Airtel Money","ar":"ادفع عبر Airtel Money","zh":"用 Airtel Money 支付"},"NOTIF-001":{"es":"Bandeja y notificaciones","pt":"Caixa de entrada e notificações","ar":"الوارد والإشعارات","zh":"收件箱与通知"},"NOTIF-002":{"es":"No hay notificaciones nuevas","pt":"Não há notificações novas","ar":"لا توجد إشعارات جديدة","zh":"没有新通知"},"NOTIF-003":{"es":"¡Venta registrada!","pt":"Venda registada!","ar":"تم تسجيل البيع!","zh":"销售已记录！"},"NOTIF-004":{"es":"¡Deuda registrada!","pt":"Dívida registada!","ar":"تم تسجيل الدين!","zh":"欠款已记录！"},"NOTIF-005":{"es":"¡Marcado como pagado!","pt":"Marcado como pago!","ar":"تم التعليم كمدفوع!","zh":"已标为已付！"},"NOTIF-006":{"es":"PIN no válido","pt":"PIN inválido","ar":"رمز PIN غير صالح","zh":"PIN 无效"},"NOTIF-007":{"es":"Ocurrió un error inesperado","pt":"Ocorreu um erro inesperado","ar":"حدث خطأ غير متوقع","zh":"出现意外错误"},"NOTIF-008":{"es":"No hay stock suficiente para esta venta","pt":"Stock insuficiente para esta venda","ar":"المخزون غير كافٍ لهذه البيعة","zh":"库存不足，无法完成这笔销售"},"PDF-001":{"es":"Factura","pt":"Fatura","ar":"فاتورة","zh":"发票"},"PDF-002":{"es":"Recibo de pago","pt":"Recibo de pagamento","ar":"إيصال الدفع","zh":"付款收据"},"PDF-003":{"es":"Estado de deudores","pt":"Extrato de devedores","ar":"كشف المدينين","zh":"欠款人明细"},"PDF-004":{"es":"Informe resumen de todas las deudas","pt":"Relatório resumo de todas as dívidas","ar":"تقرير ملخص كل الديون","zh":"全部欠款汇总"},"PDF-005":{"es":"Facturar a","pt":"Faturar a","ar":"فاتورة إلى","zh":"账单抬头"},"PDF-006":{"es":"De","pt":"De","ar":"من","zh":"来自"},"PDF-007":{"es":"Descripción","pt":"Descrição","ar":"الوصف","zh":"说明"},"PDF-008":{"es":"Cant.","pt":"Qtd.","ar":"الكمية","zh":"数量"},"PDF-009":{"es":"Precio unitario","pt":"Preço unitário","ar":"سعر الوحدة","zh":"单价"},"PDF-010":{"es":"Importe","pt":"Valor","ar":"المبلغ","zh":"金额"},"PDF-011":{"es":"Subtotal","pt":"Subtotal","ar":"المجموع الفرعي","zh":"小计"},"PDF-012":{"es":"Impuesto (0 %)","pt":"Imposto (0%)","ar":"الضريبة (0%)","zh":"税（0%）"},"PDF-013":{"es":"Importe total a pagar","pt":"Valor total a pagar","ar":"المبلغ الإجمالي المستحق","zh":"应付总额"},"PDF-014":{"es":"Pagado","pt":"Pago","ar":"مدفوع","zh":"已付"},"PDF-015":{"es":"Saldo restante","pt":"Saldo restante","ar":"الرصيد المتبقي","zh":"剩余余额"},"PDF-016":{"es":"Número de deudores","pt":"Número de devedores","ar":"عدد المدينين","zh":"欠款人数"},"PDF-017":{"es":"Saldo medio","pt":"Saldo médio","ar":"متوسط الرصيد","zh":"平均余额"},"PDF-018":{"es":"Gracias por elegir {shop}.","pt":"Obrigado por escolher {shop}.","ar":"شكراً لاختيارك {shop}.","zh":"感谢选择 {shop}。"},"PDF-019":{"es":"Página {n} de {total}","pt":"Página {n} de {total}","ar":"صفحة {n} من {total}","zh":"第 {n} 页，共 {total} 页"},"PDF-020":{"es":"RECIBO OFICIAL DE TIENDA","pt":"RECIBO OFICIAL DE LOJA","ar":"إيصال بيع رسمي","zh":"正式零售收据"},"MISC-001":{"es":"Inicio","pt":"Início","ar":"الرئيسية","zh":"首页"},"MISC-002":{"es":"Deudas","pt":"Dívidas","ar":"الديون","zh":"欠款"},"MISC-003":{"es":"Ventas","pt":"Vendas","ar":"المبيعات","zh":"销售"},"MISC-004":{"es":"Stock","pt":"Stock","ar":"المخزون","zh":"库存"},"MISC-005":{"es":"Más","pt":"Mais","ar":"المزيد","zh":"更多"},"MISC-006":{"es":"Pregunta a ChatSella","pt":"Pergunte ao ChatSella","ar":"اسأل ChatSella","zh":"问问 ChatSella"},"MISC-007":{"es":"Pregunta a ChatSella... p. ej. ¿Cuánto cobramos hoy?","pt":"Pergunte ao ChatSella... ex. Quanto recebemos hoje?","ar":"اسأل ChatSella... مثال: كم حصّلنا اليوم؟","zh":"问问 ChatSella……例如：今天收了多少钱？"},"MISC-008":{"es":"Caja inteligente y simple para tenderos de Ruanda","pt":"Caixa inteligente e simples para lojistas do Ruanda","ar":"صندوق ذكي وبسيط لأصحاب المتاجر في رواندا","zh":"为卢旺达店主打造的简单收银"},"MISC-009":{"es":"Precios asequibles para negocios reales de Ruanda","pt":"Preços acessíveis para negócios reais do Ruanda","ar":"أسعار مناسبة للمتاجر الحقيقية في رواندا","zh":"适合卢旺达真实店铺的价格"},"MISC-010":{"es":"Términos del servicio","pt":"Termos de serviço","ar":"شروط الخدمة","zh":"服务条款"},"MISC-011":{"es":"Política de privacidad","pt":"Política de privacidade","ar":"سياسة الخصوصية","zh":"隐私政策"}}
+{
+  "AUTH-001": {
+    "es": "Sella",
+    "pt": "Sella",
+    "ar": "Sella",
+    "zh": "Sella"
+  },
+  "AUTH-002": {
+    "es": "Gestión simple de tiendas para Ruanda",
+    "pt": "Gestão simples de lojas para o Ruanda",
+    "ar": "إدارة بسيطة للمتاجر في رواندا",
+    "zh": "为卢旺达打造的简易店铺管理"
+  },
+  "AUTH-003": {
+    "es": "Bienvenido de nuevo",
+    "pt": "Bem-vindo de volta",
+    "ar": "مرحباً بعودتك",
+    "zh": "欢迎回来"
+  },
+  "AUTH-004": {
+    "es": "Elige una cuenta o entra en tu tienda",
+    "pt": "Escolha uma conta ou entre na sua loja",
+    "ar": "اختر حساباً أو ادخل إلى متجرك",
+    "zh": "选择账户或登录你的店铺"
+  },
+  "AUTH-005": {
+    "es": "Entrar con PIN",
+    "pt": "Entrar com PIN",
+    "ar": "الدخول برمز PIN",
+    "zh": "用 PIN 登录"
+  },
+  "AUTH-006": {
+    "es": "Entrar con otro número",
+    "pt": "Entrar com outro número",
+    "ar": "الدخول برقم آخر",
+    "zh": "用另一个号码登录"
+  },
+  "AUTH-007": {
+    "es": "Registrar una tienda nueva",
+    "pt": "Registar uma loja nova",
+    "ar": "تسجيل متجر جديد",
+    "zh": "注册新店铺"
+  },
+  "AUTH-008": {
+    "es": "¿Eres cajero? Únete con el código de la tienda",
+    "pt": "É caixa? Entre com o código da loja",
+    "ar": "هل أنت أمين صندوق؟ انضم برمز المتجر",
+    "zh": "你是收银员吗？用店铺码加入"
+  },
+  "AUTH-009": {
+    "es": "Introduce tu número de teléfono",
+    "pt": "Introduza o seu número de telefone",
+    "ar": "أدخل رقم هاتفك",
+    "zh": "输入你的电话号码"
+  },
+  "AUTH-010": {
+    "es": "078X XXX XXX",
+    "pt": "078X XXX XXX",
+    "ar": "078X XXX XXX",
+    "zh": "078X XXX XXX"
+  },
+  "AUTH-011": {
+    "es": "Usaremos este número para identificar tu cuenta",
+    "pt": "Usaremos este número para identificar a sua conta",
+    "ar": "سنستخدم هذا الرقم للتعرف على حسابك",
+    "zh": "我们将用这个号码识别你的账户"
+  },
+  "AUTH-012": {
+    "es": "Introduce un número de teléfono ruandés válido",
+    "pt": "Introduza um número de telefone ruandês válido",
+    "ar": "أدخل رقم هاتف رواندي صالحاً",
+    "zh": "请输入有效的卢旺达电话号码"
+  },
+  "AUTH-013": {
+    "es": "Introduce tu PIN de 4 dígitos",
+    "pt": "Introduza o seu PIN de 4 dígitos",
+    "ar": "أدخل رمز PIN المكوّن من 4 أرقام",
+    "zh": "输入 4 位数 PIN"
+  },
+  "AUTH-014": {
+    "es": "Mantén tu PIN en secreto",
+    "pt": "Mantenha o seu PIN em segredo",
+    "ar": "أبقِ رمز PIN سرّياً",
+    "zh": "请保管好你的 PIN"
+  },
+  "AUTH-015": {
+    "es": "PIN incorrecto. Inténtalo de nuevo.",
+    "pt": "PIN incorreto. Tente novamente.",
+    "ar": "رمز PIN غير صحيح. حاول مرة أخرى.",
+    "zh": "PIN 不正确。请再试一次。"
+  },
+  "AUTH-016": {
+    "es": "Demasiados intentos. Espera {seconds}s",
+    "pt": "Demasiadas tentativas. Aguarde {seconds}s",
+    "ar": "محاولات كثيرة جداً. انتظر {seconds} ث",
+    "zh": "错误次数过多。请等待 {seconds} 秒"
+  },
+  "AUTH-017": {
+    "es": "¿Olvidaste tu PIN?",
+    "pt": "Esqueceu o seu PIN?",
+    "ar": "هل نسيت رمز PIN؟",
+    "zh": "忘记 PIN？"
+  },
+  "AUTH-018": {
+    "es": "Crear cuenta de la tienda",
+    "pt": "Criar conta da loja",
+    "ar": "إنشاء حساب المتجر",
+    "zh": "创建店铺账户"
+  },
+  "AUTH-019": {
+    "es": "Nombre del negocio / tienda *",
+    "pt": "Nome do negócio / loja *",
+    "ar": "اسم النشاط / المتجر *",
+    "zh": "店铺名称 *"
+  },
+  "AUTH-020": {
+    "es": "p. ej. Kigali Fashion Boutique",
+    "pt": "ex. Kigali Fashion Boutique",
+    "ar": "مثال: Kigali Fashion Boutique",
+    "zh": "例如：Kigali Fashion Boutique"
+  },
+  "AUTH-021": {
+    "es": "Nombre completo del propietario *",
+    "pt": "Nome completo do proprietário *",
+    "ar": "الاسم الكامل للمالك *",
+    "zh": "店主全名 *"
+  },
+  "AUTH-022": {
+    "es": "Teléfono del propietario *",
+    "pt": "Telefone do proprietário *",
+    "ar": "هاتف المالك *",
+    "zh": "店主电话 *"
+  },
+  "AUTH-023": {
+    "es": "Correo (para recuperación y facturas)",
+    "pt": "E-mail (para recuperação e faturas)",
+    "ar": "البريد (للاستعادة والفواتير)",
+    "zh": "电子邮箱（用于找回和发票）"
+  },
+  "AUTH-024": {
+    "es": "Crea un PIN de seguridad de 4 dígitos *",
+    "pt": "Crie um PIN de segurança de 4 dígitos *",
+    "ar": "أنشئ رمز PIN أمنياً من 4 أرقام *",
+    "zh": "创建 4 位安全 PIN *"
+  },
+  "AUTH-025": {
+    "es": "Confirma el PIN de 4 dígitos *",
+    "pt": "Confirme o PIN de 4 dígitos *",
+    "ar": "أكّد رمز PIN من 4 أرقام *",
+    "zh": "确认 4 位 PIN *"
+  },
+  "AUTH-026": {
+    "es": "Los PIN no coinciden",
+    "pt": "Os PINs não coincidem",
+    "ar": "رمزا PIN غير متطابقين",
+    "zh": "两次 PIN 不一致"
+  },
+  "AUTH-027": {
+    "es": "Crear cuenta",
+    "pt": "Criar conta",
+    "ar": "إنشاء الحساب",
+    "zh": "创建账户"
+  },
+  "AUTH-028": {
+    "es": "Acceso de cajero · Unirse a la tienda",
+    "pt": "Acesso de caixa · Entrar na loja",
+    "ar": "دخول أمين الصندوق · الانضمام للمتجر",
+    "zh": "收银员入口 · 加入店铺"
+  },
+  "AUTH-029": {
+    "es": "Introduce el código de la tienda (p. ej. SEL-XXXXXX)",
+    "pt": "Introduza o código da loja (ex. SEL-XXXXXX)",
+    "ar": "أدخل رمز المتجر (مثال: SEL-XXXXXX)",
+    "zh": "输入店铺码（例如 SEL-XXXXXX）"
+  },
+  "AUTH-030": {
+    "es": "Pide al dueño el código de 6 caracteres en la página de personal.",
+    "pt": "Peça ao dono o código de 6 caracteres na página da equipa.",
+    "ar": "اطلب من صاحب المتجر الرمز المكوّن من 6 أحرف في صفحة الموظفين.",
+    "zh": "向店主索取员工管理页上的 6 位店铺码。"
+  },
+  "AUTH-031": {
+    "es": "Comprobar código de la tienda",
+    "pt": "Verificar código da loja",
+    "ar": "تحقق من رمز المتجر",
+    "zh": "核对店铺码"
+  },
+  "AUTH-032": {
+    "es": "Tienda verificada: {shop_name}",
+    "pt": "Loja verificada: {shop_name}",
+    "ar": "تم التحقق من المتجر: {shop_name}",
+    "zh": "店铺已确认：{shop_name}"
+  },
+  "AUTH-033": {
+    "es": "Tu nombre completo *",
+    "pt": "O seu nome completo *",
+    "ar": "اسمك الكامل *",
+    "zh": "你的全名 *"
+  },
+  "AUTH-034": {
+    "es": "Tu número de teléfono *",
+    "pt": "O seu número de telefone *",
+    "ar": "رقم هاتفك *",
+    "zh": "你的电话号码 *"
+  },
+  "AUTH-035": {
+    "es": "Crea tu PIN personal de cajero",
+    "pt": "Crie o seu PIN pessoal de caixa",
+    "ar": "أنشئ رمز PIN الشخصي لأمين الصندوق",
+    "zh": "创建你的收银 PIN"
+  },
+  "AUTH-036": {
+    "es": "Confirma tu PIN de cajero",
+    "pt": "Confirme o seu PIN de caixa",
+    "ar": "أكّد رمز PIN لأمين الصندوق",
+    "zh": "确认收银 PIN"
+  },
+  "AUTH-037": {
+    "es": "Código de tienda no válido. Confírmalo con el dueño.",
+    "pt": "Código da loja inválido. Confirme com o dono.",
+    "ar": "رمز المتجر غير صالح. تأكد منه مع صاحب المتجر.",
+    "zh": "店铺码无效。请向店主核对。"
+  },
+  "AUTH-038": {
+    "es": "Este teléfono de cajero aún no está autorizado en la tienda.",
+    "pt": "Este telefone de caixa ainda não está autorizado na loja.",
+    "ar": "هاتف أمين الصندوق هذا غير مسموح به بعد في قائمة المتجر.",
+    "zh": "这个收银员号码尚未加入店铺名单。"
+  },
+  "AUTH-039": {
+    "es": "¡Cajero registrado! Bienvenido a {shop_name}.",
+    "pt": "Caixa registado! Bem-vindo a {shop_name}.",
+    "ar": "تم تسجيل أمين الصندوق! مرحباً بك في {shop_name}.",
+    "zh": "收银员已加入！欢迎来到 {shop_name}。"
+  },
+  "AUTH-040": {
+    "es": "¿Seguro que quieres salir?",
+    "pt": "Tem a certeza de que quer sair?",
+    "ar": "هل تريد تسجيل الخروج بالتأكيد؟",
+    "zh": "确定要退出吗？"
+  },
+  "AUTH-041": {
+    "es": "Salir",
+    "pt": "Sair",
+    "ar": "تسجيل الخروج",
+    "zh": "退出"
+  },
+  "AUTH-042": {
+    "es": "Cancelar",
+    "pt": "Cancelar",
+    "ar": "إلغاء",
+    "zh": "取消"
+  },
+  "DASH-001": {
+    "es": "Inicio",
+    "pt": "Início",
+    "ar": "الرئيسية",
+    "zh": "首页"
+  },
+  "DASH-002": {
+    "es": "Buenos días, {name}",
+    "pt": "Bom dia, {name}",
+    "ar": "صباح الخير، {name}",
+    "zh": "早上好，{name}"
+  },
+  "DASH-003": {
+    "es": "Buenas tardes, {name}",
+    "pt": "Boa tarde, {name}",
+    "ar": "مساء الخير، {name}",
+    "zh": "下午好，{name}"
+  },
+  "DASH-004": {
+    "es": "Buenas noches, {name}",
+    "pt": "Boa noite, {name}",
+    "ar": "مساء الخير، {name}",
+    "zh": "晚上好，{name}"
+  },
+  "DASH-005": {
+    "es": "Hoy",
+    "pt": "Hoje",
+    "ar": "اليوم",
+    "zh": "今天"
+  },
+  "DASH-006": {
+    "es": "Esta semana",
+    "pt": "Esta semana",
+    "ar": "هذا الأسبوع",
+    "zh": "本周"
+  },
+  "DASH-007": {
+    "es": "Deuda total sin pagar",
+    "pt": "Dívida total por pagar",
+    "ar": "إجمالي الدين غير المدفوع",
+    "zh": "未付欠款总额"
+  },
+  "DASH-008": {
+    "es": "En todos los clientes activos",
+    "pt": "Em todos os clientes ativos",
+    "ar": "لدى كل العملاء النشطين",
+    "zh": "所有未结清客户"
+  },
+  "DASH-009": {
+    "es": "Dinero cobrado hoy",
+    "pt": "Dinheiro recebido hoje",
+    "ar": "المال المحصّل اليوم",
+    "zh": "今日收款"
+  },
+  "DASH-010": {
+    "es": "Dinero cobrado esta semana",
+    "pt": "Dinheiro recebido esta semana",
+    "ar": "المال المحصّل هذا الأسبوع",
+    "zh": "本周收款"
+  },
+  "DASH-011": {
+    "es": "Volumen / valor de ventas",
+    "pt": "Volume / valor de vendas",
+    "ar": "حجم / قيمة المبيعات",
+    "zh": "销售额"
+  },
+  "DASH-012": {
+    "es": "Crédito dado hoy",
+    "pt": "Crédito dado hoje",
+    "ar": "الائتمان الممنوح اليوم",
+    "zh": "今日赊账"
+  },
+  "DASH-013": {
+    "es": "Acciones rápidas",
+    "pt": "Ações rápidas",
+    "ar": "إجراءات سريعة",
+    "zh": "快捷操作"
+  },
+  "DASH-014": {
+    "es": "Nueva venta",
+    "pt": "Nova venda",
+    "ar": "بيع جديد",
+    "zh": "新销售"
+  },
+  "DASH-015": {
+    "es": "Ver ventas e informes",
+    "pt": "Ver vendas e relatórios",
+    "ar": "عرض المبيعات والتقارير",
+    "zh": "查看销售和报表"
+  },
+  "DASH-016": {
+    "es": "Deudas / libro de clientes",
+    "pt": "Dívidas / livro de clientes",
+    "ar": "الديون / سجل العملاء",
+    "zh": "欠款 / 客户账本"
+  },
+  "DASH-017": {
+    "es": "Inventario y stock",
+    "pt": "Inventário e stock",
+    "ar": "المخزون",
+    "zh": "库存"
+  },
+  "DASH-018": {
+    "es": "Alerta de deudas vencidas",
+    "pt": "Alerta de dívidas em atraso",
+    "ar": "تنبيه الديون المتأخرة",
+    "zh": "逾期欠款提醒"
+  },
+  "DASH-019": {
+    "es": "Enviar recordatorios",
+    "pt": "Enviar lembretes",
+    "ar": "إرسال تذكيرات",
+    "zh": "发送提醒"
+  },
+  "DASH-020": {
+    "es": "Sin conexión · Guardado en el teléfono",
+    "pt": "Sem ligação · Guardado no telefone",
+    "ar": "دون اتصال · محفوظ على الهاتف",
+    "zh": "离线 · 已保存在本机"
+  },
+  "SALE-001": {
+    "es": "Nueva venta y caja",
+    "pt": "Nova venda e caixa",
+    "ar": "بيع جديد والصندوق",
+    "zh": "新销售与收银台"
+  },
+  "SALE-002": {
+    "es": "Busca productos por nombre o código de barras...",
+    "pt": "Pesquise produtos por nome ou código de barras...",
+    "ar": "ابحث عن المنتجات بالاسم أو الرمز الشريطي...",
+    "zh": "按名称或条码搜索商品..."
+  },
+  "SALE-003": {
+    "es": "Todas las categorías",
+    "pt": "Todas as categorias",
+    "ar": "كل الفئات",
+    "zh": "全部分类"
+  },
+  "SALE-004": {
+    "es": "{count} en stock",
+    "pt": "{count} em stock",
+    "ar": "{count} في المخزون",
+    "zh": "库存 {count}"
+  },
+  "SALE-005": {
+    "es": "Agotado",
+    "pt": "Esgotado",
+    "ar": "نفد من المخزون",
+    "zh": "缺货"
+  },
+  "SALE-006": {
+    "es": "Elige la cantidad",
+    "pt": "Escolha a quantidade",
+    "ar": "اختر الكمية",
+    "zh": "选择数量"
+  },
+  "SALE-007": {
+    "es": "Añadir al carrito",
+    "pt": "Adicionar ao cesto",
+    "ar": "أضف إلى السلة",
+    "zh": "加入购物车"
+  },
+  "SALE-008": {
+    "es": "Carrito ({count})",
+    "pt": "Cesto ({count})",
+    "ar": "السلة ({count})",
+    "zh": "购物车（{count}）"
+  },
+  "SALE-009": {
+    "es": "Aún no hay artículos en el carrito",
+    "pt": "Ainda não há artigos no cesto",
+    "ar": "لا توجد أصناف في السلة بعد",
+    "zh": "购物车还是空的"
+  },
+  "SALE-010": {
+    "es": "Subtotal",
+    "pt": "Subtotal",
+    "ar": "المجموع الفرعي",
+    "zh": "小计"
+  },
+  "SALE-011": {
+    "es": "Descuento",
+    "pt": "Desconto",
+    "ar": "خصم",
+    "zh": "折扣"
+  },
+  "SALE-012": {
+    "es": "Importe total a pagar",
+    "pt": "Valor total a pagar",
+    "ar": "المبلغ الإجمالي المستحق",
+    "zh": "应付总额"
+  },
+  "SALE-013": {
+    "es": "Detalles del pago",
+    "pt": "Detalhes do pagamento",
+    "ar": "تفاصيل الدفع",
+    "zh": "付款详情"
+  },
+  "SALE-014": {
+    "es": "Efectivo",
+    "pt": "Dinheiro",
+    "ar": "نقداً",
+    "zh": "现金"
+  },
+  "SALE-015": {
+    "es": "MTN MoMo",
+    "pt": "MTN MoMo",
+    "ar": "MTN MoMo",
+    "zh": "MTN MoMo"
+  },
+  "SALE-016": {
+    "es": "Airtel Money",
+    "pt": "Airtel Money",
+    "ar": "Airtel Money",
+    "zh": "Airtel Money"
+  },
+  "SALE-017": {
+    "es": "Transferencia bancaria",
+    "pt": "Transferência bancária",
+    "ar": "تحويل بنكي",
+    "zh": "银行转账"
+  },
+  "SALE-018": {
+    "es": "Paga ahora",
+    "pt": "A pagar agora",
+    "ar": "يدفع الآن",
+    "zh": "现在支付"
+  },
+  "SALE-019": {
+    "es": "Saldo / crédito",
+    "pt": "Saldo / crédito",
+    "ar": "الرصيد / الآجل",
+    "zh": "余额 / 赊账"
+  },
+  "SALE-020": {
+    "es": "Cambio a devolver",
+    "pt": "Troco a devolver",
+    "ar": "الباقي للعميل",
+    "zh": "应找零"
+  },
+  "SALE-021": {
+    "es": "Nombre del cliente (obligatorio si hay crédito)",
+    "pt": "Nome do cliente (obrigatório se houver crédito)",
+    "ar": "اسم العميل (إلزامي عند البيع الآجل)",
+    "zh": "客户姓名（赊账时必填）"
+  },
+  "SALE-022": {
+    "es": "Fecha de vencimiento del pago",
+    "pt": "Data de vencimento do pagamento",
+    "ar": "تاريخ استحقاق الدفع",
+    "zh": "付款到期日"
+  },
+  "SALE-023": {
+    "es": "Completar venta",
+    "pt": "Concluir venda",
+    "ar": "إتمام البيع",
+    "zh": "完成销售"
+  },
+  "SALE-024": {
+    "es": "¡Venta completada!",
+    "pt": "Venda concluída!",
+    "ar": "اكتمل البيع!",
+    "zh": "销售完成！"
+  },
+  "SALE-025": {
+    "es": "Imprimir recibo",
+    "pt": "Imprimir recibo",
+    "ar": "طباعة الإيصال",
+    "zh": "打印收据"
+  },
+  "SALE-026": {
+    "es": "Enviar recibo por SMS",
+    "pt": "Enviar recibo por SMS",
+    "ar": "إرسال الإيصال برسالة SMS",
+    "zh": "短信发送收据"
+  },
+  "SALE-027": {
+    "es": "Nueva venta",
+    "pt": "Nova venda",
+    "ar": "بيع جديد",
+    "zh": "新销售"
+  },
+  "INV-001": {
+    "es": "Inventario y stock",
+    "pt": "Inventário e stock",
+    "ar": "المخزون",
+    "zh": "库存"
+  },
+  "INV-002": {
+    "es": "Gestiona productos, existencias y precios",
+    "pt": "Gira produtos, stock e preços",
+    "ar": "أدِر المنتجات والكميات والأسعار",
+    "zh": "管理商品、库存和价格"
+  },
+  "INV-003": {
+    "es": "Añadir producto",
+    "pt": "Adicionar produto",
+    "ar": "إضافة منتج",
+    "zh": "添加商品"
+  },
+  "INV-004": {
+    "es": "Buscar productos en stock...",
+    "pt": "Pesquisar produtos em stock...",
+    "ar": "ابحث في المخزون...",
+    "zh": "搜索库存商品..."
+  },
+  "INV-005": {
+    "es": "Alerta de stock bajo",
+    "pt": "Alerta de stock baixo",
+    "ar": "تنبيه انخفاض المخزون",
+    "zh": "低库存提醒"
+  },
+  "INV-006": {
+    "es": "Agotado",
+    "pt": "Esgotado",
+    "ar": "نفد من المخزون",
+    "zh": "缺货"
+  },
+  "INV-007": {
+    "es": "Añadir producto nuevo",
+    "pt": "Adicionar produto novo",
+    "ar": "إضافة منتج جديد",
+    "zh": "添加新商品"
+  },
+  "INV-008": {
+    "es": "Nombre del producto *",
+    "pt": "Nome do produto *",
+    "ar": "اسم المنتج *",
+    "zh": "商品名称 *"
+  },
+  "INV-009": {
+    "es": "Precio de coste (compra)",
+    "pt": "Preço de custo (compra)",
+    "ar": "سعر التكلفة (الشراء)",
+    "zh": "成本价（进价）"
+  },
+  "INV-010": {
+    "es": "Precio de venta *",
+    "pt": "Preço de venda *",
+    "ar": "سعر البيع *",
+    "zh": "售价 *"
+  },
+  "INV-011": {
+    "es": "Cantidad inicial en stock *",
+    "pt": "Quantidade inicial em stock *",
+    "ar": "كمية المخزون الأولية *",
+    "zh": "初始库存数量 *"
+  },
+  "INV-012": {
+    "es": "Umbral de alerta de stock bajo",
+    "pt": "Limite de alerta de stock baixo",
+    "ar": "حد تنبيه انخفاض المخزون",
+    "zh": "低库存预警数量"
+  },
+  "INV-013": {
+    "es": "Guardar producto",
+    "pt": "Guardar produto",
+    "ar": "حفظ المنتج",
+    "zh": "保存商品"
+  },
+  "INV-014": {
+    "es": "Ajustar stock (+ / -)",
+    "pt": "Ajustar stock (+ / -)",
+    "ar": "تعديل المخزون (+ / -)",
+    "zh": "调整库存（+ / -）"
+  },
+  "INV-015": {
+    "es": "¿Seguro que quieres eliminar este producto?",
+    "pt": "Tem a certeza de que quer eliminar este produto?",
+    "ar": "هل تريد حذف هذا المنتج بالتأكيد؟",
+    "zh": "确定删除这个商品吗？"
+  },
+  "INV-016": {
+    "es": "Importar inventario (CSV / Excel)",
+    "pt": "Importar inventário (CSV / Excel)",
+    "ar": "استيراد المخزون (CSV / Excel)",
+    "zh": "导入库存（CSV / Excel）"
+  },
+  "CLI-001": {
+    "es": "Directorio de clientes",
+    "pt": "Diretório de clientes",
+    "ar": "دليل العملاء",
+    "zh": "客户名录"
+  },
+  "CLI-002": {
+    "es": "Gestiona contactos y créditos de clientes",
+    "pt": "Gira contactos e crédito dos clientes",
+    "ar": "أدِر جهات الاتصال وسجلات الائتمان",
+    "zh": "管理客户联系方式和赊账"
+  },
+  "CLI-003": {
+    "es": "Añadir cliente nuevo",
+    "pt": "Adicionar cliente novo",
+    "ar": "إضافة عميل جديد",
+    "zh": "添加新客户"
+  },
+  "CLI-004": {
+    "es": "Nombre del cliente *",
+    "pt": "Nome do cliente *",
+    "ar": "اسم العميل *",
+    "zh": "客户姓名 *"
+  },
+  "CLI-005": {
+    "es": "Introduce el nombre completo...",
+    "pt": "Introduza o nome completo...",
+    "ar": "أدخل الاسم الكامل...",
+    "zh": "输入全名..."
+  },
+  "CLI-006": {
+    "es": "Número de teléfono",
+    "pt": "Número de telefone",
+    "ar": "رقم الهاتف",
+    "zh": "电话号码"
+  },
+  "CLI-007": {
+    "es": "07X XXX XXXX",
+    "pt": "07X XXX XXXX",
+    "ar": "07X XXX XXXX",
+    "zh": "07X XXX XXXX"
+  },
+  "CLI-008": {
+    "es": "Confirmar y guardar",
+    "pt": "Confirmar e guardar",
+    "ar": "تأكيد وحفظ",
+    "zh": "确认并保存"
+  },
+  "CLI-009": {
+    "es": "Cliente añadido",
+    "pt": "Cliente adicionado",
+    "ar": "تمت إضافة العميل",
+    "zh": "客户已添加"
+  },
+  "CLI-010": {
+    "es": "Suscripción vencida — ve a Facturación para editar clientes",
+    "pt": "Subscrição expirada — vá a Faturação para editar clientes",
+    "ar": "انتهى الاشتراك — اذهب إلى الفوترة لتعديل العملاء",
+    "zh": "订阅已过期 — 请到账单页修改客户"
+  },
+  "CLI-011": {
+    "es": "Cliente eliminado",
+    "pt": "Cliente eliminado",
+    "ar": "تم حذف العميل",
+    "zh": "客户已删除"
+  },
+  "CLI-012": {
+    "es": "Aún no hay clientes",
+    "pt": "Ainda não há clientes",
+    "ar": "لا يوجد عملاء بعد",
+    "zh": "还没有客户"
+  },
+  "CLI-013": {
+    "es": "Añade tu primer cliente arriba para empezar.",
+    "pt": "Adicione o primeiro cliente acima para começar.",
+    "ar": "أضف أول عميل أعلاه للبدء.",
+    "zh": "在上方添加第一位客户即可开始。"
+  },
+  "DEBT-001": {
+    "es": "Deudas y libro de crédito",
+    "pt": "Dívidas e livro de crédito",
+    "ar": "الديون ودفتر الائتمان",
+    "zh": "客户欠款账本"
+  },
+  "DEBT-002": {
+    "es": "Todas las deudas",
+    "pt": "Todas as dívidas",
+    "ar": "كل الديون",
+    "zh": "全部欠款"
+  },
+  "DEBT-003": {
+    "es": "Vencidas",
+    "pt": "Em atraso",
+    "ar": "متأخرة",
+    "zh": "已逾期"
+  },
+  "DEBT-004": {
+    "es": "Vencen hoy",
+    "pt": "Vencem hoje",
+    "ar": "مستحقة اليوم",
+    "zh": "今日到期"
+  },
+  "DEBT-005": {
+    "es": "Deuda original",
+    "pt": "Dívida original",
+    "ar": "الدين الأصلي",
+    "zh": "原始欠款"
+  },
+  "DEBT-006": {
+    "es": "Saldo restante",
+    "pt": "Saldo restante",
+    "ar": "الرصيد المتبقي",
+    "zh": "剩余余额"
+  },
+  "DEBT-007": {
+    "es": "Registrar pago",
+    "pt": "Registar pagamento",
+    "ar": "تسجيل دفعة",
+    "zh": "登记付款"
+  },
+  "DEBT-008": {
+    "es": "Recordar por WhatsApp / SMS",
+    "pt": "Lembrar por WhatsApp / SMS",
+    "ar": "تذكير عبر WhatsApp / SMS",
+    "zh": "用 WhatsApp / 短信提醒"
+  },
+  "DEBT-009": {
+    "es": "Descargar estado del deudor",
+    "pt": "Descarregar extrato do devedor",
+    "ar": "تنزيل كشف المدين",
+    "zh": "下载欠款明细"
+  },
+  "DEBT-010": {
+    "es": "Descargar resumen de todas las deudas (PDF)",
+    "pt": "Descarregar resumo de todas as dívidas (PDF)",
+    "ar": "تنزيل ملخص كل الديون (PDF)",
+    "zh": "下载全部欠款汇总（PDF）"
+  },
+  "DEBT-011": {
+    "es": "Registrar pago de la deuda del cliente",
+    "pt": "Registar pagamento da dívida do cliente",
+    "ar": "تسجيل دفعة دين العميل",
+    "zh": "登记客户还款"
+  },
+  "DEBT-012": {
+    "es": "Importe pagado (FRW) *",
+    "pt": "Valor pago (FRW) *",
+    "ar": "المبلغ المدفوع (FRW) *",
+    "zh": "已付金额（FRW）*"
+  },
+  "DEBT-013": {
+    "es": "Método de pago",
+    "pt": "Método de pagamento",
+    "ar": "طريقة الدفع",
+    "zh": "付款方式"
+  },
+  "DEBT-014": {
+    "es": "Confirmar y generar recibo",
+    "pt": "Confirmar e gerar recibo",
+    "ar": "تأكيد وإنشاء الإيصال",
+    "zh": "确认并生成收据"
+  },
+  "PAY-001": {
+    "es": "Historial de pagos y transacciones",
+    "pt": "Histórico de pagamentos e transações",
+    "ar": "سجل المدفوعات والمعاملات",
+    "zh": "付款与交易记录"
+  },
+  "PAY-002": {
+    "es": "Buscar por nº de recibo o nombre del cliente...",
+    "pt": "Pesquisar por nº do recibo ou nome do cliente...",
+    "ar": "ابحث برقم الإيصال أو اسم العميل...",
+    "zh": "按收据号或客户姓名搜索..."
+  },
+  "PAY-003": {
+    "es": "Efectivo",
+    "pt": "Dinheiro",
+    "ar": "نقداً",
+    "zh": "现金"
+  },
+  "PAY-004": {
+    "es": "MTN MoMo",
+    "pt": "MTN MoMo",
+    "ar": "MTN MoMo",
+    "zh": "MTN MoMo"
+  },
+  "PAY-005": {
+    "es": "Ver / reimprimir recibo",
+    "pt": "Ver / reimprimir recibo",
+    "ar": "عرض / إعادة طباعة الإيصال",
+    "zh": "查看 / 重新打印收据"
+  },
+  "REP-001": {
+    "es": "Informes y análisis de ventas",
+    "pt": "Relatórios e análise de vendas",
+    "ar": "تقارير وتحليل المبيعات",
+    "zh": "销售报表与分析"
+  },
+  "REP-002": {
+    "es": "Hoy",
+    "pt": "Hoje",
+    "ar": "اليوم",
+    "zh": "今天"
+  },
+  "REP-003": {
+    "es": "Semana",
+    "pt": "Semana",
+    "ar": "أسبوع",
+    "zh": "周"
+  },
+  "REP-004": {
+    "es": "Mes",
+    "pt": "Mês",
+    "ar": "شهر",
+    "zh": "月"
+  },
+  "REP-005": {
+    "es": "Dinero total cobrado",
+    "pt": "Dinheiro total recebido",
+    "ar": "إجمالي المال المحصّل",
+    "zh": "收款总额"
+  },
+  "REP-006": {
+    "es": "Deudas impagas ampliadas",
+    "pt": "Dívidas por pagar alargadas",
+    "ar": "الديون غير المدفوعة الموسّعة",
+    "zh": "未付欠款明细"
+  },
+  "REP-007": {
+    "es": "Reiniciar historial de ventas (solo el dueño)",
+    "pt": "Repor histórico de vendas (apenas o dono)",
+    "ar": "إعادة ضبط سجل المبيعات (المالك فقط)",
+    "zh": "重置销售记录（仅店主）"
+  },
+  "REP-008": {
+    "es": "¿Seguro que quieres poner todos los registros de ventas en 0?",
+    "pt": "Tem a certeza de que quer repor todos os registos de vendas para 0?",
+    "ar": "هل تريد إعادة كل سجلات المبيعات إلى 0 بالتأكيد؟",
+    "zh": "确定把所有销售记录清零吗？"
+  },
+  "STAF-001": {
+    "es": "Personal y cajeros",
+    "pt": "Pessoal e caixas",
+    "ar": "الموظفون وأمناء الصندوق",
+    "zh": "员工与收银员"
+  },
+  "STAF-002": {
+    "es": "Código de tu tienda",
+    "pt": "Código da sua loja",
+    "ar": "رمز متجرك",
+    "zh": "你的店铺码"
+  },
+  "STAF-003": {
+    "es": "Copiar código",
+    "pt": "Copiar código",
+    "ar": "نسخ الرمز",
+    "zh": "复制代码"
+  },
+  "STAF-004": {
+    "es": "¡Código de tienda copiado!",
+    "pt": "Código da loja copiado!",
+    "ar": "تم نسخ رمز المتجر!",
+    "zh": "店铺码已复制！"
+  },
+  "STAF-005": {
+    "es": "Añadir cajero / personal",
+    "pt": "Adicionar caixa / pessoal",
+    "ar": "إضافة أمين صندوق / موظف",
+    "zh": "添加收银员 / 员工"
+  },
+  "STAF-006": {
+    "es": "Nombre del empleado *",
+    "pt": "Nome do funcionário *",
+    "ar": "اسم الموظف *",
+    "zh": "员工姓名 *"
+  },
+  "STAF-007": {
+    "es": "Número de teléfono *",
+    "pt": "Número de telefone *",
+    "ar": "رقم الهاتف *",
+    "zh": "电话号码 *"
+  },
+  "STAF-008": {
+    "es": "Rol",
+    "pt": "Função",
+    "ar": "الدور",
+    "zh": "角色"
+  },
+  "STAF-009": {
+    "es": "Cajero (solo caja y ventas)",
+    "pt": "Caixa (apenas POS e vendas)",
+    "ar": "أمين صندوق (الصندوق والمبيعات فقط)",
+    "zh": "收银员（仅收银台和销售）"
+  },
+  "STAF-010": {
+    "es": "Gerente (acceso total salvo la suscripción)",
+    "pt": "Gerente (acesso total exceto a subscrição)",
+    "ar": "مدير (وصول كامل ما عدا الاشتراك)",
+    "zh": "经理（除订阅外全部权限）"
+  },
+  "STAF-011": {
+    "es": "Activo",
+    "pt": "Ativo",
+    "ar": "نشط",
+    "zh": "在职"
+  },
+  "STAF-012": {
+    "es": "Desactivado",
+    "pt": "Desativado",
+    "ar": "معطّل",
+    "zh": "已停用"
+  },
+  "STAF-013": {
+    "es": "Última actividad",
+    "pt": "Última atividade",
+    "ar": "آخر نشاط",
+    "zh": "最近活跃"
+  },
+  "STAF-014": {
+    "es": "Activo ahora",
+    "pt": "Ativo agora",
+    "ar": "نشط الآن",
+    "zh": "当前在线"
+  },
+  "STAF-015": {
+    "es": "Nunca ha entrado",
+    "pt": "Nunca entrou",
+    "ar": "لم يسجّل الدخول أبداً",
+    "zh": "从未登录"
+  },
+  "STAF-016": {
+    "es": "Restablecer PIN",
+    "pt": "Repor PIN",
+    "ar": "إعادة تعيين PIN",
+    "zh": "重置 PIN"
+  },
+  "STAF-017": {
+    "es": "Restablecer PIN del cajero {name}",
+    "pt": "Repor PIN do caixa {name}",
+    "ar": "إعادة تعيين PIN لأمين الصندوق {name}",
+    "zh": "重置收银员 {name} 的 PIN"
+  },
+  "STAF-018": {
+    "es": "Nuevo PIN de seguridad de 4 dígitos *",
+    "pt": "Novo PIN de segurança de 4 dígitos *",
+    "ar": "رمز PIN أمني جديد من 4 أرقام *",
+    "zh": "新的 4 位安全 PIN *"
+  },
+  "STAF-019": {
+    "es": "Las sesiones activas en el teléfono del cajero se cerrarán de inmediato.",
+    "pt": "As sessões ativas no telefone do caixa serão encerradas de imediato.",
+    "ar": "ستُنهى الجلسات النشطة على هاتف أمين الصندوق فوراً.",
+    "zh": "收银员手机上的登录会立即失效。"
+  },
+  "STAF-020": {
+    "es": "Cerrar sesión de inmediato",
+    "pt": "Encerrar sessão de imediato",
+    "ar": "إنهاء الجلسة فوراً",
+    "zh": "立即撤销登录"
+  },
+  "STAF-021": {
+    "es": "Desactivar cajero",
+    "pt": "Desativar caixa",
+    "ar": "إيقاف أمين الصندوق",
+    "zh": "停用收银员"
+  },
+  "SETT-001": {
+    "es": "Ajustes y herramientas",
+    "pt": "Definições e ferramentas",
+    "ar": "الإعدادات والأدوات",
+    "zh": "设置与工具"
+  },
+  "SETT-002": {
+    "es": "Cuenta y PIN de seguridad",
+    "pt": "Conta e PIN de segurança",
+    "ar": "الحساب ورمز PIN",
+    "zh": "账户与安全 PIN"
+  },
+  "SETT-003": {
+    "es": "Perfil, cambiar PIN, eliminar cuenta",
+    "pt": "Perfil, alterar PIN, eliminar conta",
+    "ar": "الملف، تغيير PIN، حذف الحساب",
+    "zh": "资料、修改 PIN、删除账户"
+  },
+  "SETT-004": {
+    "es": "Ajustes de recibo e impresión",
+    "pt": "Definições de recibo e impressão",
+    "ar": "إعدادات الإيصال والطباعة",
+    "zh": "收据与打印设置"
+  },
+  "SETT-005": {
+    "es": "Impresora térmica (80 mm/58 mm), PDF, WhatsApp",
+    "pt": "Impressora térmica (80 mm/58 mm), PDF, WhatsApp",
+    "ar": "طابعة حرارية (80 مم/58 مم)، PDF، WhatsApp",
+    "zh": "热敏打印机（80mm/58mm）、PDF、WhatsApp"
+  },
+  "SETT-006": {
+    "es": "Idioma",
+    "pt": "Idioma",
+    "ar": "اللغة",
+    "zh": "语言"
+  },
+  "SETT-007": {
+    "es": "Instalar la app en el teléfono",
+    "pt": "Instalar a aplicação no telefone",
+    "ar": "تثبيت التطبيق على الهاتف",
+    "zh": "把应用安装到手机"
+  },
+  "SETT-008": {
+    "es": "Facturación y suscripción",
+    "pt": "Faturação e subscrição",
+    "ar": "الفوترة والاشتراك",
+    "zh": "账单与订阅"
+  },
+  "SETT-009": {
+    "es": "Mostrar el logo de la tienda en el recibo",
+    "pt": "Mostrar o logótipo da loja no recibo",
+    "ar": "إظهار شعار المتجر على الإيصال",
+    "zh": "在收据上显示店铺标志"
+  },
+  "SETT-010": {
+    "es": "Mensaje personalizado del encabezado",
+    "pt": "Mensagem personalizada do cabeçalho",
+    "ar": "رسالة مخصصة في أعلى الإيصال",
+    "zh": "自定义收据页眉"
+  },
+  "SETT-011": {
+    "es": "Pie del recibo / nota de agradecimiento",
+    "pt": "Rodapé do recibo / nota de agradecimento",
+    "ar": "تذييل الإيصال / كلمة شكر",
+    "zh": "收据页脚 / 感谢语"
+  },
+  "SETT-012": {
+    "es": "Impresora térmica (58 mm)",
+    "pt": "Impressora térmica (58 mm)",
+    "ar": "طابعة حرارية (58 مم)",
+    "zh": "热敏打印机（58mm）"
+  },
+  "SETT-013": {
+    "es": "Impresora térmica (80 mm)",
+    "pt": "Impressora térmica (80 mm)",
+    "ar": "طابعة حرارية (80 مم)",
+    "zh": "热敏打印机（80mm）"
+  },
+  "SUBS-001": {
+    "es": "Suscripción y planes",
+    "pt": "Subscrição e planos",
+    "ar": "الاشتراك والخطط",
+    "zh": "订阅与方案"
+  },
+  "SUBS-002": {
+    "es": "Suscripción activa",
+    "pt": "Subscrição ativa",
+    "ar": "اشتراك نشط",
+    "zh": "订阅有效"
+  },
+  "SUBS-003": {
+    "es": "Suscripción vencida",
+    "pt": "Subscrição expirada",
+    "ar": "انتهى الاشتراك",
+    "zh": "订阅已过期"
+  },
+  "SUBS-004": {
+    "es": "La suscripción venció — renuévala para seguir creando ventas, editando stock y gestionando deudas.",
+    "pt": "A subscrição expirou — renove para continuar a criar vendas, editar stock e gerir dívidas.",
+    "ar": "انتهى الاشتراك — جدّده لمواصلة المبيعات والمخزون والديون.",
+    "zh": "订阅已过期 — 请续费后才能继续开单、改库存和管理欠款。"
+  },
+  "SUBS-005": {
+    "es": "Plan Pro de la tienda",
+    "pt": "Plano Pro da loja",
+    "ar": "خطة المتجر Pro",
+    "zh": "店铺 Pro 方案"
+  },
+  "SUBS-006": {
+    "es": "Mensual (5.000 RWF / mes)",
+    "pt": "Mensal (5.000 RWF / mês)",
+    "ar": "شهري (5,000 RWF / شهر)",
+    "zh": "按月（5,000 RWF / 月）"
+  },
+  "SUBS-007": {
+    "es": "Anual (ahorra 20 % · 48.000 RWF / año)",
+    "pt": "Anual (poupe 20% · 48.000 RWF / ano)",
+    "ar": "سنوي (وفّر 20% · 48,000 RWF / سنة)",
+    "zh": "按年（省 20% · 48,000 RWF / 年）"
+  },
+  "SUBS-008": {
+    "es": "Pagar con MTN Mobile Money",
+    "pt": "Pagar com MTN Mobile Money",
+    "ar": "ادفع عبر MTN Mobile Money",
+    "zh": "用 MTN Mobile Money 支付"
+  },
+  "SUBS-009": {
+    "es": "Pagar con Airtel Money",
+    "pt": "Pagar com Airtel Money",
+    "ar": "ادفع عبر Airtel Money",
+    "zh": "用 Airtel Money 支付"
+  },
+  "NOTIF-001": {
+    "es": "Bandeja y notificaciones",
+    "pt": "Caixa de entrada e notificações",
+    "ar": "الوارد والإشعارات",
+    "zh": "收件箱与通知"
+  },
+  "NOTIF-002": {
+    "es": "No hay notificaciones nuevas",
+    "pt": "Não há notificações novas",
+    "ar": "لا توجد إشعارات جديدة",
+    "zh": "没有新通知"
+  },
+  "NOTIF-003": {
+    "es": "¡Venta registrada!",
+    "pt": "Venda registada!",
+    "ar": "تم تسجيل البيع!",
+    "zh": "销售已记录！"
+  },
+  "NOTIF-004": {
+    "es": "¡Deuda registrada!",
+    "pt": "Dívida registada!",
+    "ar": "تم تسجيل الدين!",
+    "zh": "欠款已记录！"
+  },
+  "NOTIF-005": {
+    "es": "¡Marcado como pagado!",
+    "pt": "Marcado como pago!",
+    "ar": "تم التعليم كمدفوع!",
+    "zh": "已标为已付！"
+  },
+  "NOTIF-006": {
+    "es": "PIN no válido",
+    "pt": "PIN inválido",
+    "ar": "رمز PIN غير صالح",
+    "zh": "PIN 无效"
+  },
+  "NOTIF-007": {
+    "es": "Ocurrió un error inesperado",
+    "pt": "Ocorreu um erro inesperado",
+    "ar": "حدث خطأ غير متوقع",
+    "zh": "出现意外错误"
+  },
+  "NOTIF-008": {
+    "es": "No hay stock suficiente para esta venta",
+    "pt": "Stock insuficiente para esta venda",
+    "ar": "المخزون غير كافٍ لهذه البيعة",
+    "zh": "库存不足，无法完成这笔销售"
+  },
+  "PDF-001": {
+    "es": "Factura",
+    "pt": "Fatura",
+    "ar": "فاتورة",
+    "zh": "发票"
+  },
+  "PDF-002": {
+    "es": "Recibo de pago",
+    "pt": "Recibo de pagamento",
+    "ar": "إيصال الدفع",
+    "zh": "付款收据"
+  },
+  "PDF-003": {
+    "es": "Estado de deudores",
+    "pt": "Extrato de devedores",
+    "ar": "كشف المدينين",
+    "zh": "欠款人明细"
+  },
+  "PDF-004": {
+    "es": "Informe resumen de todas las deudas",
+    "pt": "Relatório resumo de todas as dívidas",
+    "ar": "تقرير ملخص كل الديون",
+    "zh": "全部欠款汇总"
+  },
+  "PDF-005": {
+    "es": "Facturar a",
+    "pt": "Faturar a",
+    "ar": "فاتورة إلى",
+    "zh": "账单抬头"
+  },
+  "PDF-006": {
+    "es": "De",
+    "pt": "De",
+    "ar": "من",
+    "zh": "来自"
+  },
+  "PDF-007": {
+    "es": "Descripción",
+    "pt": "Descrição",
+    "ar": "الوصف",
+    "zh": "说明"
+  },
+  "PDF-008": {
+    "es": "Cant.",
+    "pt": "Qtd.",
+    "ar": "الكمية",
+    "zh": "数量"
+  },
+  "PDF-009": {
+    "es": "Precio unitario",
+    "pt": "Preço unitário",
+    "ar": "سعر الوحدة",
+    "zh": "单价"
+  },
+  "PDF-010": {
+    "es": "Importe",
+    "pt": "Valor",
+    "ar": "المبلغ",
+    "zh": "金额"
+  },
+  "PDF-011": {
+    "es": "Subtotal",
+    "pt": "Subtotal",
+    "ar": "المجموع الفرعي",
+    "zh": "小计"
+  },
+  "PDF-012": {
+    "es": "Impuesto (0 %)",
+    "pt": "Imposto (0%)",
+    "ar": "الضريبة (0%)",
+    "zh": "税（0%）"
+  },
+  "PDF-013": {
+    "es": "Importe total a pagar",
+    "pt": "Valor total a pagar",
+    "ar": "المبلغ الإجمالي المستحق",
+    "zh": "应付总额"
+  },
+  "PDF-014": {
+    "es": "Pagado",
+    "pt": "Pago",
+    "ar": "مدفوع",
+    "zh": "已付"
+  },
+  "PDF-015": {
+    "es": "Saldo restante",
+    "pt": "Saldo restante",
+    "ar": "الرصيد المتبقي",
+    "zh": "剩余余额"
+  },
+  "PDF-016": {
+    "es": "Número de deudores",
+    "pt": "Número de devedores",
+    "ar": "عدد المدينين",
+    "zh": "欠款人数"
+  },
+  "PDF-017": {
+    "es": "Saldo medio",
+    "pt": "Saldo médio",
+    "ar": "متوسط الرصيد",
+    "zh": "平均余额"
+  },
+  "PDF-018": {
+    "es": "Gracias por elegir {shop}.",
+    "pt": "Obrigado por escolher {shop}.",
+    "ar": "شكراً لاختيارك {shop}.",
+    "zh": "感谢选择 {shop}。"
+  },
+  "PDF-019": {
+    "es": "Página {n} de {total}",
+    "pt": "Página {n} de {total}",
+    "ar": "صفحة {n} من {total}",
+    "zh": "第 {n} 页，共 {total} 页"
+  },
+  "PDF-020": {
+    "es": "RECIBO OFICIAL DE TIENDA",
+    "pt": "RECIBO OFICIAL DE LOJA",
+    "ar": "إيصال بيع رسمي",
+    "zh": "正式零售收据"
+  },
+  "MISC-001": {
+    "es": "Inicio",
+    "pt": "Início",
+    "ar": "الرئيسية",
+    "zh": "首页"
+  },
+  "MISC-002": {
+    "es": "Deudas",
+    "pt": "Dívidas",
+    "ar": "الديون",
+    "zh": "欠款"
+  },
+  "MISC-003": {
+    "es": "Ventas",
+    "pt": "Vendas",
+    "ar": "المبيعات",
+    "zh": "销售"
+  },
+  "MISC-004": {
+    "es": "Stock",
+    "pt": "Stock",
+    "ar": "المخزون",
+    "zh": "库存"
+  },
+  "MISC-005": {
+    "es": "Más",
+    "pt": "Mais",
+    "ar": "المزيد",
+    "zh": "更多"
+  },
+  "MISC-006": {
+    "es": "Pregunta a ChatSella",
+    "pt": "Pergunte ao ChatSella",
+    "ar": "اسأل ChatSella",
+    "zh": "问问 ChatSella"
+  },
+  "MISC-007": {
+    "es": "Pregunta a ChatSella... p. ej. ¿Cuánto cobramos hoy?",
+    "pt": "Pergunte ao ChatSella... ex. Quanto recebemos hoje?",
+    "ar": "اسأل ChatSella... مثال: كم حصّلنا اليوم؟",
+    "zh": "问问 ChatSella……例如：今天收了多少钱？"
+  },
+  "MISC-008": {
+    "es": "Caja inteligente y simple para tenderos de Ruanda",
+    "pt": "Caixa inteligente e simples para lojistas do Ruanda",
+    "ar": "صندوق ذكي وبسيط لأصحاب المتاجر في رواندا",
+    "zh": "为卢旺达店主打造的简单收银"
+  },
+  "MISC-009": {
+    "es": "Precios asequibles para negocios reales de Ruanda",
+    "pt": "Preços acessíveis para negócios reais do Ruanda",
+    "ar": "أسعار مناسبة للمتاجر الحقيقية في رواندا",
+    "zh": "适合卢旺达真实店铺的价格"
+  },
+  "MISC-010": {
+    "es": "Términos del servicio",
+    "pt": "Termos de serviço",
+    "ar": "شروط الخدمة",
+    "zh": "服务条款"
+  },
+  "MISC-011": {
+    "es": "Política de privacidad",
+    "pt": "Política de privacidade",
+    "ar": "سياسة الخصوصية",
+    "zh": "隐私政策"
+  },
+  "WEB-001": {
+    "zh": "产品与收银机",
+    "ar": "المنتج ونقاط البيع"
+  },
+  "WEB-002": {
+    "zh": "价格方案",
+    "ar": "باقات الأسعار"
+  },
+  "WEB-003": {
+    "zh": "应用下载",
+    "ar": "التنزيلات"
+  },
+  "WEB-004": {
+    "zh": "登录",
+    "ar": "تسجيل الدخول"
+  },
+  "WEB-005": {
+    "zh": "开始 7 天免费试用",
+    "ar": "ابدأ التجربة المجانية 7 أيام"
+  },
+  "WEB-006": {
+    "zh": "为卢旺达商店打造的柜台收银、库存追踪和客户赊账本。",
+    "ar": "نظام تسجيل المبيعات، ومتابعة المخزون، ودفتر ديون العملاء لمتاجر رواندا."
+  },
+  "WEB-010": {
+    "zh": "销售",
+    "ar": "البيع"
+  },
+  "WEB-011": {
+    "zh": "赊账",
+    "ar": "الآجل"
+  },
+  "WEB-012": {
+    "zh": "库存",
+    "ar": "المخزون"
+  },
+  "WEB-038": {
+    "zh": "发起支付 {amount}",
+    "ar": "اطلب دفع {amount}"
+  },
+  "WEB-045": {
+    "zh": "适用于 Windows 和 Mac 的桌面应用",
+    "ar": "تطبيق سطح المكتب لنظامي Windows وMac"
+  },
+  "WEB-048": {
+    "zh": "网站上的订阅通过手机上的 MTN MoMo 支付。现金、Airtel 和银行转账用于柜台销售，不用于这笔账单。",
+    "ar": "اشتراك الموقع يُدفع عبر MTN MoMo على الهاتف. النقد وAirtel والبنك للمبيعات في الصندوق، لا لهذه الفاتورة."
+  },
+  "WEB-059": {
+    "zh": "卢旺达基加利 · 店铺收银、库存管理与赊账账本",
+    "ar": "كيغالي، رواندا · نقاط البيع للمتاجر، المخزون ودفتر الديون"
+  },
+  "WEB-060": {
+    "zh": "观看交互式演示",
+    "ar": "شاهد العرض التفاعلي"
+  },
+  "WEB-061": {
+    "zh": "100% 离线可用收银系统",
+    "ar": "نظام نقاط بيع يعمل بدون إنترنت 100%"
+  },
+  "WEB-067": {
+    "zh": "柜台收银机",
+    "ar": "صندوق المحاسبة ونقاط البيع"
+  },
+  "WEB-068": {
+    "zh": "客户赊账本 (Ideni)",
+    "ar": "دفتر ديون العملاء (Ideni)"
+  },
+  "WEB-069": {
+    "zh": "库存与进销存管理",
+    "ar": "إدارة المخزون والسلع"
+  },
+  "WEB-070": {
+    "zh": "蓝牙热敏小票与发票",
+    "ar": "فواتير حرارية وبلوتوث"
+  },
+  "WEB-071": {
+    "zh": "收银员 PIN 码与安全控制",
+    "ar": "رمز أمان وصلاحيات الكاشير"
+  },
+  "WEB-090": {
+    "zh": "在您的所有设备上下载 Sella",
+    "ar": "حمّل Sella على جميع أجهزتك"
+  },
+  "WEB-094": {
+    "zh": "在 App Store 下载",
+    "ar": "تنزيل من App Store"
+  },
+  "WEB-097": {
+    "zh": "Google Play 下载",
+    "ar": "احصل عليه من Google Play"
+  },
+  "WEB-100": {
+    "zh": "下载 Windows 桌面版 (.exe)",
+    "ar": "تنزيل لنظام Windows (.exe)"
+  },
+  "WEB-103": {
+    "zh": "下载 Mac 桌面版 (.dmg)",
+    "ar": "تنزيل لنظام Mac (.dmg)"
+  },
+  "WEB-106": {
+    "zh": "立即启动网页版",
+    "ar": "فتح تطبيق الويب الآن"
+  },
+  "WEB-107": {
+    "zh": "扫码在手机上立即体验",
+    "ar": "امسح الرمز لفتح التطبيق على هاتفك فوراً"
+  }
+}
