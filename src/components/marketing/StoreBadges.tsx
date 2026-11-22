@@ -47,6 +47,13 @@ export function GooglePlayBadge({
     full: "h-[48px] w-full px-4 py-2 gap-3 justify-center rounded-[10px]",
   }[size];
 
+  const badgeHeights = {
+    sm: "h-[42px]",
+    md: "h-[48px]",
+    lg: "h-[54px]",
+    full: "h-[48px] w-full",
+  }[size];
+
   const iconSizes = {
     sm: "w-5 h-5",
     md: "w-6 h-6",
@@ -58,6 +65,26 @@ export function GooglePlayBadge({
     variant === "glass"
       ? "bg-slate-900/90 backdrop-blur-xl border border-white/25 hover:border-cyan-400/60 shadow-[0_8px_20px_-4px_rgba(0,0,0,0.5),inset_0_1px_0_0_rgba(255,255,255,0.25)]"
       : "bg-black border border-[#a6a6a6]/90 hover:border-white shadow-[0_4px_12px_rgba(0,0,0,0.4),inset_0_1px_0_0_rgba(255,255,255,0.2)]";
+
+  if (lang === "en" && variant === "dark") {
+    return (
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={onClick}
+        aria-label="Get it on Google Play"
+        className={`inline-flex items-center justify-center transition-all duration-200 select-none hover:scale-[1.02] active:scale-[0.98] ${badgeHeights} ${className}`}
+      >
+        <img
+          src="/brand/google-play-badge.svg"
+          alt="Get it on Google Play"
+          className="h-full w-auto object-contain rounded-[10px] drop-shadow-[0_4px_12px_rgba(0,0,0,0.4)]"
+          loading="lazy"
+        />
+      </a>
+    );
+  }
 
   return (
     <a
@@ -144,6 +171,13 @@ export function AppStoreBadge({
     full: "h-[48px] w-full px-4 py-2 gap-3 justify-center rounded-[10px]",
   }[size];
 
+  const badgeHeights = {
+    sm: "h-[42px]",
+    md: "h-[48px]",
+    lg: "h-[54px]",
+    full: "h-[48px] w-full",
+  }[size];
+
   const iconSizes = {
     sm: "w-5 h-5",
     md: "w-6 h-6",
@@ -155,6 +189,26 @@ export function AppStoreBadge({
     variant === "glass"
       ? "bg-slate-900/90 backdrop-blur-xl border border-white/25 hover:border-cyan-400/60 shadow-[0_8px_20px_-4px_rgba(0,0,0,0.5),inset_0_1px_0_0_rgba(255,255,255,0.25)]"
       : "bg-black border border-[#a6a6a6]/90 hover:border-white shadow-[0_4px_12px_rgba(0,0,0,0.4),inset_0_1px_0_0_rgba(255,255,255,0.2)]";
+
+  if (lang === "en" && variant === "dark") {
+    return (
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={onClick}
+        aria-label="Download on the App Store"
+        className={`inline-flex items-center justify-center transition-all duration-200 select-none hover:scale-[1.02] active:scale-[0.98] ${badgeHeights} ${className}`}
+      >
+        <img
+          src="/brand/app-store-badge.svg"
+          alt="Download on the App Store"
+          className="h-full w-auto object-contain rounded-[10px] drop-shadow-[0_4px_12px_rgba(0,0,0,0.4)]"
+          loading="lazy"
+        />
+      </a>
+    );
+  }
 
   return (
     <a
