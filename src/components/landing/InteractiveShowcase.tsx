@@ -2,102 +2,122 @@ import { useEffect, useRef } from "react";
 import {
   CheckCircle2,
   CreditCard,
-  FileText,
+  Lock,
   MessageCircle,
   Package,
   Printer,
   ShieldCheck,
-  Smartphone,
   TrendingUp,
-  Zap,
 } from "lucide-react";
 import { type ScreenId } from "./PhoneMockup";
+import { t, type CatalogueId } from "@/i18n";
+import { useAppLanguage } from "@/i18n/useAppLanguage";
 
 interface InteractiveShowcaseProps {
   activeScreen: ScreenId;
   onScreenChange: (id: ScreenId) => void;
 }
 
-const TABS: Array<{ id: ScreenId; label: string; icon: React.ReactNode }> = [
-  { id: "pos", label: "Point of Sale", icon: <CreditCard size={15} /> },
-  { id: "debts", label: "Debts & WhatsApp", icon: <MessageCircle size={15} /> },
-  { id: "momo", label: "MoMo Instant Pay", icon: <Smartphone size={15} /> },
-  { id: "receipt", label: "Thermal Receipts", icon: <Printer size={15} /> },
-];
-
-const DETAILS: Record<
-  ScreenId,
-  {
-    title: string;
-    subtitle: string;
-    description: string;
-    features: string[];
-    stat: string;
-    statLabel: string;
-  }
-> = {
-  pos: {
-    title: "Lighting-Fast Retail Sales & Split Checkout",
-    subtitle: "Built for speed at the shop counter with zero lags.",
-    description:
-      "Ring up multi-item orders in seconds. Apply item-level or basket discounts, and split payments between Cash and Mobile Money seamlessly.",
-    features: [
-      "Barcode & SKU scanner support via camera or Bluetooth",
-      "Automatic customer change calculation",
-      "Full offline sale queueing (works even when internet drops)",
-    ],
-    stat: "< 3s",
-    statLabel: "Average checkout time per customer",
-  },
-  debts: {
-    title: "Credit Sales & 1-Click WhatsApp Reminders",
-    subtitle: "Never lose track of unpaid balances or forgotten client debts.",
-    description:
-      "Maintain a spotless credit ledger. When payment is due, send pre-formatted Kinyarwanda payment reminder messages directly to their WhatsApp with a single tap.",
-    features: [
-      "1-tap WhatsApp message: 'Twakwibutsaga kwishyura ideni...'",
-      "Automated total unpaid ledger calculated across all customers",
-      "Instant payment logging with live balance reduction",
-    ],
-    stat: "94%",
-    statLabel: "Debt recovery rate with WhatsApp reminders",
-  },
-  momo: {
-    title: "Direct Rwandan Mobile Money (*182#)",
-    subtitle: "Real-time subscriptions and customer payments without credit cards.",
-    description:
-      "Powered by Paypack and local Rwandan telecom networks. Enter any MTN or Airtel phone number to trigger a live STK push prompt directly to the customer's phone.",
-    features: [
-      "Instant auto-unlock via Supabase Realtime webhooks",
-      "Automatic network detection (MTN 078/079 vs Airtel 072/073)",
-      "Zero credit card required — keep 99% of your hard-earned revenue",
-    ],
-    stat: "100%",
-    statLabel: "Local Rwanda MoMo compatibility",
-  },
-  receipt: {
-    title: "Thermal Receipts & Digital WhatsApp Invoices",
-    subtitle: "Professional branding that earns trust from every customer.",
-    description:
-      "Print clean, itemized receipts on any standard 58mm or 80mm ESC/POS Bluetooth or USB printer, or share a branded digital PDF receipt directly to their phone.",
-    features: [
-      "Customizable shop name, phone, address, and thank-you notes",
-      "Thermal printer formatting optimized for paper roll efficiency",
-      "Full PDF export and 1-tap WhatsApp invoice delivery",
-    ],
-    stat: "58 / 80mm",
-    statLabel: "Compatible with all standard thermal printers",
-  },
-};
-
 export function InteractiveShowcase({
   activeScreen,
   onScreenChange,
 }: InteractiveShowcaseProps) {
+  const lang = useAppLanguage();
+  const rw = lang === "rw";
   const trackRef = useRef<HTMLDivElement>(null);
   const indicatorRef = useRef<HTMLSpanElement>(null);
 
-  // Position indicator smoothly over active tab
+  const tabs: Array<{ id: ScreenId; label: string; icon: React.ReactNode }> = [
+    { id: "pos", label: t("WEB-067" as CatalogueId), icon: <CreditCard size={15} /> },
+    { id: "debts", label: t("WEB-068" as CatalogueId), icon: <MessageCircle size={15} /> },
+    { id: "stock", label: t("WEB-069" as CatalogueId), icon: <Package size={15} /> },
+    { id: "receipt", label: t("WEB-070" as CatalogueId), icon: <Printer size={15} /> },
+    { id: "staff", label: t("WEB-071" as CatalogueId), icon: <Lock size={15} /> },
+  ];
+
+  const details: Record<
+    ScreenId,
+    {
+      title: string;
+      subtitle: string;
+      description: string;
+      features: string[];
+      stat: string;
+      statLabel: string;
+    }
+  > = {
+    pos: {
+      title: rw ? "Igurisha ryihuta kuri kaunta n'ubwishyu buvanze" : "Lightning-Fast Counter POS & Split Payments",
+      subtitle: rw ? "Byakorewe umuvuduko kuri kaunta idafite amakosa" : "Engineered for speed at the counter with zero lag",
+      description: rw
+        ? "Andika ibicuruzwa mu masegonda make. Gaba amafaranga mu buryo bwa kashi, MTN MoMo, cyangwa ideni rimwe."
+        : "Ring up items in seconds. Split payment between Cash, MTN MoMo, and customer credit in a single checkout.",
+      features: [
+        rw ? "Kamera isoma barcode ako kanya" : "Camera barcode scanning",
+        rw ? "Irakora 100% n'iyo interineti yahita" : "100% offline-first POS queueing",
+        rw ? "Kubara chenji y'umukiliya mu mafaranga nyarwanda" : "Instant RWF change calculation",
+      ],
+      stat: "< 3s",
+      statLabel: rw ? "Igihe cyo kugurisha ku mukiliya umwe" : "Average customer checkout time",
+    },
+    debts: {
+      title: rw ? "Igitabo cy'amadeni n'ubutumwa bwa WhatsApp ku munsi" : "Customer Credit Ledger & 1-Tap WhatsApp Reminders",
+      subtitle: rw ? "Nta na rimwe uzongera kwibagirwa amafaranga abakiriya bakugomba" : "Never lose track of unpaid shop credits or client balances",
+      description: rw
+        ? "Genzura amadeni yose y'iduka. Kanda rimwe gusa wohereze ubutumwa bw'ikinyabupfura kuri WhatsApp y'umukiliya bumwibutsa kwishyura."
+        : "Track all customer credit balances. Tap once to dispatch polite, pre-formatted debt reminders directly to WhatsApp.",
+      features: [
+        rw ? "Ubutumwa bwa WhatsApp buhita bwuzuzamo imibare" : "Automated WhatsApp payment reminder message",
+        rw ? "Kubara amadeni yose hamwe ku bacuruzi bose" : "Real-time total unpaid ledger across all clients",
+        rw ? "Kwandika kwishyura igice bitinze" : "Instant partial payment logging & balance deduction",
+      ],
+      stat: "94%",
+      statLabel: rw ? "Igipimo cyo kwishyuzwa binyuze kuri WhatsApp" : "Debt recovery rate with WhatsApp alerts",
+    },
+    stock: {
+      title: rw ? "Gucunga sitoki n'imiburo y'ibiri gushira" : "Live Inventory Tracking & Low Stock Alerts",
+      subtitle: rw ? "Menya ibiri mu bubiko n'ibikeneye gutumizwa mbere y'uko bishira" : "Know exact quantities and reorder before shelves run dry",
+      description: rw
+        ? "Buri gurisha rihita rigabanya umubare w'ibikoresho bisigaye muri sitoki. Niba bigeze ku gipimo fatizo, uhita ubona integuza."
+        : "Every sale instantly decrements remaining shelf quantities. Receive proactive alerts when items hit critical reorder levels.",
+      features: [
+        rw ? "Integuza y'ibicuruzwa byegereje gushira" : "Proactive low-stock reorder thresholds",
+        rw ? "Kwinjiza ibicuruzwa byinshi muri Excel/CSV" : "Bulk inventory import via Excel & CSV",
+        rw ? "Gukurikirana igiciro cyo kurangura n'icyo kugurisha" : "Wholesale cost vs retail margin tracking",
+      ],
+      stat: "100%",
+      statLabel: rw ? "Sitoki ihora ihuje n'ibiri ku meza" : "Inventory accuracy between shelf and register",
+    },
+    receipt: {
+      title: rw ? "Inyemezabwishyu za Bluetooth Thermal na PDF" : "Bluetooth Thermal Receipts & Digital PDF Invoices",
+      subtitle: rw ? "Resi zifite umutekano w'umukiliya n'ikimenyetso cya shop" : "Professional branding and trust for every counter transaction",
+      description: rw
+        ? "Printinga kuri printer ya Bluetooth (58mm cyangwa 80mm) cyangwa ohereza PDF ku mukiliya ifite izina ry'iduka na ref ya MoMo."
+        : "Print clean, itemized receipts on any 58mm or 80mm ESC/POS thermal printer, or share digital PDFs with MoMo approval codes.",
+      features: [
+        rw ? "Yemera printer za Bluetooth 58mm na 80mm" : "Compatible with standard 58mm & 80mm thermal printers",
+        rw ? "Guhana PDF ifite ikaseri ry'iduka" : "Official PDF invoices with digital verification stamps",
+        rw ? "Kugaragaza nomero ya ref ya MoMo ku nyemezabwishyu" : "MTN MoMo transaction reference printed on receipt",
+      ],
+      stat: "58/80mm",
+      statLabel: rw ? "Ubugari bwa resi zose zemewe mu Rwanda" : "Standard paper width supported",
+    },
+    staff: {
+      title: rw ? "Umutekano w'umukozi ugurisha na PIN y'imibare 4" : "Staff PIN Security & Shift Handover Control",
+      subtitle: rw ? "Umukozi agurisha ku meza atabangamiye amabanga ya shop" : "Empower cashiers at the counter with zero risk to shop settings",
+      description: rw
+        ? "Umukozi yinjira na PIN y'imibare 4. Ashobora kugurisha no gusohora resi, ariko ntiyemerewe gusiba inyandiko cyangwa guhindura ibiciro."
+        : "Cashiers sign in with a simple 4-digit PIN. They record sales and issue receipts, but cannot erase ledger history or alter prices.",
+      features: [
+        rw ? "PIN y'imibare 4 yihariye kuri buri mukozi" : "Dedicated 4-digit PIN for each cashier",
+        rw ? "Gufunga uburenganzira bwo gusiba amadeni cyangwa ibicuruzwa" : "Role-based restriction on deleting sales and inventory",
+        rw ? "Raporo y'ibyo umukozi yagurishije muri shift ye" : "Shift reconciliation report (Cash vs MoMo in drawer)",
+      ],
+      stat: "100%",
+      statLabel: rw ? "Umutekano w'imikoreshereze y'ikese" : "Protection against unauthorized record deletion",
+    },
+  };
+
   useEffect(() => {
     if (!trackRef.current || !indicatorRef.current) return;
     const activeEl = trackRef.current.querySelector<HTMLButtonElement>(
@@ -114,19 +134,20 @@ export function InteractiveShowcase({
     }px)`;
   }, [activeScreen]);
 
-  const detail = DETAILS[activeScreen];
+  const detail = details[activeScreen];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 select-none">
       {/* Sliding Pill Selector */}
       <div className="flex justify-center">
         <div ref={trackRef} className="pill-track max-w-full overflow-x-auto no-scrollbar">
           <span ref={indicatorRef} className="pill-indicator" aria-hidden="true" />
-          {TABS.map((tab) => {
+          {tabs.map((tab) => {
             const isActive = activeScreen === tab.id;
             return (
               <button
                 key={tab.id}
+                type="button"
                 data-tab-id={tab.id}
                 onClick={() => onScreenChange(tab.id)}
                 className={`pill-item flex items-center gap-2 ${isActive ? "active" : ""}`}
@@ -141,18 +162,18 @@ export function InteractiveShowcase({
 
       {/* Feature Details Card */}
       <div className="feature-glow-card text-left space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 dark:border-white/10 pb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4">
           <div>
-            <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">{detail.title}</h3>
-            <p className="text-sm text-[#1A6FFF] font-semibold">{detail.subtitle}</p>
+            <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">{detail.title}</h3>
+            <p className="text-sm text-[#0B3FCC] font-semibold">{detail.subtitle}</p>
           </div>
-          <div className="bg-[#1A6FFF]/10 border border-[#1A6FFF]/20 rounded-2xl px-4 py-2 shrink-0 text-left sm:text-right">
-            <p className="text-2xl font-black text-slate-900 dark:text-white">{detail.stat}</p>
-            <p className="text-[11px] text-slate-500 dark:text-white/60">{detail.statLabel}</p>
+          <div className="bg-[#0B3FCC]/10 border border-[#0B3FCC]/20 rounded-2xl px-4 py-2 shrink-0 text-left sm:text-right">
+            <p className="text-2xl font-black text-slate-900 font-mono tabular-nums">{detail.stat}</p>
+            <p className="text-[11px] text-slate-500 font-medium">{detail.statLabel}</p>
           </div>
         </div>
 
-        <p className="text-sm sm:text-base text-slate-600 dark:text-white/75 leading-relaxed">
+        <p className="text-sm sm:text-base text-slate-600 leading-relaxed font-normal">
           {detail.description}
         </p>
 
@@ -160,10 +181,10 @@ export function InteractiveShowcase({
           {detail.features.map((feat, idx) => (
             <div
               key={idx}
-              className="bg-slate-50 dark:bg-white/5 border border-slate-200/80 dark:border-white/5 rounded-xl p-3 flex items-start gap-2.5 transition-colors"
+              className="bg-slate-50 border border-slate-200/80 rounded-xl p-3 flex items-start gap-2.5 transition-colors shadow-2xs"
             >
-              <CheckCircle2 size={16} className="text-[#1A6FFF] shrink-0 mt-0.5" />
-              <span className="text-xs text-slate-700 dark:text-white/90 leading-tight font-medium">{feat}</span>
+              <CheckCircle2 size={16} className="text-[#0B3FCC] shrink-0 mt-0.5" />
+              <span className="text-xs text-slate-800 leading-tight font-medium">{feat}</span>
             </div>
           ))}
         </div>

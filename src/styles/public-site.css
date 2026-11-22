@@ -1,0 +1,71 @@
+.sella-public {
+  --sella-ink: #141414;
+  --sella-muted: #4b4b4b;
+  --sella-line: #e6e6e6;
+  --sella-blue: #0b3fcc;
+  --sella-move: 160ms;
+  --sella-sheet: 280ms;
+  color: var(--sella-ink);
+  background: #fff;
+  font-variant-numeric: tabular-nums;
+}
+
+.sella-public :focus-visible {
+  outline: 2px solid var(--sella-blue);
+  outline-offset: 2px;
+}
+
+.sella-move {
+  transition: opacity var(--sella-move) ease, transform var(--sella-move) ease;
+}
+
+.sella-sheet {
+  transition: transform var(--sella-sheet) ease, opacity var(--sella-sheet) ease;
+}
+
+.sella-glass-edge {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(11, 63, 204, 0.28);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.7), 0 16px 40px rgba(11, 63, 204, 0.12);
+}
+
+@supports (backdrop-filter: blur(12px)) {
+  .sella-glass-edge {
+    background: rgba(247, 250, 255, 0.72);
+    backdrop-filter: blur(12px);
+  }
+}
+
+.sella-tab-on {
+  background: rgba(11, 63, 204, 0.1);
+  color: #0b3fcc;
+  border: 1px solid rgba(11, 63, 204, 0.35);
+}
+
+.sella-check {
+  transform: scale(0.6);
+  opacity: 0;
+}
+
+.sella-check.is-on {
+  animation: sella-check-in 220ms ease forwards;
+}
+
+@keyframes sella-check-in {
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sella-public .sella-move,
+  .sella-public .sella-sheet,
+  .sella-public .sella-check,
+  .sella-public .sella-check.is-on {
+    animation: none;
+    transition: none;
+    transform: none;
+    opacity: 1;
+  }
+}

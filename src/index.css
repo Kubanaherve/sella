@@ -3,12 +3,20 @@
 @import '@fontsource/inter/600.css';
 @import '@fontsource/inter/700.css';
 @import './styles/web-showcase.css';
+@import './styles/public-site.css';
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
+  html[lang="ar"], [dir="rtl"] {
+    font-family: 'Noto Sans Arabic', 'Cairo', Inter, system-ui, -apple-system, sans-serif;
+  }
+  html[lang="zh-Hans"], html[lang="zh"] {
+    font-family: 'Noto Sans SC', Inter, system-ui, -apple-system, sans-serif;
+  }
+
   :root {
     /* Neutral surfaces. One accent: #1D4ED8 */
     --background: 0 0% 98%;
@@ -951,11 +959,11 @@
 }
 
 .sella-splash-root--light {
-  background: #b9d4ff;
+  background: radial-gradient(circle at 50% 35%, #0c204d 0%, #060e22 70%, #030712 100%);
 }
 
 .sella-splash-root--dark {
-  background: #040816;
+  background: radial-gradient(circle at 50% 35%, #0c204d 0%, #040816 70%, #02040a 100%);
 }
 
 .sella-splash-root--out {
@@ -1086,8 +1094,8 @@
 }
 
 .sella-splash-progress {
-  width: min(56vw, 180px);
-  opacity: 0;
+  width: min(70vw, 240px);
+  opacity: 1;
   transition: opacity 280ms var(--sella-ease);
 }
 
