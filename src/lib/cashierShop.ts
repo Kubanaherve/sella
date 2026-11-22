@@ -50,11 +50,12 @@ export function profileFromShopLookup(
   };
 }
 
-/** A yes/no write flag, with no billing dates or payment history. */
+/** A yes/no write flag, with no billing dates or payment history. Cashiers inherit the owner's active status and Pro features. */
 export function subscriptionFromWriteAccess(
   ownerId: string,
   canWrite: boolean,
-  now = new Date()
+  now = new Date(),
+  isPro: boolean = true
 ): SubscriptionSnapshot {
   const days = canWrite ? 1 : -(3 + 1);
   const end = new Date(now.getTime() + days * 86400000).toISOString();
@@ -62,6 +63,7 @@ export function subscriptionFromWriteAccess(
     workspaceId: `user:${ownerId}`,
     userId: ownerId,
     status: canWrite ? "active" : "expired",
+    productPlan: isPro ? "pro" : "normal",
     provider: "manual",
     priceRwf: 0,
     trialEndsAt: null,

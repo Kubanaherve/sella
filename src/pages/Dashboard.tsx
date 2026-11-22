@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { BRAND } from "@/lib/brand";
-import { accessLabel } from "@/lib/entitlements";
+import { accessLabel, hasProFeatures } from "@/lib/entitlements";
 import { isNativeApp } from "@/lib/platform";
 import { useAccountStatus } from "@/contexts/AccountStatusContext";
 import { WriteGate } from "@/components/WriteGate";
@@ -307,32 +307,34 @@ const DashboardPage = () => {
                 openAccountStatusModal("POS & Sales");
                 return;
               }
-              navigate("/subscribe");
+              navigate("/billing");
             }}
             className="w-full rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-3.5 text-left text-xs transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/60 shadow-xs flex items-center justify-between gap-3"
           >
             <div className="space-y-0.5 min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 <span className="font-semibold text-neutral-900 dark:text-neutral-100 tracking-tight">
-                  Subscription Status
+                  {hasProFeatures(subscription) ? "Pro Member" : "Free Plan"}
                 </span>
                 <span
                   className={cn(
                     "text-[10px] font-semibold px-2 py-0.5 rounded-full border",
-                    canWrite
+                    hasProFeatures(subscription)
                       ? "bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 border-emerald-500/20"
-                      : "bg-amber-500/10 text-amber-900 dark:text-amber-300 border-amber-500/20"
+                      : canWrite
+                      ? "bg-amber-500/10 text-amber-900 dark:text-amber-300 border-amber-500/20"
+                      : "bg-red-500/10 text-red-900 dark:text-red-300 border-red-500/20"
                   )}
                 >
-                  {accessLabel(subscription)}
+                  {hasProFeatures(subscription) ? "Pro Active" : accessLabel(subscription)}
                 </span>
               </div>
               <p className="text-neutral-500 dark:text-neutral-400">
-                {!canWrite
-                  ? isNativeApp()
-                    ? "Tap to view account status"
-                    : labels.renewWithMomo
-                  : "All register features active"}
+                {hasProFeatures(subscription)
+                  ? "All commercial & staff features unlocked · Tap to manage in Billing"
+                  : isNativeApp()
+                  ? "Tap to view account status"
+                  : "Upgrade to Pro with MTN Mobile Money"}
               </p>
             </div>
             <ChevronRight className="w-4 h-4 text-neutral-400 shrink-0" />
