@@ -11,7 +11,18 @@ import { toast } from "sonner";
 
 const SWITCHES: Record<
   AppLanguage,
-  Record<"enabled" | "autoGenerate" | "allowPdf" | "allowPrint" | "allowWhatsApp" | "showAnimation", string>
+  Record<
+    | "enabled"
+    | "autoGenerate"
+    | "allowPdf"
+    | "allowPrint"
+    | "allowWhatsApp"
+    | "allowSms"
+    | "autoSendWhatsApp"
+    | "autoSendSms"
+    | "showAnimation",
+    string
+  >
 > = {
   rw: {
     enabled: "Koresha resi",
@@ -19,6 +30,9 @@ const SWITCHES: Record<
     allowPdf: "Emera kudownloadinga PDF",
     allowPrint: "Emera kuprinta",
     allowWhatsApp: "Emera kohereza kuri WhatsApp",
+    allowSms: "Emera kohereza kuri SMS",
+    autoSendWhatsApp: "Kohereza ako kanya kuri WhatsApp niba telefoni ihari",
+    autoSendSms: "Kohereza ako kanya kuri SMS niba telefoni ihari",
     showAnimation: "Erekana animation ya printer",
   },
   en: {
@@ -27,6 +41,9 @@ const SWITCHES: Record<
     allowPdf: "Allow PDF download",
     allowPrint: "Allow printing",
     allowWhatsApp: "Allow WhatsApp",
+    allowSms: "Allow SMS",
+    autoSendWhatsApp: "Auto-send receipt to WhatsApp if customer phone exists",
+    autoSendSms: "Auto-send receipt to SMS if customer phone exists",
     showAnimation: "Show the printer animation",
   },
   fr: {
@@ -35,6 +52,9 @@ const SWITCHES: Record<
     allowPdf: "Autoriser le PDF",
     allowPrint: "Autoriser l'impression",
     allowWhatsApp: "Autoriser WhatsApp",
+    allowSms: "Autoriser les SMS",
+    autoSendWhatsApp: "Envoyer auto sur WhatsApp si téléphone présent",
+    autoSendSms: "Envoyer auto par SMS si téléphone présent",
     showAnimation: "Afficher l'animation de l'imprimante",
   },
   sw: {
@@ -43,6 +63,9 @@ const SWITCHES: Record<
     allowPdf: "Ruhusu kupakua PDF",
     allowPrint: "Ruhusu kuchapisha",
     allowWhatsApp: "Ruhusu WhatsApp",
+    allowSms: "Ruhusu SMS",
+    autoSendWhatsApp: "Tuma kiotomatiki kwa WhatsApp ikiwa simu ipo",
+    autoSendSms: "Tuma kiotomatiki kwa SMS ikiwa simu ipo",
     showAnimation: "Onyesha mchoro wa printa",
   },
   rn: {
@@ -51,6 +74,9 @@ const SWITCHES: Record<
     allowPdf: "Emera kudownloadinga PDF",
     allowPrint: "Emera kuprinta",
     allowWhatsApp: "Emera WhatsApp",
+    allowSms: "Emera SMS",
+    autoSendWhatsApp: "Rungika ako kanya kuri WhatsApp",
+    autoSendSms: "Rungika ako kanya kuri SMS",
     showAnimation: "Erekana animation ya printer",
   },
   lg: {
@@ -59,6 +85,9 @@ const SWITCHES: Record<
     allowPdf: "Kiriza kudownloadinga PDF",
     allowPrint: "Kiriza okupulinta",
     allowWhatsApp: "Kiriza WhatsApp",
+    allowSms: "Kiriza SMS",
+    autoSendWhatsApp: "Sindika mu WhatsApp singa essimu eriwo",
+    autoSendSms: "Sindika mu SMS singa essimu eriwo",
     showAnimation: "Laga animation ya pulinta",
   },
   es: {
@@ -67,6 +96,9 @@ const SWITCHES: Record<
     allowPdf: "Permitir descargar PDF",
     allowPrint: "Permitir imprimir",
     allowWhatsApp: "Permitir WhatsApp",
+    allowSms: "Permitir SMS",
+    autoSendWhatsApp: "Enviar auto por WhatsApp si hay teléfono",
+    autoSendSms: "Enviar auto por SMS si hay teléfono",
     showAnimation: "Mostrar la animación de la impresora",
   },
   pt: {
@@ -75,6 +107,9 @@ const SWITCHES: Record<
     allowPdf: "Permitir descarregar PDF",
     allowPrint: "Permitir impressão",
     allowWhatsApp: "Permitir WhatsApp",
+    allowSms: "Permitir SMS",
+    autoSendWhatsApp: "Enviar auto por WhatsApp se houver telefone",
+    autoSendSms: "Enviar auto por SMS se houver telefone",
     showAnimation: "Mostrar a animação da impressora",
   },
   ar: {
@@ -83,6 +118,9 @@ const SWITCHES: Record<
     allowPdf: "السماح بتنزيل PDF",
     allowPrint: "السماح بالطباعة",
     allowWhatsApp: "السماح بـ WhatsApp",
+    allowSms: "السماح بـ SMS",
+    autoSendWhatsApp: "إرسال تلقائي عبر WhatsApp عند توفر الهاتف",
+    autoSendSms: "إرسال تلقائي عبر SMS عند توفر الهاتف",
     showAnimation: "إظهار حركة الطابعة",
   },
   zh: {
@@ -91,6 +129,9 @@ const SWITCHES: Record<
     allowPdf: "允许下载 PDF",
     allowPrint: "允许打印",
     allowWhatsApp: "允许 WhatsApp",
+    allowSms: "允许 SMS 短信",
+    autoSendWhatsApp: "客户有电话时自动发送 WhatsApp",
+    autoSendSms: "客户有电话时自动发送短信",
     showAnimation: "显示打印机动画",
   },
 };
@@ -121,6 +162,9 @@ export default function ReceiptSettingsPage() {
             ["allowPdf", SWITCHES[lang].allowPdf],
             ["allowPrint", SWITCHES[lang].allowPrint],
             ["allowWhatsApp", SWITCHES[lang].allowWhatsApp],
+            ["allowSms", SWITCHES[lang].allowSms],
+            ["autoSendWhatsApp", SWITCHES[lang].autoSendWhatsApp],
+            ["autoSendSms", SWITCHES[lang].autoSendSms],
             ["showAnimation", SWITCHES[lang].showAnimation],
           ] as const
         ).map(([key, label]) => (

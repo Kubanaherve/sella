@@ -319,11 +319,19 @@ export default function LoginPage() {
             </form>
           )}
 
-          <div className="pt-4 border-t border-slate-200 text-center text-xs text-slate-600">
-            {rw ? "Nta konti y'iduka uragira?" : "Don't have a shop account?"}{" "}
-            <Link to="/signup" className="font-semibold text-[#0B3FCC] hover:underline">
-              {rw ? "Fungura iduka (Iminsi 7 ku buntu)" : "Start 7-day free trial"}
-            </Link>
+          <div className="pt-4 border-t border-slate-200 text-center text-xs text-slate-600 space-y-2">
+            <div>
+              {rw ? "Uri umukozi (Cashier) muri shop?" : "Are you a store cashier?"}{" "}
+              <Link to="/app" className="font-semibold text-[#0B3FCC] hover:underline">
+                {rw ? "Injira na Shop Code & PIN" : "Join with Shop Code & PIN"}
+              </Link>
+            </div>
+            <div>
+              {rw ? "Nta konti y'iduka uragira?" : "Don't have a shop account?"}{" "}
+              <Link to="/signup" className="font-semibold text-[#0B3FCC] hover:underline">
+                {rw ? "Fungura iduka (Iminsi 7 ku buntu)" : "Start 7-day free trial"}
+              </Link>
+            </div>
           </div>
         </div>
 

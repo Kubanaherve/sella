@@ -321,6 +321,7 @@ export const WebMomoCheckout: React.FC<WebMomoCheckoutProps> = ({
         if (body.status === "SUCCESSFUL") {
           setInternalStatus("confirmed");
           await refreshSubscription();
+          if (onSuccess) onSuccess();
           toast.success(
             rw
               ? "Ubwishyu bwemejwe neza! Pro yafunguwe."

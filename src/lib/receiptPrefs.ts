@@ -6,6 +6,9 @@ export type ReceiptPrefs = {
   allowPdf: boolean;
   allowPrint: boolean;
   allowWhatsApp: boolean;
+  allowSms: boolean;
+  autoSendWhatsApp: boolean;
+  autoSendSms: boolean;
   showAnimation: boolean;
   thankYouMessage: string;
 };
@@ -16,6 +19,9 @@ const DEFAULTS: ReceiptPrefs = {
   allowPdf: true,
   allowPrint: true,
   allowWhatsApp: true,
+  allowSms: true,
+  autoSendWhatsApp: false,
+  autoSendSms: false,
   showAnimation: true,
   thankYouMessage: "Murakoze kuduhitamo! Thank you for shopping with us.",
 };

@@ -1,4 +1,5 @@
-import { MessageCircle, FileText, Share2, X } from "lucide-react";
+import { FileText, Share2, X } from "lucide-react";
+import { WhatsAppIcon } from "@/components/icons/MessagingIcons";
 import type { ReminderStatus } from "@/lib/whatsappReminder";
 import { cn } from "@/lib/utils";
 
@@ -71,7 +72,7 @@ export function WhatsAppReminderOverlay({
           )}
           <div className="relative z-10 flex items-center gap-3">
             <span className="w-14 h-14 rounded-[16px] bg-white/20 border border-white/25 flex items-center justify-center backdrop-blur-md">
-              <MessageCircle size={28} />
+              <WhatsAppIcon size={28} className="text-white" />
             </span>
             <div className="min-w-0">
               <p className="text-[11px] font-semibold uppercase tracking-wide text-white/80">

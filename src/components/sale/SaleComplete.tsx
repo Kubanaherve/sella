@@ -15,10 +15,10 @@ import { toast } from "sonner";
 import {
   CheckCircle2,
   FileText,
-  MessageCircle,
   Printer,
   X,
 } from "lucide-react";
+import { WhatsAppIcon, SmsIcon } from "@/components/icons/MessagingIcons";
 
 type Props = {
   data: ReceiptData;
@@ -107,6 +107,31 @@ export function SaleComplete({ data, onClose }: Props) {
       : `https://wa.me/?text=${encodeURIComponent(msg)}`;
     window.open(url, "_blank");
   };
+
+  const shareSms = () => {
+    if (!prefs.allowSms) {
+      toast.message("Kohereza kuri SMS birahagaritswe");
+      return;
+    }
+    const msg = buildWhatsAppReceiptMessage(data);
+    const digits = data.customerPhone
+      ? data.customerPhone.replace(/\D/g, "")
+      : "";
+    const url = digits
+      ? `sms:${digits}?body=${encodeURIComponent(msg)}`
+      : `sms:?body=${encodeURIComponent(msg)}`;
+    window.location.href = url;
+  };
+
+  // Automatic message dispatch if configured in receipt preferences
+  useEffect(() => {
+    if (!data.customerPhone) return;
+    if (prefs.autoSendWhatsApp && prefs.allowWhatsApp) {
+      shareWhatsApp();
+    } else if (prefs.autoSendSms && prefs.allowSms) {
+      shareSms();
+    }
+  }, []);
 
   const printReceipt = () => {
     if (!prefs.allowPrint) {
@@ -242,10 +267,17 @@ export function SaleComplete({ data, onClose }: Props) {
               </Button>
               <Button
                 variant="outline"
-                className="h-11 gap-1.5 col-span-2"
+                className="h-11 gap-2 bg-[#25D366]/10 border-[#25D366]/30 text-[#128C7E] dark:text-[#25D366] hover:bg-[#25D366]/20 font-semibold"
                 onClick={shareWhatsApp}
               >
-                <MessageCircle size={15} /> WhatsApp
+                <WhatsAppIcon size={18} className="text-[#25D366] shrink-0" /> WhatsApp
+              </Button>
+              <Button
+                variant="outline"
+                className="h-11 gap-2 bg-[#0284C7]/10 border-[#0284C7]/30 text-[#0284C7] dark:text-[#38BDF8] hover:bg-[#0284C7]/20 font-semibold"
+                onClick={shareSms}
+              >
+                <SmsIcon size={18} className="text-[#0284C7] shrink-0" /> SMS
               </Button>
               <Button className="h-11 btn-navy col-span-2" onClick={generateWithAnim}>
                 <FileText size={15} className="mr-1.5" /> PDF

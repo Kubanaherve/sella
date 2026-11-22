@@ -26,6 +26,7 @@ import {
   List,
   X,
 } from "lucide-react";
+import { WhatsAppIcon, SmsIcon } from "@/components/icons/MessagingIcons";
 import { PageHeader } from "@/components/PageHeader";
 import { EmptyState } from "@/components/EmptyState";
 import { ListPageSkeleton } from "@/components/ListPageSkeleton";
@@ -917,7 +918,7 @@ const DebtsPage = () => {
                 onClick={() => void handleWhatsAppReminder(selectedCustomer)}
                 className="w-full min-h-[58px] rounded-2xl bg-[#25D366] text-white text-[16px] font-extrabold flex items-center justify-center gap-2.5 shadow-md active:scale-[0.98] disabled:opacity-70"
               >
-                <MessageCircle size={22} />
+                <WhatsAppIcon size={22} className="text-white shrink-0" />
                 Send WhatsApp Reminder
               </button>
 
@@ -930,11 +931,11 @@ const DebtsPage = () => {
                       onClick={() => handleSMS(selectedCustomer)}
                       className="flex flex-col items-center gap-1.5 active:scale-95"
                     >
-                      <span className="w-12 h-12 rounded-[14px] bg-[#0EA5E9] text-white flex items-center justify-center shadow-sm">
-                        <MessageCircle size={20} />
+                      <span className="w-12 h-12 rounded-[14px] bg-[#0284C7] text-white flex items-center justify-center shadow-sm">
+                        <SmsIcon size={20} className="text-white" />
                       </span>
                       <span className="text-[10px] font-bold text-slate-700 text-center leading-tight">
-                        Ubutumwa
+                        SMS (Ubutumwa)
                       </span>
                     </button>
                     <button
