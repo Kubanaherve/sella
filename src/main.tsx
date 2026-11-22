@@ -4,6 +4,23 @@ import "./index.css";
 import { Capacitor } from "@capacitor/core";
 import { initSafeAreaChrome } from "./lib/safeArea";
 import { bootstrapAppearance } from "./contexts/ThemeContext";
+import { applyDocumentLanguage, getAppLanguage } from "./lib/appLanguage";
+
+// Synchronously apply language and direction attributes (e.g. dir="rtl" for Arabic)
+applyDocumentLanguage(getAppLanguage());
+
+// Automatically pass Accept-Language: {lang} on all API and fetch requests
+if (typeof window !== "undefined") {
+  const originalFetch = window.fetch;
+  window.fetch = function (input: RequestInfo | URL, init?: RequestInit) {
+    const lang = getAppLanguage();
+    const headers = new Headers(init?.headers);
+    if (!headers.has("Accept-Language")) {
+      headers.set("Accept-Language", lang);
+    }
+    return originalFetch.call(this, input, { ...init, headers });
+  };
+}
 
 // Manual theme only — apply stored light/dark before paint (never phone system).
 bootstrapAppearance();

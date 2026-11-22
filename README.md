@@ -1,4 +1,4 @@
-# Sella — Universal Digital Marketplace & Retail Operating System for Rwanda
+# Sella — Shop POS Register, Stock & Customer Credit Book for Rwanda
 
 Multi-tenant digital marketplace, POS register, and retail management platform built for Rwandan commercial businesses: clothing shops, shoe boutiques, hardware stores (quincailleries), electronics and gadget suppliers, supermarkets, mini-markets, pharmacies, beauty & cosmetics, restaurants & food businesses, construction materials, agricultural produce, furniture, wholesale warehouses, and informal market traders.
 

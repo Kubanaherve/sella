@@ -98,6 +98,69 @@ function sellaStaffApiPlugin() {
         return;
       }
 
+      if (url.pathname === "/api/payments/initiate" && req.method === "POST") {
+        let body = "";
+        req.on("data", (chunk: any) => {
+          body += chunk;
+        });
+        req.on("end", async () => {
+          try {
+            const data = JSON.parse(body || "{}");
+            const { handlePaymentInitiate } = await import("./src/server/paymentsApi.ts");
+            const result = await handlePaymentInitiate(data, req.headers["authorization"] || "");
+            res.statusCode = result.status;
+            res.setHeader("Content-Type", "application/json");
+            res.end(JSON.stringify(result.body));
+          } catch (e: any) {
+            res.statusCode = 500;
+            res.setHeader("Content-Type", "application/json");
+            res.end(JSON.stringify({ error: e.message }));
+          }
+        });
+        return;
+      }
+
+      const statusMatch = url.pathname.match(/^\/api\/payments\/status\/([^/]+)$/);
+      if (statusMatch && req.method === "GET") {
+        try {
+          const { handlePaymentStatus } = await import("./src/server/paymentsApi.ts");
+          const result = await handlePaymentStatus(
+            decodeURIComponent(statusMatch[1]),
+            req.headers["authorization"] || ""
+          );
+          res.statusCode = result.status;
+          res.setHeader("Content-Type", "application/json");
+          res.end(JSON.stringify(result.body));
+        } catch (e: any) {
+          res.statusCode = 500;
+          res.setHeader("Content-Type", "application/json");
+          res.end(JSON.stringify({ error: e.message }));
+        }
+        return;
+      }
+
+      if (url.pathname === "/api/payments/webhook" && req.method === "POST") {
+        let body = "";
+        req.on("data", (chunk: any) => {
+          body += chunk;
+        });
+        req.on("end", async () => {
+          try {
+            const data = JSON.parse(body || "{}");
+            const { handlePaymentWebhook } = await import("./src/server/paymentsApi.ts");
+            const result = await handlePaymentWebhook(data);
+            res.statusCode = result.status;
+            res.setHeader("Content-Type", "application/json");
+            res.end(JSON.stringify(result.body));
+          } catch (e: any) {
+            res.statusCode = 500;
+            res.setHeader("Content-Type", "application/json");
+            res.end(JSON.stringify({ error: e.message }));
+          }
+        });
+        return;
+      }
+
       next();
     });
   };

@@ -26,6 +26,9 @@ import DashboardPage from "./pages/Dashboard";
 import LandingPage from "./pages/LandingPage";
 
 // Code-split routes loaded on demand
+const LoginPage = lazy(() => import("./pages/Login"));
+const SignupPage = lazy(() => import("./pages/Signup"));
+const SettingsPage = lazy(() => import("./pages/Settings"));
 const AddDebtPage = lazy(() => import("./pages/AddDebt"));
 const DebtsPage = lazy(() => import("./pages/Debts"));
 const SalesPage = lazy(() => import("./pages/Sales"));
@@ -39,7 +42,7 @@ const ForgotPasswordPage = lazy(() => import("./pages/ForgotPassword"));
 const ResetPasswordPage = lazy(() => import("./pages/ResetPassword"));
 const ImportCustomersPage = lazy(() => import("./pages/ImportCustomers"));
 const ImportInventoryPage = lazy(() => import("./pages/ImportInventory"));
-const AccountPage = lazy(() => import("./pages/Account"));
+const AccountPage = lazy(() => import("./pages/Settings"));
 const SyncConflictsPage = lazy(() => import("./pages/SyncConflicts"));
 const AdminPaymentsPage = lazy(() => import("./pages/AdminPayments"));
 const AdminDashboardPage = lazy(() => import("./pages/AdminDashboard"));
@@ -54,8 +57,8 @@ const HowItWorksPage = lazy(() => import("./pages/marketing/HowItWorksPage"));
 const PricingPage = lazy(() => import("./pages/marketing/PricingPage"));
 const DownloadPage = lazy(() => import("./pages/marketing/DownloadPage"));
 const AboutPage = lazy(() => import("./pages/marketing/AboutPage"));
-const ContactPage = lazy(() => import("./pages/marketing/ContactPage"));
-const SupportPage = lazy(() => import("./pages/marketing/SupportPage"));
+const ContactPage = lazy(() => import("./pages/Support"));
+const SupportPage = lazy(() => import("./pages/Support"));
 const FaqPage = lazy(() => import("./pages/marketing/FaqPage"));
 const DeleteAccountRequestPage = lazy(() => import("./pages/DeleteAccountRequest"));
 const MorePage = lazy(() => import("./pages/More"));
@@ -123,14 +126,11 @@ function DesktopBoot({ children }: { children: ReactNode }) {
 
 const App = () => {
   const [showSplash, setShowSplash] = useState(() => {
-    // Only native mobile app requires the full boot splash; web pages (landing, docs, privacy, subscribe) load instantly
-    if (!Capacitor.isNativePlatform()) {
-      return false;
-    }
+    // Play splash on initial session load (both web & native), skipped once seen per session
     try {
       return sessionStorage.getItem(SPLASH_KEY) !== "1";
     } catch {
-      return true;
+      return false;
     }
   });
 
@@ -177,7 +177,10 @@ const App = () => {
                 <Route path="/orders" element={<CustomerOrdersPage />} />
                 <Route path="/orders/:orderId" element={<CustomerOrdersPage />} />
                 <Route path="/app" element={<AuthPage />} />
-                <Route path="/login" element={<AuthPage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/signup" element={<SignupPage />} />
+                <Route path="/settings" element={<SettingsPage />} />
+                <Route path="/billing" element={<BillingPage />} />
                 <Route path="/docs" element={<DocumentationPage />} />
                 <Route path="/features" element={<FeaturesPage />} />
                 <Route path="/benefits" element={<BenefitsPage />} />
